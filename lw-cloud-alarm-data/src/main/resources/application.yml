@@ -1,0 +1,5 @@
+server:
+  port: 9984
+spring:
+  application:
+    name: lw-cloud-alarm-data

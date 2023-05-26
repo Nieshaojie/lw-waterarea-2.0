@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.mskyeye</groupId>
+    <artifactId>lw-waterarea-2.0</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+    </properties>
+
+    <modules>
+        <!-- 公共模块 -->
+        <module>lw-cloud-common</module>
+        <!-- 协议模块 -->
+        <module>lw-cloud-protocol</module>
+        <!-- 中心站数据信令服务 -->
+        <module>lw-cloud-iot-cms</module>
+        <!-- 航迹融合服务 -->
+        <module>lw-cloud-track-merge</module>
+        <!-- 光电跟踪服务 -->
+        <module>lw-cloud-camera-trace</module>
+        <!-- websocket数据服务 -->
+        <module>lw-cloud-ws-data</module>
+        <!-- 报警服务 -->
+        <module>lw-cloud-alarm-data</module>
+        <!--  船舶数据服务 -->
+        <module>lw-cloud-data-db</module>
+    </modules>
+
+    <!-- 一般来说父级项目的packaging都为pom，packaging默认类型jar类型-->
+    <packaging>pom</packaging>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- SpringBoot的依赖配置-->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>2.3.3.RELEASE</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>Hoxton.SR8</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- AlibabaCloud的依赖配置-->
+            <dependency>
+                <groupId>com.alibaba.cloud</groupId>
+                <artifactId>spring-cloud-alibaba-dependencies</artifactId>
+                <version>2.2.1.RELEASE</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <repositories>
+        <repository>
+            <id>aliyun-maven</id>
+            <name>Ali Maven</name>
+            <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+        </repository>
+<!--        <repository>-->
+<!--            <id>spring-milestones</id>-->
+<!--            <name>Spring Milestones</name>-->
+<!--            <url>https://repo.spring.io/milestone</url>-->
+<!--        </repository>-->
+<!--        <repository>-->
+<!--            <id>spring-releases</id>-->
+<!--            <name>Spring Releases</name>-->
+<!--            <url>https://repo.spring.io/libs-release</url>-->
+<!--        </repository>-->
+<!--        <repository>-->
+<!--            <id>spring-milestones</id>-->
+<!--            <name>Spring Milestones</name>-->
+<!--            <url>https://repo.spring.io/libs-milestone</url>-->
+<!--        </repository>-->
+    </repositories>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+<!--                    <fork>true</fork>-->
+                    <addResources>true</addResources>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

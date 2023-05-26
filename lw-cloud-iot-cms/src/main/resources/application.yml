@@ -1,0 +1,6 @@
+server:
+  port: 9980
+
+spring:
+  application:
+    name: lw-cloud-iot-cms

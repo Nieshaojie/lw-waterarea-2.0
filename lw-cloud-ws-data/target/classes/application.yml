@@ -1,0 +1,6 @@
+server:
+  port: 9983
+
+spring:
+  application:
+    name: lw-cloud-ws-data
