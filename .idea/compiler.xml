@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="探测站数据交互服务" />
+        <module name="中心站数据信令服务" />
+        <module name="航迹融合服务" />
+        <module name="探测站监控服务" />
+        <module name="websocket数据服务" />
+        <module name="公共模块" />
+        <module name="数据存储服务" />
+        <module name="报警服务" />
+        <module name="协议模块" />
+        <module name="光电跟踪服务" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="lw-cloud-ds-monitor" target="11" />
+      <module name="安卓APP服务" target="11" />
+      <module name="平台业务服务" target="11" />
+      <module name="平台属性配置服务" target="11" />
+      <module name="平台认证服务" target="11" />
+      <module name="短信推送服务" target="11" />
+      <module name="第三方视频平台对接服务" target="11" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

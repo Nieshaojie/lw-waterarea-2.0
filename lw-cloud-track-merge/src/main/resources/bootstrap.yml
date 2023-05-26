@@ -1,0 +1,19 @@
+spring:
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 192.168.124.100:8848
+        group: CENTRAL_STATION_DATA_SERVER
+        username: nacos
+        password: nacos
+      config:
+        server-addr: 192.168.124.100:8848 #Nacos配置中心地址
+        file-extension: yaml #文件拓展格式
+        group: CENTRAL_STATION_DATA_SERVER
+        username: ${spring.cloud.nacos.discovery.username}
+        password: ${spring.cloud.nacos.discovery.password}
+  profiles:
+    active: dev
+logging:
+  level:
+    com.alibaba.nacos.client.config.impl: WARN
