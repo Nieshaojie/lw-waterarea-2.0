@@ -29,9 +29,9 @@ public class AisStaticDataToMqHandler extends ChannelInboundHandlerAdapter {
     @Autowired
     private MqConnectionUtil mcUtil;
 
-    // 设置消息的TTL为1秒
+    // 设置消息的TTL为10秒
     private AMQP.BasicProperties properties = new AMQP.BasicProperties.Builder()
-            .expiration("1000")
+            .expiration("10000")
             .build();
 
     @Override

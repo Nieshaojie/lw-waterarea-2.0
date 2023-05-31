@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.mskyeye.shipData.mapper.YzAisStaticInfoMapper">
+<mapper namespace="com.mskyeye.dataDb.mapper.YzAisStaticInfoMapper">
 
     <resultMap type="YzAisStaticInfo" id="YzAisStaticInfoResult">
         <result property="mmsi"    column="mmsi"    />

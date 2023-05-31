@@ -8,15 +8,15 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="探测站数据交互服务" />
-        <module name="中心站数据信令服务" />
-        <module name="航迹融合服务" />
         <module name="探测站监控服务" />
         <module name="websocket数据服务" />
         <module name="公共模块" />
         <module name="数据存储服务" />
         <module name="报警服务" />
+        <module name="航迹处理服务" />
         <module name="协议模块" />
         <module name="光电跟踪服务" />
+        <module name="中心站信令服务" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>

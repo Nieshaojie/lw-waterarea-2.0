@@ -30,9 +30,9 @@ public class TrackToMqHandler extends ChannelInboundHandlerAdapter {
     @Autowired
     private MqConnectionUtil mcUtil;
 
-    // 设置消息的TTL为1秒
+    // 设置消息的TTL为10秒
     private AMQP.BasicProperties properties = new AMQP.BasicProperties.Builder()
-            .expiration("1000")
+            .expiration("10000")
             .build();
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {

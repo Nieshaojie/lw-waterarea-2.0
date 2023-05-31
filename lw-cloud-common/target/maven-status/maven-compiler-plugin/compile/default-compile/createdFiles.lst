@@ -5,6 +5,7 @@ com\mskyeye\common\utils\DateUtil.class
 com\mskyeye\common\config\MySwaggerResourceProvider.class
 com\mskyeye\common\exception\MyException.class
 com\mskyeye\common\annotation\validator\CheckIPAddrValidator.class
+com\mskyeye\common\utils\RedisCacheKey.class
 com\mskyeye\common\utils\serializer\JsonCameraTypeSerializer.class
 com\mskyeye\common\utils\StringUtil.class
 com\mskyeye\common\utils\UUIDUtil.class

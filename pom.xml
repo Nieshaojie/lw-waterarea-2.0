@@ -18,10 +18,10 @@
         <module>lw-cloud-common</module>
         <!-- 协议模块 -->
         <module>lw-cloud-protocol</module>
-        <!-- 中心站数据信令服务 -->
+        <!-- 中心站信令服务 -->
         <module>lw-cloud-iot-cms</module>
-        <!-- 航迹融合服务 -->
-        <module>lw-cloud-track-merge</module>
+        <!-- 航迹处理服务 -->
+        <module>lw-cloud-track-handle</module>
         <!-- 光电跟踪服务 -->
         <module>lw-cloud-camera-trace</module>
         <!-- websocket数据服务 -->
