@@ -2,5 +2,13 @@ server:
   port: 9985
 
 spring:
+  profiles:
+    active: dev,redis
   application:
     name: lw-cloud-data-db
+
+mybatis:
+  type-aliases-package: com.mskyeye.lwradarstationdata.protocol
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true

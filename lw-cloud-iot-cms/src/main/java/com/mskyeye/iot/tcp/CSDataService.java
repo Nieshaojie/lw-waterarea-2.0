@@ -90,7 +90,7 @@ public class CSDataService implements ApplicationRunner {
             cf.channel().closeFuture().sync(); //关闭服务器通道
         } catch (Exception e) {
             e.printStackTrace();
-            log.error("【中心站数据信令服务】【异常信息】" + e.getMessage());
+            log.error("【中心站信令服务】【异常信息】" + e.getMessage());
         } finally {
             workGroup.shutdownGracefully();
             bossGroup.shutdownGracefully();
