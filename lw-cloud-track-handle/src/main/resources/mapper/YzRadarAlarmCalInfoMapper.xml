@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mskyeye.handler.mapper.YzRadarAlarmCalInfoMapper">
+
+    <resultMap type="RadarAlarmCalInfo" id="YzRadarAlarmCalInfoResult">
+        <result property="code"    column="code"    />
+        <result property="deptId"    column="dept_id"    />
+        <result property="areaId"    column="area_id"    />
+        <result property="points"    column="points"    />
+        <result property="calMethod"    column="cal_method"    />
+        <result property="calPro"    column="cal_pron"    />
+        <result property="typeValue"    column="type_value"    />
+        <result property="typeName"    column="type_name"    />
+        <result property="startTime"    column="start_time"    />
+        <result property="endTime"    column="end_time"    />
+        <result property="isInterAlarm"    column="is_inter_alarm"    />
+    </resultMap>
+
+
+    <select id="selectRadarAlarmCalInfoList" resultMap="YzRadarAlarmCalInfoResult">
+        SELECT a.dept_id, e.code, a.area_id, b.points, c.cal_method, c.cal_pron,
+               c.type_value, c.type_name, a.start_time, a.end_time, a.is_inter_alarm
+        FROM yz_radar_alarm_config a
+                 JOIN yz_radar_alarm_area b ON a.area_id = b.id
+                 JOIN yz_radar_alarm_type c ON a.type_id = c.id
+                 JOIN sys_dept d ON a.dept_id = d.dept_id
+                 JOIN (
+            SELECT dept_id, MAX(code) AS code
+            FROM yz_radar_info
+            GROUP BY dept_id
+        ) e ON a.dept_id = e.dept_id
+        WHERE a.is_enable = 1
+    </select>
+</mapper>

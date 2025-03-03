@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mskyeye.handler.mapper.YzCarInfoMapper">
+    
+    <resultMap type="YzCarInfo" id="YzCarInfoResult">
+        <result property="id"    column="id"    />
+        <result property="carCode"    column="car_code"    />
+        <result property="carModel"    column="car_model"    />
+        <result property="carPlateNumber"    column="car_plate_number"    />
+        <result property="carDescribe"    column="car_describe"    />
+        <result property="deptId"    column="dept_id"    />
+        <result property="addrUrl"    column="addr_url"    />
+        <result property="carGps"    column="car_gps"    />
+    </resultMap>
+
+    <sql id="selectYzCarInfoVo">
+        select id, car_code, car_model, car_plate_number, car_describe, dept_id, addr_url, car_gps from yz_car_info
+    </sql>
+
+    <select id="selectYzCarInfoList" parameterType="YzCarInfo" resultMap="YzCarInfoResult">
+        <include refid="selectYzCarInfoVo"/>
+        <where>  
+            <if test="carCode != null  and carCode != ''"> and car_code = #{carCode}</if>
+            <if test="carModel != null  and carModel != ''"> and car_model = #{carModel}</if>
+            <if test="carPlateNumber != null  and carPlateNumber != ''"> and car_plate_number = #{carPlateNumber}</if>
+            <if test="carDescribe != null  and carDescribe != ''"> and car_describe = #{carDescribe}</if>
+            <if test="deptId != null "> and dept_id = #{deptId}</if>
+            <if test="addrUrl != null  and addrUrl != ''"> and addr_url = #{addrUrl}</if>
+            <if test="carGps != null  and carGps != ''"> and car_gps = #{carGps}</if>
+        </where>
+    </select>
+    
+    <select id="selectYzCarInfoById" parameterType="Long" resultMap="YzCarInfoResult">
+        <include refid="selectYzCarInfoVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertYzCarInfo" parameterType="YzCarInfo" useGeneratedKeys="true" keyProperty="id">
+        insert into yz_car_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="carCode != null">car_code,</if>
+            <if test="carModel != null">car_model,</if>
+            <if test="carPlateNumber != null">car_plate_number,</if>
+            <if test="carDescribe != null">car_describe,</if>
+            <if test="deptId != null">dept_id,</if>
+            <if test="addrUrl != null">addr_url,</if>
+            <if test="carGps != null">car_gps,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="carCode != null">#{carCode},</if>
+            <if test="carModel != null">#{carModel},</if>
+            <if test="carPlateNumber != null">#{carPlateNumber},</if>
+            <if test="carDescribe != null">#{carDescribe},</if>
+            <if test="deptId != null">#{deptId},</if>
+            <if test="addrUrl != null">#{addrUrl},</if>
+            <if test="carGps != null">#{carGps},</if>
+         </trim>
+    </insert>
+
+    <update id="updateYzCarInfo" parameterType="YzCarInfo">
+        update yz_car_info
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="carCode != null">car_code = #{carCode},</if>
+            <if test="carModel != null">car_model = #{carModel},</if>
+            <if test="carPlateNumber != null">car_plate_number = #{carPlateNumber},</if>
+            <if test="carDescribe != null">car_describe = #{carDescribe},</if>
+            <if test="deptId != null">dept_id = #{deptId},</if>
+            <if test="addrUrl != null">addr_url = #{addrUrl},</if>
+            <if test="carGps != null">car_gps = #{carGps},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteYzCarInfoById" parameterType="Long">
+        delete from yz_car_info where id = #{id}
+    </delete>
+
+    <delete id="deleteYzCarInfoByIds" parameterType="String">
+        delete from yz_car_info where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

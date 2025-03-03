@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mskyeye.handler.mapper.YzAisAlarmConfigMapper">
+    
+    <resultMap type="AisAlarmCalInfo" id="YzAisAlarmConfigResult">
+        <result property="mmsi"    column="mmsi"    />
+        <result property="alarmType"    column="alarm_type"    />
+    </resultMap>
+
+    <select id="selectAisAlarmCalInfoList" resultMap="YzAisAlarmConfigResult">
+        select mmsi,alarm_type from yz_ais_alarm_config where is_enable_alarm = 1
+    </select>
+
+</mapper>
