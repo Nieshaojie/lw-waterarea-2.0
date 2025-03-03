@@ -1,0 +1,18 @@
+server:
+  port: 9982
+
+spring:
+  profiles:
+    active: dev
+  application:
+    name: lw-cloud-camera-trace
+
+mybatis:
+  type-aliases-package: com.mskyeye.trace.model
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+
+#TODO
+#alarm_stg_url: "C://ruoyi/uploadPath/alarm/"
+alarm_stg_url: "/home/yuzheng/uploadPath/alarm/"
