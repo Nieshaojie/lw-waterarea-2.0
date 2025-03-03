@@ -1,4 +1,4 @@
-com\mskyeye\lwradarstationdata\protocol\radar\custom\LwTrackPacket$Content.class
+com\mskyeye\lwradarstationdata\protocol\track\LwTrackPacket.class
 com\mskyeye\lwradarstationdata\protocol\radar\spx\SpxPacketTrackExtended_tag.class
 com\mskyeye\lwradarstationdata\protocol\radar\spx\SpxPacketTrackNormal_tag.class
 com\mskyeye\lwradarstationdata\protocol\utils\serializer\LonLatDoubleSerialize.class
@@ -6,9 +6,10 @@ com\mskyeye\lwradarstationdata\protocol\utils\serializer\OyzFloatSerialize.class
 com\mskyeye\lwradarstationdata\protocol\radar\spx\SpxPacketTrackerStatus_tag.class
 com\mskyeye\lwradarstationdata\protocol\radar\spx\SpxPacketHeader.class
 com\mskyeye\lwradarstationdata\protocol\radar\custom\RadarParamHead.class
+com\mskyeye\lwradarstationdata\protocol\radar\custom\RadarRealInfo.class
+com\mskyeye\lwradarstationdata\protocol\track\Content.class
 com\mskyeye\lwradarstationdata\protocol\radar\spx\SpxPacketTrackMinimal_tag.class
 com\mskyeye\lwradarstationdata\protocol\radar\spx\RadarImage.class
 com\mskyeye\lwradarstationdata\protocol\radar\custom\TrackTcpPacket.class
 com\mskyeye\lwradarstationdata\protocol\ais\YzAisStaticInfo.class
-com\mskyeye\lwradarstationdata\protocol\radar\custom\LwTrackPacket.class
 com\mskyeye\lwradarstationdata\protocol\utils\serializer\OyzDoubleSerialize.class

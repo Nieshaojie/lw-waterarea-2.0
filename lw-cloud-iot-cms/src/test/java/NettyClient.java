@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
  **/
 public class NettyClient {
 
-    private static final String SERVER = "127.0.0.1";
+    private static final String SERVER = "192.168.124.89";
 
     //    @Value("${server_port}")
     private Integer serverPort = 6688;

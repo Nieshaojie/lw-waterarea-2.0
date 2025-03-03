@@ -1,7 +1,10 @@
 package com.mskyeye.ws.common;
 
+import com.mskyeye.ws.model.DeviceInDept;
+import org.yeauty.pojo.Session;
+
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * @ClassName:GlobalResources
@@ -25,4 +28,9 @@ public class GlobalResources {
     //实时航迹队列
     public static ConcurrentLinkedDeque<String> curTrackQueue = new ConcurrentLinkedDeque<>();
 
+    //用户Session
+    public static ConcurrentHashMap<Session, DeviceInDept> sessionKV = new ConcurrentHashMap<>();
+
+    //设备信息Map,key是机构ID
+    public static ConcurrentHashMap<Long, DeviceInDept> deviceInfoMap = new ConcurrentHashMap<>();
 }

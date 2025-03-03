@@ -1,9 +1,9 @@
 package com.mskyeye.iot.utils;
 
 import com.mskyeye.lwradarstationdata.protocol.radar.custom.TrackTcpPacket;
-import com.mskyeye.lwradarstationdata.protocol.radar.custom.LwTrackPacket;
+import com.mskyeye.lwradarstationdata.protocol.track.Content;
+import com.mskyeye.lwradarstationdata.protocol.track.LwTrackPacket;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,7 +21,7 @@ public class ProConvClazz {
 
         LwTrackPacket trackWSPacket = new LwTrackPacket();
 
-        LwTrackPacket.Content content = new LwTrackPacket.Content();
+        Content content = new Content();
 
         content.setSOURCE((int) trackTcpPacket.getUSrc());
 
@@ -31,13 +31,8 @@ public class ProConvClazz {
 
         content.setSTATUS((int) trackTcpPacket.getBAdd());
 
-        content.setMMSI(trackTcpPacket.getUMmsi());
+        content.setMMSI((long) trackTcpPacket.getUMmsi());
 
-        if(trackTcpPacket.getSShipName() == null){
-            content.setNAME(null);
-        }else {
-            content.setNAME(new String(trackTcpPacket.getSShipName(), StandardCharsets.UTF_8));
-        }
         content.setLAT(trackTcpPacket.getDTargetLat());
 
         content.setLON(trackTcpPacket.getDTargetLon());
@@ -47,6 +42,8 @@ public class ProConvClazz {
         content.setSPEED(trackTcpPacket.getISpeed());
 
         content.setHEAD(trackTcpPacket.getIHead());
+
+        content.setNAVIGATION(trackTcpPacket.getISpeed() > 3.0 ?1:0);
 
         content.setRANGEMETRES(trackTcpPacket.getRangeMetres());
 
@@ -60,13 +57,13 @@ public class ProConvClazz {
 
         content.setSTRENGTH(trackTcpPacket.getStrength());
 
-        List<LwTrackPacket.Content> list = new ArrayList<>();
+        List<Content> list = new ArrayList<>();
 
         list.add(content);
 
         trackWSPacket.setITEM(list);
 
-        trackWSPacket.setTIME(trackTcpPacket.getTLastUpdatetime());
+        trackWSPacket.setTIME(System.currentTimeMillis());//用服务器时间,防止各雷达站时间不同步
 
         return trackWSPacket;
     }

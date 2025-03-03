@@ -62,10 +62,5 @@ public class MainHandlerService implements ApplicationRunner {
         aisHandlerService.run();
 
 
-//        new Thread(()->{
-//            while (true){
-//
-//            }
-//        }).start();
     }
 }

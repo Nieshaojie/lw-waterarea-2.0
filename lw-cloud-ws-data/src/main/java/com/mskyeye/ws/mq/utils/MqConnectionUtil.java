@@ -38,11 +38,18 @@ public class MqConnectionUtil {
 
     private Channel channel;
 
-//    public static String EXCHANGE_NAME = "radar_track";
-    public static String EXCHANGE_NAME = "iot.radarstation.data";
+    public static final String EXCHANGE_NAME = "iot.data";
+    public static final String TRACK_QUEUE_NAME = "processed_track2ws";
+    public static final String TRACK_QUEUE_ROUTING_KEY = "processed_track2ws.#";
 
-    public static String QUEUE_NAME = "radar_track_ws_queue";
+    public static final String CAMERA_STATUS_QUEUE_NAME = "camera_status";
+    public static final String CAMERA_STATUS_QUEUE_ROUTING_KEY = "camera_status.#";
 
+    public static final String AI_ALARM_EVENT_QUEUE_NAME = "ai_alarm";
+    public static final String AI_ALARM_EVENT_QUEUE_ROUTING_KEY = "ai_alarm.#";
+
+    public static final String CAR_TRACK_QUEUE_NAME = "car_track";
+    public static final String CAR_TRACK_QUEUE_ROUTING_KEY = "car_track.#";
     public Boolean initMqConfig(){
         try {
             //定义连接工厂
@@ -55,14 +62,31 @@ public class MqConnectionUtil {
 //            factory.setVirtualHost("/iot");
             factory.setUsername(mqUserName);
             factory.setPassword(mqPassWord);
+            factory.setAutomaticRecoveryEnabled(true); // 开启自动重连功能
+            factory.setNetworkRecoveryInterval(1000); // 自动重连间隔时间，单位为毫秒
             // 获取连接
             Connection connection = factory.newConnection();
             mqConn = connection;
             channel = mqConn.createChannel();
-            // 声明队列
-            channel.queueDeclare(QUEUE_NAME, false, false, false, null);
-            // 绑定队列到交换机
-            channel.queueBind(QUEUE_NAME, EXCHANGE_NAME, "");
+            channel.exchangeDeclare(EXCHANGE_NAME, "topic");
+            // 创建参数map，并设置x-expires参数为-1
+//            Map<String, Object> arguments = new HashMap<>();
+//            arguments.put("x-expires", -1);
+            // 航迹队列
+            channel.queueDeclare(TRACK_QUEUE_NAME, true, false, false, null);
+            channel.queueBind(TRACK_QUEUE_NAME, EXCHANGE_NAME, TRACK_QUEUE_ROUTING_KEY);
+
+            // 相机状态队列
+            channel.queueDeclare(CAMERA_STATUS_QUEUE_NAME, true, false, false, null);
+            channel.queueBind(CAMERA_STATUS_QUEUE_NAME, EXCHANGE_NAME, CAMERA_STATUS_QUEUE_ROUTING_KEY);
+
+            // AI告警事件队列
+            channel.queueDeclare(AI_ALARM_EVENT_QUEUE_NAME, true, false, false, null);
+            channel.queueBind(AI_ALARM_EVENT_QUEUE_NAME, EXCHANGE_NAME, AI_ALARM_EVENT_QUEUE_ROUTING_KEY);
+
+            // 车载GPS信息队列
+            channel.queueDeclare(CAR_TRACK_QUEUE_NAME, true, false, false, null);
+            channel.queueBind(CAR_TRACK_QUEUE_NAME, EXCHANGE_NAME, CAR_TRACK_QUEUE_ROUTING_KEY);
             return true;
         }catch (Exception e){
             e.printStackTrace();

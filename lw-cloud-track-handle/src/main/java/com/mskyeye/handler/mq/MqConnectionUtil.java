@@ -35,16 +35,22 @@ public class MqConnectionUtil {
     private String mqPassWord;
 
     private Connection mqConn;
+    private Channel channel;
 
-    private Channel originalTrackChannel;
-
-    private Channel mergeTrackChannel;
-
-    public static final String ORIGINAL_EXCHANGE_NAME = "iot.radarstation.data";
-
-    public static final String MERGE_EXCHANGE_NAME = "merge_track";
-
-    public Boolean initMqConfig(){
+    public static final String EXCHANGE_NAME = "iot.data";
+    public static final String TRACK_QUEUE_NAME = "track";
+    public static final String TRACK_QUEUE_ROUTING_KEY = "track.#";
+    public static final String PRO_TRACK_QUEUE_NAME1 = "processed_track2trace";
+    public static final String PRO_TRACK_QUEUE_NAME2 = "processed_track2ws";
+    public static final String PRO_TRACK_QUEUE_NAME3 = "processed_track2db";
+    public static final String PRO_TRACK_QUEUE_ROUTING_KEY1 = "processed_track2trace.#";
+    public static final String PRO_TRACK_QUEUE_ROUTING_KEY2 = "processed_track2ws.#";
+    public static final String PRO_TRACK_QUEUE_ROUTING_KEY3 = "processed_track2db.#";
+    public static final String CAR_TRACK_QUEUE_NAME = "car_track";
+    public static final String CAR_TRACK_QUEUE_ROUTING_KEY = "car_track.#";
+    public static final String NEW_ALARM_QUEUE_NAME = "new_alarm";
+    public static final String NEW_ALARM_QUEUE_ROUTING_KEY = "new_alarm.#";
+    public Boolean initMqConfig() {
         try {
             //定义连接工厂
             ConnectionFactory factory = new ConnectionFactory();
@@ -53,22 +59,34 @@ public class MqConnectionUtil {
             //端口
             factory.setPort(mqPort);
             //设置账号信息，用户名、密码、vhost
-//            factory.setVirtualHost("/iot");
             factory.setUsername(mqUserName);
             factory.setPassword(mqPassWord);
+            factory.setAutomaticRecoveryEnabled(true); // 开启自动重连功能
+            factory.setNetworkRecoveryInterval(1000); // 自动重连间隔时间，单位为毫秒
             // 获取连接
             Connection connection = factory.newConnection();
             mqConn = connection;
+            channel = mqConn.createChannel();
+            channel.exchangeDeclare(EXCHANGE_NAME, "topic");
+            // 声明队列
+            channel.queueDeclare(TRACK_QUEUE_NAME, true, false, false, null);
+            channel.queueDeclare(PRO_TRACK_QUEUE_NAME1, true, false, false, null);
+            channel.queueDeclare(PRO_TRACK_QUEUE_NAME2, true, false, false, null);
+            channel.queueDeclare(PRO_TRACK_QUEUE_NAME3, true, false, false, null);
+            channel.queueDeclare(CAR_TRACK_QUEUE_NAME, true, false, false, null);
+            channel.queueDeclare(NEW_ALARM_QUEUE_NAME, true, false, false, null);
 
-            originalTrackChannel = mqConn.createChannel();
-            originalTrackChannel.exchangeDeclare(ORIGINAL_EXCHANGE_NAME,"fanout");
-
-            mergeTrackChannel = mqConn.createChannel();
-            mergeTrackChannel.exchangeDeclare(MERGE_EXCHANGE_NAME,"fanout");
+            // 将队列与交换机通过路由键绑定
+            channel.queueBind(TRACK_QUEUE_NAME, EXCHANGE_NAME, TRACK_QUEUE_ROUTING_KEY);
+            channel.queueBind(PRO_TRACK_QUEUE_NAME1, EXCHANGE_NAME, PRO_TRACK_QUEUE_ROUTING_KEY1);
+            channel.queueBind(PRO_TRACK_QUEUE_NAME2, EXCHANGE_NAME, PRO_TRACK_QUEUE_ROUTING_KEY2);
+            channel.queueBind(PRO_TRACK_QUEUE_NAME3, EXCHANGE_NAME, PRO_TRACK_QUEUE_ROUTING_KEY3);
+            channel.queueBind(CAR_TRACK_QUEUE_NAME, EXCHANGE_NAME, CAR_TRACK_QUEUE_ROUTING_KEY);
+            channel.queueBind(NEW_ALARM_QUEUE_NAME, EXCHANGE_NAME, NEW_ALARM_QUEUE_ROUTING_KEY);
             return true;
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
-            log.error("【merge服务的MQ连接】失败",e.getMessage());
+            log.error("【track_handle服务的MQ连接】失败", e.getMessage());
             return false;
         }
     }

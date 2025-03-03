@@ -38,7 +38,7 @@ public class MqConnectionUtil {
 
     private Channel channel;
 
-    public static final String EXCHANGE_NAME = "iot.radarstation.data";
+    public static final String EXCHANGE_NAME = "iot.data";
     public static final String TRACK_QUEUE_NAME = "track";
     public static final String TRACK_QUEUE_ROUTING_KEY = "track.#";
     public static final String AIS_STATIC_QUEUE_NAME = "ais.static.data";
@@ -56,6 +56,8 @@ public class MqConnectionUtil {
 //            factory.setVirtualHost("/iot");
             factory.setUsername(mqUserName);
             factory.setPassword(mqPassWord);
+            factory.setAutomaticRecoveryEnabled(true); // 开启自动重连功能
+            factory.setNetworkRecoveryInterval(1000); // 自动重连间隔时间，单位为毫秒
             // 获取连接
             Connection connection = factory.newConnection();
             mqConn = connection;

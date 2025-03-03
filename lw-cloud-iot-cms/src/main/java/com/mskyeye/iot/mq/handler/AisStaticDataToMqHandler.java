@@ -7,7 +7,6 @@ import com.rabbitmq.client.AMQP;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.util.ReferenceCountUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -36,10 +35,14 @@ public class AisStaticDataToMqHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        YzAisStaticInfo rtp = (YzAisStaticInfo) msg;
-        mcUtil.getChannel().basicPublish(mcUtil.EXCHANGE_NAME,"ais.static.data.key",
-                properties, new Gson().toJson(rtp).getBytes(StandardCharsets.UTF_8));
-        ReferenceCountUtil.release(msg);
+        if (msg instanceof YzAisStaticInfo) {
+            YzAisStaticInfo rtp = (YzAisStaticInfo) msg;
+            mcUtil.getChannel().basicPublish(mcUtil.EXCHANGE_NAME, "ais.static.data.key",
+                    properties, new Gson().toJson(rtp).getBytes(StandardCharsets.UTF_8));
+        }else {
+            //由下一个handler处理
+            ctx.fireChannelRead(msg);
+        }
     }
 
     @Override

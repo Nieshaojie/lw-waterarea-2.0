@@ -16,15 +16,11 @@ public class RadarTrackCache {
 
     private Long targetId;                              /*目标批号*/
 
-    private Integer iMmsi;                              /*MMSI*/
-
-    private String shipName;                            /*船名*/
-
     private double shipLon;                             /*经度*/
 
     private double shipLat;                             /*纬度*/
 
-    private Boolean bMergeTar = false;                  /*是否为融合目标*/
+    private Integer refNum = 0;                                /*更新的连续帧数,用于判断是否为稳定目标*/
 
-    private Long refreshTime;                          /*更新时间*/
+    private Long refreshTime;                           /*更新时间*/
 }

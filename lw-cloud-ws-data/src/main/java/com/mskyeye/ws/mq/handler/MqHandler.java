@@ -1,10 +1,11 @@
 package com.mskyeye.ws.mq.handler;
 
-import com.mskyeye.ws.common.GlobalResources;
 import com.mskyeye.ws.mq.utils.MqConnectionUtil;
+import com.mskyeye.ws.server.WebSocketServer;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
+import io.netty.util.CharsetUtil;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,12 +30,13 @@ public class MqHandler implements ApplicationRunner {
 
     @Autowired
     private MqConnectionUtil mqConnUtil;
-
+    @Autowired
+    private WebSocketServer webSocketServer;
     @Override
     public void run(ApplicationArguments args) throws Exception {
         //初始化消息队列配置
         mqConnUtil.initMqConfig();
-        // 定义队列的消费者
+        // 航迹队列的消费者
         DefaultConsumer consumer = new DefaultConsumer(mqConnUtil.getChannel()) {
             // 获取消息，并且处理，这个方法类似事件监听，如果有消息的时候，会被自动调用
             @SneakyThrows
@@ -42,22 +44,56 @@ public class MqHandler implements ApplicationRunner {
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,
                                        byte[] body) throws IOException {
                 // body 即消息体
-                String msg = new String(body);
-                //System.out.println(" [消费者1] received : " + msg + "!");
-                //如果缓存队列满，出队列
-                if(GlobalResources.capTrackQueue.size() > GlobalResources.TRACK_QUEUE_CAP){
-                    GlobalResources.capTrackQueue.poll();
-                }
-                GlobalResources.capTrackQueue.add(msg);
-                //如果实时队列满，出队列
-                if(GlobalResources.curTrackQueue.size() > GlobalResources.TRACK_QUEUE_CUR){
-                    GlobalResources.curTrackQueue.poll();
-                }
-                GlobalResources.curTrackQueue.add(msg);
+                String msg = new String(body, CharsetUtil.UTF_8);
+                webSocketServer.sendTrackMsgToAll(msg);
             }
         };
         // 监听队列，自动返回完成
-        mqConnUtil.getChannel().basicConsume(MqConnectionUtil.QUEUE_NAME, true, consumer);
-    }
+        mqConnUtil.getChannel().basicConsume(MqConnectionUtil.TRACK_QUEUE_NAME, true, consumer);
 
+        // 相机状态队列的消费者
+        DefaultConsumer consumer1 = new DefaultConsumer(mqConnUtil.getChannel()) {
+            // 获取消息，并且处理，这个方法类似事件监听，如果有消息的时候，会被自动调用
+            @SneakyThrows
+            @Override
+            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,
+                                       byte[] body) throws IOException {
+                // body 即消息体
+                String msg = new String(body, CharsetUtil.UTF_8);
+                webSocketServer.sendCameraStatusToAll(msg);
+            }
+        };
+        // 监听队列，自动返回完成
+        mqConnUtil.getChannel().basicConsume(MqConnectionUtil.CAMERA_STATUS_QUEUE_NAME, true, consumer1);
+
+        // AI告警事件队列的消费者
+        DefaultConsumer consumer2 = new DefaultConsumer(mqConnUtil.getChannel()) {
+            // 获取消息，并且处理，这个方法类似事件监听，如果有消息的时候，会被自动调用
+            @SneakyThrows
+            @Override
+            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,
+                                       byte[] body) throws IOException {
+                // body 即消息体
+                String msg = new String(body, CharsetUtil.UTF_8);
+                webSocketServer.sendAiAlarmEventToAll(msg);
+            }
+        };
+        // 监听队列，自动返回完成
+        mqConnUtil.getChannel().basicConsume(MqConnectionUtil.AI_ALARM_EVENT_QUEUE_NAME, true, consumer2);
+
+        // 车载GPS信息队列的消费者
+        DefaultConsumer consumer3 = new DefaultConsumer(mqConnUtil.getChannel()) {
+            // 获取消息，并且处理，这个方法类似事件监听，如果有消息的时候，会被自动调用
+            @SneakyThrows
+            @Override
+            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,
+                                       byte[] body) throws IOException {
+                // body 即消息体
+                String msg = new String(body, CharsetUtil.UTF_8);
+                webSocketServer.sendCarInfoToAll(msg);
+            }
+        };
+        // 监听队列，自动返回完成
+        mqConnUtil.getChannel().basicConsume(MqConnectionUtil.CAR_TRACK_QUEUE_NAME, true, consumer3);
+    }
 }

@@ -1,10 +1,12 @@
 package com.mskyeye.iot.mq.handler;
 
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 /**
  * @ClassName:ServerHeartbeatHandler
@@ -13,7 +15,9 @@ import lombok.extern.slf4j.Slf4j;
  * @Date:2022/11/25 16:52
  * @Version:1.0
  **/
+@Component
 @Slf4j
+@ChannelHandler.Sharable
 public class ServerHeartbeatHandler extends ChannelInboundHandlerAdapter {
 
     @Override

@@ -3,7 +3,7 @@ package com.mskyeye.iot.mq.handler;
 import com.google.gson.Gson;
 import com.mskyeye.iot.mq.util.MqConnectionUtil;
 import com.mskyeye.iot.utils.ProConvClazz;
-import com.mskyeye.lwradarstationdata.protocol.radar.custom.LwTrackPacket;
+import com.mskyeye.lwradarstationdata.protocol.track.LwTrackPacket;
 import com.mskyeye.lwradarstationdata.protocol.radar.custom.TrackTcpPacket;
 import com.rabbitmq.client.AMQP;
 import io.netty.channel.ChannelHandler;
@@ -38,6 +38,7 @@ public class TrackToMqHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof TrackTcpPacket) {
             TrackTcpPacket rtp = (TrackTcpPacket) msg;
+            rtp.setISpeed(rtp.getISpeed()*1.944f);//转换成节
             LwTrackPacket trackWSPacket = ProConvClazz.trackTcp2WS(rtp);
             mcUtil.getChannel().basicPublish(mcUtil.EXCHANGE_NAME,"track.key",
                     properties, new Gson().toJson(trackWSPacket).getBytes(StandardCharsets.UTF_8));

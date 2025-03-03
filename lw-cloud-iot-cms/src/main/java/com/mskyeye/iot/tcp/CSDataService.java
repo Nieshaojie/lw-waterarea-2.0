@@ -1,6 +1,7 @@
 package com.mskyeye.iot.tcp;
 
 import com.mskyeye.iot.mq.handler.AisStaticDataToMqHandler;
+import com.mskyeye.iot.mq.handler.RadarStatusDataToRedisHandler;
 import com.mskyeye.iot.mq.handler.ServerHeartbeatHandler;
 import com.mskyeye.iot.mq.handler.TrackToMqHandler;
 import com.mskyeye.iot.mq.util.MqConnectionUtil;
@@ -14,7 +15,6 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.timeout.IdleStateHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,8 +22,6 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Component;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * @ClassName:CSDataService
@@ -44,10 +42,16 @@ public class CSDataService implements ApplicationRunner {
     private MqConnectionUtil mqConnUtil;
 
     @Autowired
+    private ServerHeartbeatHandler serverHeartbeatHandler;
+
+    @Autowired
     private TrackToMqHandler trackToMqHandler;
 
     @Autowired
     private AisStaticDataToMqHandler aisStaticDataToMqHandler;
+
+    @Autowired
+    private RadarStatusDataToRedisHandler radarStatusDataToRedisHandler;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -76,12 +80,13 @@ public class CSDataService implements ApplicationRunner {
                     log.info("Port:" + ch.localAddress().getPort());
                     log.info("IP详情:" + IpUtil.getIpVo(ch.localAddress().getHostName()));
 
-                    ch.pipeline().addLast(new IdleStateHandler(5, 0, 0, TimeUnit.SECONDS));
+//                    ch.pipeline().addLast(new IdleStateHandler(5, 0, 0, TimeUnit.SECONDS));
                     ch.pipeline().addLast(MarshallingCodeFactory.buildMarshallingEncoder());
                     ch.pipeline().addLast(MarshallingCodeFactory.buildMarshallingDecoder());
-                    ch.pipeline().addLast(new ServerHeartbeatHandler());
+                    ch.pipeline().addLast(serverHeartbeatHandler);
                     ch.pipeline().addLast(trackToMqHandler);  //航迹处理
                     ch.pipeline().addLast(aisStaticDataToMqHandler);  //AIS静态数据处理
+                    ch.pipeline().addLast(radarStatusDataToRedisHandler);  //雷达状态数据处理
                 }
             });
 

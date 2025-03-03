@@ -3,7 +3,7 @@ server:
 
 spring:
   profiles:
-    active: dev,redis
+    active: dev
   application:
     name: lw-cloud-data-db
 

@@ -30,8 +30,19 @@ public class YzAisStaticInfo implements Serializable
     /** 船舶类型 */
     private String shipType;
 
+    /** 类型名 */
+    private String typeName;
+
     /** 吃水深度 */
     private BigDecimal draught;
 
+    /** 船长 */
+    private Integer shipLength;
+
+    /** 船宽 */
+    private Integer shipWidth;
+
+    /** 国籍 */
+    private String country;
 }
 

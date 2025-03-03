@@ -10,11 +10,15 @@
         <result property="callSign"    column="call_sign"    />
         <result property="shipName"    column="ship_name"    />
         <result property="shipType"    column="ship_type"    />
+        <result property="shipLength"    column="ship_length"    />
+        <result property="shipWidth"    column="ship_width"    />
+        <result property="typeName"    column="type_name"    />
         <result property="draught"    column="draught"    />
+        <result property="country"    column="country"    />
     </resultMap>
 
     <sql id="selectYzAisStaticInfoVo">
-        select mmsi, imo, call_sign, ship_name, ship_type, draught from yz_ais_static_info
+        select mmsi, imo, call_sign, ship_name, ship_type, ship_length, ship_width, type_name, draught,country from yz_ais_static_info
     </sql>
 
     <select id="selectYzAisStaticInfoList" parameterType="YzAisStaticInfo" resultMap="YzAisStaticInfoResult">
@@ -24,7 +28,11 @@
             <if test="callSign != null  and callSign != ''"> and call_sign = #{callSign}</if>
             <if test="shipName != null  and shipName != ''"> and ship_name like concat('%', #{shipName}, '%')</if>
             <if test="shipType != null  and shipType != ''"> and ship_type = #{shipType}</if>
+            <if test="shipLength != null "> and ship_length = #{shipLength}</if>
+            <if test="shipWidth != null "> and ship_width = #{shipWidth}</if>
+            <if test="typeName != null  and typeName != ''"> and type_name like concat('%', #{typeName}, '%')</if>
             <if test="draught != null "> and draught = #{draught}</if>
+            <if test="country != null "> and country = #{country}</if>
         </where>
     </select>
 
@@ -41,7 +49,11 @@
             <if test="callSign != null">call_sign,</if>
             <if test="shipName != null">ship_name,</if>
             <if test="shipType != null">ship_type,</if>
+            <if test="shipLength != null">ship_length,</if>
+            <if test="shipWidth != null">ship_width,</if>
+            <if test="typeName != null">type_name,</if>
             <if test="draught != null">draught,</if>
+            <if test="country != null">country,</if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="mmsi != null">#{mmsi},</if>
@@ -49,7 +61,11 @@
             <if test="callSign != null">#{callSign},</if>
             <if test="shipName != null">#{shipName},</if>
             <if test="shipType != null">#{shipType},</if>
+            <if test="shipLength != null">#{shipLength},</if>
+            <if test="shipWidth != null">#{shipWidth},</if>
+            <if test="typeName != null">#{typeName},</if>
             <if test="draught != null">#{draught},</if>
+            <if test="country != null">#{country},</if>
         </trim>
     </insert>
 
@@ -60,7 +76,11 @@
             <if test="callSign != null">call_sign = #{callSign},</if>
             <if test="shipName != null">ship_name = #{shipName},</if>
             <if test="shipType != null">ship_type = #{shipType},</if>
+            <if test="shipLength != null">ship_length = #{shipLength},</if>
+            <if test="shipWidth != null">ship_width = #{shipWidth},</if>
+            <if test="typeName != null">type_name = #{typeName},</if>
             <if test="draught != null">draught = #{draught},</if>
+            <if test="country != null">country = #{country},</if>
         </trim>
         where mmsi = #{mmsi}
     </update>

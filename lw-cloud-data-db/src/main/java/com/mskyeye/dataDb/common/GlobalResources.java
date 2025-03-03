@@ -3,6 +3,7 @@ package com.mskyeye.dataDb.common;
 import com.mskyeye.lwradarstationdata.protocol.ais.YzAisStaticInfo;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * @ClassName:GlobalResources
@@ -14,4 +15,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class GlobalResources {
     //航迹共享队列
     public static ConcurrentHashMap<Long,YzAisStaticInfo> aisStaticDataMap= new ConcurrentHashMap<>();
+    public static CopyOnWriteArrayList<String> trackTableNameList = new CopyOnWriteArrayList<>();
+    public static Boolean bQueryTrackTable = false;
 }

@@ -38,9 +38,9 @@ public class MqConnectionUtil {
 
     private Channel channel;
 
-    public static final String EXCHANGE_NAME = "iot.radarstation.data";
-    public static final String TRACK_QUEUE_NAME = "track";
-    public static final String TRACK_QUEUE_ROUTING_KEY = "track.#";
+    public static final String EXCHANGE_NAME = "iot.data";
+    public static final String TRACK_QUEUE_NAME = "processed_track2db";
+    public static final String TRACK_QUEUE_ROUTING_KEY = "processed_track2db.#";
     public static final String AIS_STATIC_QUEUE_NAME = "ais.static.data";
     public static final String AIS_STATIC_QUEUE_ROUTING_KEY = "ais.static.data.#";
 
@@ -53,24 +53,21 @@ public class MqConnectionUtil {
             //端口
             factory.setPort(mqPort);
             //设置账号信息，用户名、密码、vhost
-//            factory.setVirtualHost("/iot");
             factory.setUsername(mqUserName);
             factory.setPassword(mqPassWord);
+            factory.setAutomaticRecoveryEnabled(true); // 开启自动重连功能
+            factory.setNetworkRecoveryInterval(1000); // 自动重连间隔时间，单位为毫秒
             // 获取连接
             Connection connection = factory.newConnection();
             mqConn = connection;
             channel = mqConn.createChannel();
-//            // 定义交换机类型为主题交换机
-//            channel.exchangeDeclare(EXCHANGE_NAME, "topic");
-//
-//            // 声明队列，如果队列不存在则创建
-//            channel.queueDeclare(TRACK_QUEUE_NAME, true, false, false, null);
-//            channel.queueDeclare(AIS_STATIC_QUEUE_NAME, true, false, false, null);
-//
-//            // 将队列与交换机通过路由键绑定
-//            channel.queueBind(TRACK_QUEUE_NAME, EXCHANGE_NAME, TRACK_QUEUE_ROUTING_KEY);
-//            channel.queueBind(AIS_STATIC_QUEUE_NAME, EXCHANGE_NAME, AIS_STATIC_QUEUE_ROUTING_KEY);
+            channel.exchangeDeclare(EXCHANGE_NAME, "topic");
+            // 声明队列
+            channel.queueDeclare(TRACK_QUEUE_NAME, true, false, false, null);
+            channel.queueDeclare(AIS_STATIC_QUEUE_NAME, true, false, false, null);
 
+            channel.queueBind(TRACK_QUEUE_NAME, EXCHANGE_NAME, TRACK_QUEUE_ROUTING_KEY);
+            channel.queueBind(AIS_STATIC_QUEUE_NAME, EXCHANGE_NAME, AIS_STATIC_QUEUE_ROUTING_KEY);
             return true;
         } catch (Exception e) {
             e.printStackTrace();

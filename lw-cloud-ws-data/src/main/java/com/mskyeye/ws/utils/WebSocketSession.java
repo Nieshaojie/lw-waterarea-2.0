@@ -1,8 +1,11 @@
 package com.mskyeye.ws.utils;
 
+import com.mskyeye.ws.model.DeviceInDept;
 import org.yeauty.pojo.Session;
 
 import java.util.*;
+
+import static com.mskyeye.ws.common.GlobalResources.sessionKV;
 
 /**
  * @ClassName:WebSocketSession
@@ -12,7 +15,6 @@ import java.util.*;
  * @Version:1.0
  **/
 public class WebSocketSession {
-    private static final Map<Session, String> sessionKV = new HashMap <Session, String>();
 
     /**
      * 向连接池中添加连接
@@ -20,7 +22,7 @@ public class WebSocketSession {
      * @param session
      * @param client
      */
-    public static void addClient(Session session, String client) {
+    public static void addClient(Session session, DeviceInDept client) {
         sessionKV.put(session, client);
     }
 
@@ -29,10 +31,10 @@ public class WebSocketSession {
      *
      * @return
      */
-    public static Collection<String> getOnlineClient() {
-        Set<String> result = new HashSet<String>();
-        Collection<String> clients = sessionKV.values();
-        for (String client : clients) {
+    public static Collection<DeviceInDept> getOnlineClient() {
+        Set<DeviceInDept> result = new HashSet<DeviceInDept>();
+        Collection<DeviceInDept> clients = sessionKV.values();
+        for (DeviceInDept client : clients) {
             result.add(client);
         }
         return result;
@@ -53,7 +55,7 @@ public class WebSocketSession {
      * @param session
      * @return
      */
-    public static String getClientBySession(Session session) {
+    public static DeviceInDept getClientBySession(Session session) {
         return sessionKV.get(session);
     }
 
@@ -69,7 +71,7 @@ public class WebSocketSession {
         Set<Session> keys = sessionKV.keySet();
         synchronized (keys) {
             for (Session session : keys) {
-                String value = sessionKV.get(session);
+                DeviceInDept value = sessionKV.get(session);
                 if (value.equals(groupID)) {
                     sessions.add(session);
                 }
@@ -88,7 +90,7 @@ public class WebSocketSession {
         Set<Session> keys = sessionKV.keySet();
         synchronized (keys) {
             for (Session session : keys) {
-                String c = sessionKV.get(session);
+                DeviceInDept c = sessionKV.get(session);
                 if (c.equals(client)) {
                     return session;
                 }
@@ -133,7 +135,7 @@ public class WebSocketSession {
         Set<Session> keys = sessionKV.keySet();
         synchronized (keys) {
             for (Session session : keys) {
-                String user = sessionKV.get(session);
+                DeviceInDept user = sessionKV.get(session);
                 if (user != null) {
                     session.sendText(message);
                 }

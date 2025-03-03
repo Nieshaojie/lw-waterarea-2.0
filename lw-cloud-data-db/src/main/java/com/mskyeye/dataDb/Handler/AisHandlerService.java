@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.mskyeye.common.utils.RedisCacheKey;
 import com.mskyeye.dataDb.common.GlobalResources;
 import com.mskyeye.dataDb.service.IYzAisStaticInfoService;
+import com.mskyeye.dataDb.utils.MmsiToCountry;
 import com.mskyeye.dataDb.utils.MqConnectionUtil;
 import com.mskyeye.dataDb.utils.RedisCache;
 import com.mskyeye.lwradarstationdata.protocol.ais.YzAisStaticInfo;
@@ -41,10 +42,8 @@ public class AisHandlerService {
     private IYzAisStaticInfoService iYzAisStaticInfoService;
 
     public void run() throws Exception {
-        //初始化消息队列配置
-//        mqConnectionUtil.initMqConfig();
 
-        // 定义队列的消费者
+        //定义队列的消费者
         DefaultConsumer consumer = new DefaultConsumer(mqConnectionUtil.getChannel()) {
             // 获取消息，并且处理，这个方法类似事件监听，如果有消息的时候，会被自动调用
             @SneakyThrows
@@ -53,11 +52,13 @@ public class AisHandlerService {
                                        byte[] body) throws IOException {
                 //解析成AIS静态数据对象
                 YzAisStaticInfo newInfo = JSON.parseObject(new String(body, CharsetUtil.UTF_8), YzAisStaticInfo.class);
+                //获取船舶国籍
+                String country = MmsiToCountry.countryInfoMap.get(String.valueOf(newInfo.getMmsi()/1000000));
+                newInfo.setCountry(country!=null?country:"未知");
                 //如果缓存中没有该静态数据,进行数据新增
-                if (!GlobalResources.aisStaticDataMap.containsKey(newInfo.getMmsi())) {
+                if (!GlobalResources.aisStaticDataMap.containsKey(newInfo.getMmsi().longValue())) {
                     GlobalResources.aisStaticDataMap.put(newInfo.getMmsi(), newInfo);
                     //redis更新
-//                    Map<Long,YzAisStaticInfo> map = GlobalResources.aisStaticDataMap;
                     redisCache.setCacheObject(RedisCacheKey.AIS_STATIC_INFO, GlobalResources.aisStaticDataMap);
                     //数据库新增
                     iYzAisStaticInfoService.insertYzAisStaticInfo(newInfo);
@@ -88,9 +89,29 @@ public class AisHandlerService {
                         oldInfo.setShipType(newInfo.getShipType());
                         bUpdataData = true;
                     }
+                    //更新类型名称
+                    if (oldInfo.getTypeName() == null && newInfo.getTypeName() != null) {
+                        oldInfo.setTypeName(newInfo.getTypeName());
+                        bUpdataData = true;
+                    }
                     //更新船名
                     if (oldInfo.getShipName() == null && newInfo.getShipName() != null) {
                         oldInfo.setShipName(newInfo.getShipName());
+                        bUpdataData = true;
+                    }
+                    //更新船长
+                    if (oldInfo.getShipLength() == null && newInfo.getShipLength() != null) {
+                        oldInfo.setShipLength(newInfo.getShipLength());
+                        bUpdataData = true;
+                    }
+                    //更新船宽
+                    if (oldInfo.getShipWidth() == null && newInfo.getShipWidth() != null) {
+                        oldInfo.setShipWidth(newInfo.getShipWidth());
+                        bUpdataData = true;
+                    }
+                    //更新船籍
+                    if (oldInfo.getCountry() == null && newInfo.getCountry() != null) {
+                        oldInfo.setCountry(newInfo.getCountry());
                         bUpdataData = true;
                     }
                     if(bUpdataData){

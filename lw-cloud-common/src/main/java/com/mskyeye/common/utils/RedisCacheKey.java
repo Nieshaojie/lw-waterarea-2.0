@@ -10,4 +10,6 @@ package com.mskyeye.common.utils;
 public class RedisCacheKey {
 
     public static final String AIS_STATIC_INFO = "yz2.0_info:ais_static_info";
+
+    public static final String CRUISE_STATE = "yz2.0_info:yz_cruise_state";
 }

@@ -17,7 +17,7 @@ public class TrackTcpPacket {
 
     private byte bAdd;                       /*1:更新，0:清除*/
 
-    private byte uSrc;                       /*数据来源，0：雷达，1：AIS*/
+    private byte uSrc;                       /*数据来源，0：雷达,1：真实AIS,3:正向外推AIS,4:反向外推AIS*/
 
     private long uTargetNum;                 /*目标ID*/
 
