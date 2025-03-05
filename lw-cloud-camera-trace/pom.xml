@@ -126,6 +126,13 @@
 <!--            <artifactId>jts-core</artifactId>-->
 <!--            <version>1.18.1</version> &lt;!&ndash; Use appropriate version &ndash;&gt;-->
 <!--        </dependency>-->
+
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>5.7.22</version>
+        </dependency>
+
     </dependencies>
 
     <build>
