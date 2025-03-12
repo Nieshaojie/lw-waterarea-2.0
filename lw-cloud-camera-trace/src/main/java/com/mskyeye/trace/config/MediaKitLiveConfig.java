@@ -112,6 +112,24 @@ public class MediaKitLiveConfig {
         return url;
     }
 
+    /**
+     * 拼接适配webrtc拉流地址
+     *
+     * @return
+     */
+    public  String buildFlvUrl(String app,String stream) {
+        StringBuilder streamUrl = new StringBuilder();
+        String url = streamUrl.append("ws://")
+                .append(this.getIp())
+                .append("/")
+                .append(app)
+                .append("/")
+                .append(stream)
+                .append(".live.flv")
+                .toString();
+        return url;
+    }
+
 
 
     /**

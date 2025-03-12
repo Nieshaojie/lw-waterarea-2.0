@@ -13,6 +13,7 @@ D:\code\lw-waterarea-2.0\lw-cloud-common\src\main\java\com\mskyeye\common\utils\
 D:\code\lw-waterarea-2.0\lw-cloud-common\src\main\java\com\mskyeye\common\annotation\validator\CheckLongitudeValidator.java
 D:\code\lw-waterarea-2.0\lw-cloud-common\src\main\java\com\mskyeye\common\utils\UUIDUtil.java
 D:\code\lw-waterarea-2.0\lw-cloud-common\src\main\java\com\mskyeye\common\annotation\CheckIPAddr.java
+D:\code\lw-waterarea-2.0\lw-cloud-common\src\main\java\com\mskyeye\common\utils\BeanUtils.java
 D:\code\lw-waterarea-2.0\lw-cloud-common\src\main\java\com\mskyeye\common\utils\CommonUtils.java
 D:\code\lw-waterarea-2.0\lw-cloud-common\src\main\java\com\mskyeye\common\annotation\validator\CheckIPAddrValidator.java
 D:\code\lw-waterarea-2.0\lw-cloud-common\src\main\java\com\mskyeye\common\utils\AesUtils.java

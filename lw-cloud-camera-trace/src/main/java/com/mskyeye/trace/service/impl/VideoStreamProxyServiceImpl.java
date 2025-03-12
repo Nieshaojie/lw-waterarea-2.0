@@ -42,7 +42,6 @@ public class VideoStreamProxyServiceImpl implements VideoStreamProxyService {
         if (parts.length >= 2) {
             app = parts[parts.length - 2];
             stream = parts[parts.length - 1];
-            stream = stream.substring(0, stream.length() - 1);;
         }
 
         LiveParamsDTO params = new LiveParamsDTO();
@@ -50,7 +49,7 @@ public class VideoStreamProxyServiceImpl implements VideoStreamProxyService {
         params.setVhost(liveConfig.getVhost());
         params.setApp(app);
         params.setStream(stream);
-        params.setUrl(url.replace("\"", ""));//去除url的引号
+        params.setUrl(url);//去除url的引号
         Map<String, Object> paramsMap = BeanUtils.convertToMap(params); // 将对象转化为map
 
         // 开启直播之前不管有没有拉流代理，先查询是否有该流的信息
@@ -78,8 +77,9 @@ public class VideoStreamProxyServiceImpl implements VideoStreamProxyService {
             throw new ServiceException(String.format("开启直播时出现未知错误：{%s}", checkResp));
         }
         // 拼接webrtc直播地址
-        String otherUrl = liveConfig.buildWebRtcUrl(stream); // 获取直播的webrtc地址
-
+        //String otherUrl = liveConfig.buildWebRtcUrl(stream); // 获取直播的webrtc地址
+        //拼接ws.flv播放地址
+        String otherUrl = liveConfig.buildFlvUrl(app,stream);
         return otherUrl;
     }
 

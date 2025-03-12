@@ -13,6 +13,7 @@ com\mskyeye\common\utils\JsonData.class
 com\mskyeye\common\utils\CommonUtils.class
 com\mskyeye\common\utils\DistanceBetweenLonAndLat.class
 com\mskyeye\common\utils\serializer\JsonDateSerializer.class
+com\mskyeye\common\utils\BeanUtils.class
 com\mskyeye\common\annotation\CheckIPAddr.class
 com\mskyeye\common\annotation\validator\CheckLongitudeValidator.class
 com\mskyeye\common\utils\AesUtils.class

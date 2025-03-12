@@ -32,7 +32,10 @@ D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\c
 D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\model\FishingDetectInfo.java
 D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\camera\dhkj\callback\fDisConnectCB.java
 D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\camera\hkws\callback\fLoginResultCallBack.java
+D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\config\MediaKitLiveConfig.java
 D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\annotation\BeijingTimeFormat.java
+D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\service\VideoStreamProxyService.java
+D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\config\MediaKitLiveApiConfig.java
 D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\detect\SubscriptionService.java
 D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\service\IYzAlarmEventService.java
 D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\utils\StringUtil.java
@@ -49,11 +52,14 @@ D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\C
 D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\camera\hkws\struct\NET_DVR_DEVICEINFO_V30.java
 D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\model\YzAiCruiseInfo.java
 D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\service\impl\YzAlarmEventServiceImpl.java
+D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\service\impl\VideoStreamProxyServiceImpl.java
+D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\model\LiveParamsDTO.java
 D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\netty\control\CtrlClientHandlerInitializer.java
 D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\camera\hkws\struct\NET_VCA_DEV_INFO.java
 D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\cron\RCAlarmTask.java
 D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\camera\dhkj\struct\NET_SCADA_DEVICE_ID_INFO.java
 D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\utils\RedisCache.java
+D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\constant\ThirdServiceConst.java
 D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\camera\dhkj\struct\NET_EVENT_INFO_EXTEND.java
 D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\netty\control\GplCtrlTcpClientService.java
 D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\utils\AjaxResult.java
@@ -71,6 +77,7 @@ D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\c
 D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\camera\dhkj\enumc\EM_DH_PTZ_PRESET_STATUS.java
 D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\main\MainHandlerService.java
 D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\mapper\YzAiPointInfoMapper.java
+D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\controller\VideoStreamProxyController.java
 D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\model\CameraOrder.java
 D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\controller\FishingDetectController.java
 D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\utils\HttpStatus.java
