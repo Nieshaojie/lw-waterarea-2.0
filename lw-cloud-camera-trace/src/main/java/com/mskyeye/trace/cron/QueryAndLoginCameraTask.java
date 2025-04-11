@@ -10,6 +10,7 @@ import com.mskyeye.trace.netty.control.GplCtrlTcpClientService;
 import com.mskyeye.trace.netty.status.GplStatusTcpClientService;
 import com.mskyeye.trace.proc.HkCameraProc;
 import com.mskyeye.trace.proc.HpCameraProc;
+import com.mskyeye.trace.utils.HkNetSDKLoader;
 import com.mskyeye.trace.utils.RedisCache;
 import com.sun.jna.Native;
 import com.sun.jna.NativeLong;
@@ -164,14 +165,16 @@ public class QueryAndLoginCameraTask {
                         hpCameraProc.userOnlineHeart(newCameraInfo);
                     } else if (newCameraInfo.getManu().equals("hik")) {
                         //TODO
-                        String url = "win32-x86-64/hk_lib/win/HCNetSDK.dll";
+//                        String url = "win32-x86-64/hk_lib/win/HCNetSDK.dll";
+                        HkNetSDK hkNetSDK = HkNetSDKLoader.loadSDK();
+
 //                        String url = "/home/hk_lib/linux/libhcnetsdk.so";
                         //先做登出、清理操作
                         oldCameraInfo.getHkNetSDK().NET_DVR_Logout(new NativeLong(Long.valueOf(oldCameraInfo.getLoginInfo())));
                         oldCameraInfo.getHkNetSDK().NET_DVR_Cleanup();
                         //初始化dll、连接设备
                         //TODO
-                        HkNetSDK hkNetSDK = Native.load(url, HkNetSDK.class);//调试时
+//                        HkNetSDK hkNetSDK = Native.load(url, HkNetSDK.class);//调试时
 //                        HkNetSDK hkNetSDK = Native.load("HCNetSDK", HkNetSDK.class);//打包时
                         //相机登录
                         newCameraInfo = hkCameraProc.hikLogin(newCameraInfo);

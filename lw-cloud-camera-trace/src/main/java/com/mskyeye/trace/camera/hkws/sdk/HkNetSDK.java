@@ -34,15 +34,16 @@ public interface HkNetSDK extends Library {
     boolean  NET_DVR_PTZControlWithSpeed_Other(NativeLong lUserID, NativeLong lChannel, int dwPTZCommand, int dwStop, int dwSpeed);
     boolean  NET_DVR_SetDVRConfig(NativeLong lUserID, int dwCommand, NativeLong lChannel, Pointer lpInBuffer, int dwInBufferSize);
     boolean NET_DVR_STDXMLConfig(NativeLong lUserID, NET_DVR_XML_CONFIG_INPUT lpInputParam, NET_DVR_XML_CONFIG_OUTPUT lpOutputParam);
-
+    boolean NET_DVR_PTZControl(int lRealHandle, int dwPTZCommand, int dwStop);
+    boolean NET_DVR_GetPTZAbility(int userId, byte[] buffer, int bufferSize, IntByReference bytesReturned);
     //来安船只告警
 
     int NET_DVR_SetupAlarmChan_V41(NativeLong lUserID, NET_DVR_SETUPALARM_PARAM lpSetupParam);//启用布防上传通道
     int NET_DVR_CloseAlarmChan_V30(int lAlarmHandle);//撤销布防上传通道
 
     boolean NET_DVR_SetDVRMessageCallBack_V50(int iIndex, MSGCallBack fMessageCallBack, Pointer pUser);
-
-
+    int NET_DVR_Login_V40(NET_DVR_USER_LOGIN_INFO pLoginInfo, NET_DVR_DEVICEINFO_V40 pDeviceInfo);
+    boolean NET_DVR_PTZControl_Other(int lUserID, int lChannel, int dwPTZCommand, int dwStop);
 
     public static interface FMSGCallBack extends StdCallLibrary.StdCallCallback {
         public void invoke(int lCommand, NET_DVR_ALARMER pAlarmer, Pointer pAlarmInfo, int dwBufLen, Pointer pUser);

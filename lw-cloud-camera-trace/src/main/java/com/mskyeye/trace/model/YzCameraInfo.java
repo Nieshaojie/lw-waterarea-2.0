@@ -531,7 +531,9 @@ public class YzCameraInfo
     @Override
     public String toString() {
         return "YzCameraInfo{" +
-                "curPVal=" + curPVal +
+                "name="+name+
+                ",loginInfo=" + loginInfo +
+                ",curPVal=" + curPVal +
                 ", curTVal=" + curTVal +
                 ", curZVal=" + curZVal +
                 '}';

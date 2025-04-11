@@ -83,6 +83,24 @@ public class LwCameraStatusPacket {
         return IPCSTATUS;
     }
 
+    @Override
+    public String toString() {
+        return "LwCameraStatusPacket{" +
+                "CMDTYPE='" + CMDTYPE + '\'' +
+                ", IPCID=" + IPCID +
+                ", IPCLAT=" + IPCLAT +
+                ", IPCLON=" + IPCLON +
+                ", IPCNAME='" + IPCNAME + '\'' +
+                ", IPCSTATUS='" + IPCSTATUS + '\'' +
+                ", PVAL=" + PVAL +
+                ", TVAL=" + TVAL +
+                ", ZVAL=" + ZVAL +
+                ", ORIPVAL=" + ORIPVAL +
+                ", ISAVALARM=" + ISAVALARM +
+                ", ISOPENLIGHT=" + ISOPENLIGHT +
+                '}';
+    }
+
     public void setIPCSTATUS(String IPCSTATUS) {
         this.IPCSTATUS = IPCSTATUS;
     }

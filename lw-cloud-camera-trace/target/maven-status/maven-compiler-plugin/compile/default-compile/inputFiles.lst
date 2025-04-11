@@ -1,5 +1,6 @@
 D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\model\LwCameraStatusPacket.java
 D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\camera\hkws\sdk\HkNetSDK.java
+D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\utils\HkNetSDKLoader.java
 D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\camera\hkws\struct\NET_DVR_XML_CONFIG_INPUT.java
 D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\config\DestroyBean.java
 D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\camera\hkws\struct\NET_DVR_SHIPSDETECTION_ALARM.java
@@ -58,6 +59,7 @@ D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\n
 D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\camera\hkws\struct\NET_VCA_DEV_INFO.java
 D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\cron\RCAlarmTask.java
 D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\camera\dhkj\struct\NET_SCADA_DEVICE_ID_INFO.java
+D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\controller\HikvisionPTZControl.java
 D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\utils\RedisCache.java
 D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\constant\ThirdServiceConst.java
 D:\code\lw-waterarea-2.0\lw-cloud-camera-trace\src\main\java\com\mskyeye\trace\camera\dhkj\struct\NET_EVENT_INFO_EXTEND.java

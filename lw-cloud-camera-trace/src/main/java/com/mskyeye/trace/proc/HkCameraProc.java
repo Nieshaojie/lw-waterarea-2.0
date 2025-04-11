@@ -6,10 +6,13 @@ import com.mskyeye.trace.camera.hkws.struct.*;
 import com.mskyeye.trace.model.TraceProInfo;
 import com.mskyeye.trace.model.YzCameraInfo;
 import com.mskyeye.trace.utils.DisAndAngleUtils;
+import com.mskyeye.trace.utils.HkNetSDKLoader;
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
 import com.sun.jna.NativeLong;
 import com.sun.jna.Pointer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -25,6 +28,7 @@ import static com.mskyeye.trace.camera.hkws.sdk.HkNetSDK.NET_DVR_SET_PTZPOS;
 @Component
 public class HkCameraProc {
 
+    private static final Logger log = LoggerFactory.getLogger(HkCameraProc.class);
     @Autowired
     public AlarmCallback callback;
 
@@ -41,9 +45,9 @@ public class HkCameraProc {
     public boolean ptzControl(YzCameraInfo yzCameraInfo, double pVal, double tVal, double zVal) throws Exception {
         NET_DVR_PTZPOS lpPtzPos = new NET_DVR_PTZPOS();
         Integer iTVal = (int) (tVal * 10);
-//        if (iTVal < 0) {
-//            iTVal = 3600 + iTVal;
-//        }
+        if (iTVal < 0) {
+            iTVal = 3600 + iTVal;
+        }
         lpPtzPos.wAction = 1;
         lpPtzPos.wPanPos = (short) cvt2Hex((int) (pVal * 10));
         lpPtzPos.wTiltPos = (short) cvt2Hex(iTVal);
@@ -175,6 +179,12 @@ public class HkCameraProc {
      * @return
      */
     private int cvt2Hex(int iValue) {
+//        return (iValue / 1000) * 4096 + ((iValue % 1000) / 100) * 256 + ((iValue % 100) / 10) * 16 + iValue % 10;
+        // 将输入限制在有效的角度范围内（假设范围是0~3600）
+        if (iValue < 0) {
+            iValue = 3600 + iValue;  // 确保负值转换为有效范围
+        }
+        iValue = iValue % 3600;  // 保证不超过3600
         return (iValue / 1000) * 4096 + ((iValue % 1000) / 100) * 256 + ((iValue % 100) / 10) * 16 + iValue % 10;
     }
 
@@ -187,12 +197,13 @@ public class HkCameraProc {
      */
     public YzCameraInfo hikLogin(YzCameraInfo yzCameraInfo) {
         //TODO windows
-        String url = "win32-x86-64/hk_lib/win/HCNetSDK.dll";
+//        String url = "win32-x86-64/hk_lib/win/HCNetSDK.dll";
         //TODO Linux
 //        String url = "/home/hk_lib/linux/libhcnetsdk.so";
         //初始化dll、连接设备
         //TODO
-        HkNetSDK hkNetSDK = Native.load(url, HkNetSDK.class);//调试时
+//        HkNetSDK hkNetSDK = Native.load(url, HkNetSDK.class);//调试时
+        HkNetSDK hkNetSDK = HkNetSDKLoader.loadSDK();
         NET_DVR_DEVICEINFO_V30 netDvrDeviceinfoV30 = new NET_DVR_DEVICEINFO_V30();
         hkNetSDK.NET_DVR_Init();//初始化
         //相机登录
@@ -213,21 +224,36 @@ public class HkCameraProc {
         struLoginInfo.wPort = Short.valueOf(yzCameraInfo.getManPort().toString());
         struLoginInfo.write();
         NativeLong loginId = hkNetSDK.NET_DVR_Login_V40(PointerstruLoginInfo, PointerstruDeviceInfoV40);//登录
+        if(loginId.intValue()>=0){
+            System.out.println("当前登录相机信息："+yzCameraInfo);
+        }else {
+//            System.out.println("登录失败相机信息："+yzCameraInfo);
+        }
         Integer error = hkNetSDK.NET_DVR_GetLastError();
 
         //存入登录ID
         yzCameraInfo.setLoginInfo(String.valueOf(loginId));
         yzCameraInfo.setHkNetSDK(hkNetSDK);
-        if (yzCameraInfo.getName().equals("大英界") || yzCameraInfo.getName().equals("叶郢渡口")) {
-            //注册回调函数
-            hkNetSDK.NET_DVR_SetDVRMessageCallBack_V50(0, callback, null);
-            //启用布防上传通道
-            NET_DVR_SETUPALARM_PARAM struAlarmParam = new NET_DVR_SETUPALARM_PARAM();
-            Integer lHandle = hkNetSDK.NET_DVR_SetupAlarmChan_V41(loginId, struAlarmParam);
-            if (lHandle >= 0) {
-                yzCameraInfo.setlHandle(lHandle);
+//        TODO 修改回调函数方法参数
+        try {
+            if (yzCameraInfo.getName().equals("大英界") || yzCameraInfo.getName().equals("叶郢渡口")) {
+                //注册回调函数
+                hkNetSDK.NET_DVR_SetDVRMessageCallBack_V50(0, callback, null);
+                //启用布防上传通道
+                NET_DVR_SETUPALARM_PARAM struAlarmParam = new NET_DVR_SETUPALARM_PARAM();
+                Integer lHandle = hkNetSDK.NET_DVR_SetupAlarmChan_V41(loginId, struAlarmParam);
+                if (lHandle >= 0) {
+                    yzCameraInfo.setlHandle(lHandle);
+                    log.info("布防通道启用成功，lHandle = {}", lHandle);
+                }else {
+                    int errorCode = hkNetSDK.NET_DVR_GetLastError();
+                    log.error("布防通道启用失败，错误码: {}", errorCode);
+                }
             }
+        }catch (Exception e){
+            log.error("启用布防上传通道时发生异常", e);
         }
+//        System.out.println("hikLogin 相机登录信息："+yzCameraInfo);
         return yzCameraInfo;
     }
 }

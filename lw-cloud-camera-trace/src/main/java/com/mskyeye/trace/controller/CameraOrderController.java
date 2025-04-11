@@ -2,6 +2,7 @@ package com.mskyeye.trace.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.mskyeye.trace.camera.gpl.sdk.GplNetSDK;
 import com.mskyeye.trace.model.*;
 import com.mskyeye.trace.proc.DhCameraProc;
 import com.mskyeye.trace.proc.GplCameraProc;
@@ -12,6 +13,7 @@ import com.mskyeye.trace.utils.DisAndAngleUtils;
 import com.mskyeye.trace.utils.RedisCache;
 import com.mskyeye.trace.utils.StringUtil;
 import com.sun.jna.NativeLong;
+import com.sun.jna.Pointer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +21,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static com.mskyeye.trace.common.GlResources.*;
 import static java.lang.Math.toDegrees;
@@ -120,6 +123,8 @@ public class CameraOrderController {
                     break;
                 case 6:
                     bResult = true;
+                case 8:
+                    bResult = sendTrackingCtrl(traceProInfo);
                     break;
             }
             if (bResult == true) {
@@ -212,7 +217,7 @@ public class CameraOrderController {
 
     /**
      * 根据PTZ值控制相机
-     *
+     * 前端入口
      * @param cameraId
      * @param pVal
      * @param tVal
@@ -335,6 +340,34 @@ public class CameraOrderController {
     }
 
     /**
+     * 发送经纬高引导指令
+     *
+     * @param traceProInfo
+     * @return
+     * @throws Exception
+     */
+    private Boolean sendTrackingCtrl(TraceProInfo traceProInfo) throws Exception {
+        YzCameraInfo yzCameraInfo = GL_CameraInfoMap.get(traceProInfo.getCameraId());
+        if (traceProInfo.getManu().equals("hp")) {
+            if (traceProInfo.getChannelId() == 1) {
+                traceProInfo.setChannelId(2);
+            } else if (traceProInfo.getChannelId() == 2) {
+                traceProInfo.setChannelId(1);
+            }
+            //发送框选跟踪指令
+            hpCameraProc.trackingCtrl(yzCameraInfo, traceProInfo);
+        } else if (traceProInfo.getManu().equals("hik")) {
+            return false;
+        } else if (traceProInfo.getManu().equals("dh")) {
+            return false;
+        } else {
+            return false;
+        }
+        traceProInfo.setTraceType(2);
+        return true;
+    }
+
+    /**
      * 发送图像跟踪指令
      *
      * @param traceProInfo
@@ -421,6 +454,9 @@ public class CameraOrderController {
             }
         }
 //        double tVal = -1* toDegrees(asin(height/dis));//旧的方法
+        System.out.println("计算出的方位角 dBear: " + dBear);
+        System.out.println("相机偏移校准 pCorVal: " + pCorVal);
+        System.out.println("最终 P 角: " + pVal);
 
         if (yzCameraInfo.getManu().equals("hik")) {
             hkCameraProc.ptzControl(yzCameraInfo, pVal, tVal, zFixVal);
@@ -472,4 +508,59 @@ public class CameraOrderController {
         traceProInfo.setTraceType(0);
         return traceProInfo;
     }
+
+    /**
+     * gpl云台控制相机
+     * 前端入口
+     * @param cameraId
+     * @return
+     * @throws Exception
+     */
+    @PostMapping("/gpl_ptz_ctrl")
+    public AjaxResult ptzControl (@RequestParam(value = "cameraId") Long cameraId,
+                              @RequestParam(value = "lRealHandle") int lRealHandle,
+                              @RequestParam(value = "dwPTZCommand") int dwPTZCommand,
+                              @RequestParam(value = "dwStop") int dwStop) throws Exception {
+        try {
+            YzCameraInfo yzCameraInfo = GL_CameraInfoMap.get(cameraId);
+
+            if (GL_TraceInfoMap.containsKey(yzCameraInfo.getId()) &&
+                    (GL_TraceInfoMap.get(yzCameraInfo.getId()).getTraceType() == 2 ||
+                            GL_TraceInfoMap.get(yzCameraInfo.getId()).getTraceType() == 3)) {
+                return AjaxResult.error("请先关闭该相机的跟踪");
+            }
+            for (Map.Entry<Long, YzAiCruiseInfo> entry : GL_CruiseMap.entrySet()) {
+                YzAiCruiseInfo yzAiCruiseInfo = entry.getValue();
+                if (yzAiCruiseInfo.getCameraId() == yzCameraInfo.getId() &&
+                        yzAiCruiseInfo.getStatus() == 0) {
+                    return AjaxResult.error("请先关闭该相机的AI巡航");
+                }
+            }
+            switch (yzCameraInfo.getManu()) {
+                case "hp":
+                    break;
+                case "hik":
+                    break;
+                case "dh":
+                    break;
+                case "gpl":
+                    boolean b = yzCameraInfo.getGplNetSDK().NET_DVR_PTZControl(lRealHandle, dwPTZCommand, GplNetSDK.STOP);
+                    System.out.println("gpl云台控制返回结果："+b);
+                    break;
+            }
+            return AjaxResult.success();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return AjaxResult.error();
+        }
+    }
+
+
+    /*public static void main(String[] args) {
+
+        int realHandle = 1;
+        YzCameraInfo yzCameraInfo = GL_CameraInfoMap.get(cameraId);
+        boolean b = yzCameraInfo.getGplNetSDK().NET_DVR_PTZControl(realHandle, 0, GplNetSDK.STOP);
+    }*/
 }

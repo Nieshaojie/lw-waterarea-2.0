@@ -25,6 +25,7 @@ com\mskyeye\trace\proc\HpCameraProc.class
 com\mskyeye\trace\config\FastJson2JsonRedisSerializer.class
 com\mskyeye\trace\constant\ThirdServiceConst.class
 com\mskyeye\trace\camera\hkws\callback\MSGCallBack.class
+com\mskyeye\trace\controller\HikvisionPTZControl.class
 com\mskyeye\trace\service\IYzAiCruiseInfoService.class
 com\mskyeye\trace\controller\VideoStreamProxyController.class
 com\mskyeye\trace\model\DeviceMonitorInfoBody$RectInfo.class
@@ -97,6 +98,7 @@ com\mskyeye\trace\service\impl\VideoStreamProxyServiceImpl.class
 com\mskyeye\trace\constant\ThirdServiceConst$RedSpotCacheConst.class
 com\mskyeye\trace\camera\dhkj\callback\fHaveReConnect.class
 com\mskyeye\trace\utils\MD5SaltUtil.class
+com\mskyeye\trace\utils\HkNetSDKLoader.class
 com\mskyeye\trace\camera\utils\Utils$SdkStructure.class
 com\mskyeye\trace\camera\hkws\sdk\HkNetSDK.class
 com\mskyeye\trace\camera\dhkj\struct\NET_EVENT_INFO_EXTEND.class

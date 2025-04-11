@@ -2,7 +2,9 @@ package com.mskyeye.trace.cron;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.google.gson.Gson;
+import com.mskyeye.trace.camera.dhkj.sdk.DhNetSDK;
 import com.mskyeye.trace.camera.dhkj.struct.DH_PTZ_LOCATION_INFO;
+import com.mskyeye.trace.camera.gpl.sdk.GplNetSDK;
 import com.mskyeye.trace.camera.gpl.struct.VS_PTZ_LOCATION_INFO;
 import com.mskyeye.trace.camera.hkws.sdk.HkNetSDK;
 import com.mskyeye.trace.camera.hkws.struct.NET_DVR_PTZPOS;
@@ -24,6 +26,8 @@ import com.sun.jna.Memory;
 import com.sun.jna.NativeLong;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.IntByReference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -38,6 +42,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import static com.mskyeye.trace.camera.dhkj.sdk.DhNetSDK.DH_DEVSTATE_PTZ_LOCATION;
+import static com.mskyeye.trace.camera.gpl.sdk.GplNetSDK.GPL_DEVSTATE_PTZ_LOCATION;
 import static com.mskyeye.trace.camera.hkws.sdk.HkNetSDK.NET_DVR_GET_PTZPOS;
 import static com.mskyeye.trace.common.GlResources.*;
 import static java.lang.Math.toDegrees;
@@ -54,6 +60,7 @@ import static java.lang.Math.toDegrees;
 //@Order(4)
 public class CameraStatusAndTraceTask {
 
+    private static final Logger log = LoggerFactory.getLogger(CameraStatusAndTraceTask.class);
     @Autowired
     private HpCameraProc hpCameraProc;
     @Autowired
@@ -101,14 +108,14 @@ public class CameraStatusAndTraceTask {
     /**
      * 等待200ms查询一次相机PT值
      */
-    @Scheduled(fixedDelay = 200)
+    @Scheduled(fixedDelay = 2000)
     @Async
     public void QueryPTVal() {
         if (GL_CameraInfoMap != null && !GL_CameraInfoMap.isEmpty()) {
             try {
                 // 从Redis读取光电信息
                 Map<String, String> statusMap = redisCache.getCacheObject(CAMERA_STATE_BY_ISC);
-
+//                System.out.println("查询相机PT值方法中相机信息map+"+GL_CameraInfoMap.toString());
                 for (YzCameraInfo yzCameraInfo : GL_CameraInfoMap.values()) {
                     if (!statusMap.containsKey(yzCameraInfo.getLightCode())) {
                         sendStatusToMq(infoToStatus(false, yzCameraInfo, statusMap));
@@ -180,10 +187,12 @@ public class CameraStatusAndTraceTask {
     }
 
     // 方法：处理Hik相机信息
+    //TODO 更换获取ptz值的接口
     private void processHikCameraInfo(YzCameraInfo yzCameraInfo, Map<String, String> statusMap) throws Exception {
         // Hik相机处理逻辑
         HkNetSDK hkNetSDK = yzCameraInfo.getHkNetSDK();
         NativeLong loginId = new NativeLong(Long.valueOf(yzCameraInfo.getLoginInfo()));
+//        System.out.println("当前海康相机信息:"+yzCameraInfo);
         if (loginId.intValue() == -1) {
             sendStatusToMq(infoToStatus(true, yzCameraInfo, statusMap));
             return;
@@ -202,45 +211,46 @@ public class CameraStatusAndTraceTask {
             GL_CameraInfoMap.put(yzCameraInfo.getId(), yzCameraInfo);
             return;
         }
-        yzCameraInfo = hikCon2Angle(yzCameraInfo, stPos);
+        yzCameraInfo = hikCon2Angle(yzCameraInfo, stPos);  //获取海康相机ptz值并转换
         sendStatusToMq(infoToStatus(false, yzCameraInfo, statusMap));
+//        System.out.println("当前已登录的海康相机信息:"+yzCameraInfo);
         GL_CameraInfoMap.put(yzCameraInfo.getId(), yzCameraInfo);
     }
 
     // 方法：处理Dahua相机信息
-    private void processDhCameraInfo(YzCameraInfo yzCameraInfo, Map<String, String> statusMap) {
+    private void processDhCameraInfo(YzCameraInfo yzCameraInfo, Map<String, String> statusMap) throws Exception {
         // Dahua相机处理逻辑
-        //                        DhNetSDK dhNetSDK = yzCameraInfo.getDhNetSDK();
-//                        DH_PTZ_LOCATION_INFO stPos = new DH_PTZ_LOCATION_INFO();
-//                        stPos.nChannelID = 0;
-//                        int structSize = stPos.size(); // 结构体大小
-//                        Pointer lpOutBuffer = stPos.getPointer(); // 结构体指针
-//                        IntByReference ibrBytesReturned = new IntByReference(0);
-//                        boolean ret = dhNetSDK.CLIENT_QueryRemotDevState(Long.valueOf(yzCameraInfo.getLoginInfo()), DH_DEVSTATE_PTZ_LOCATION, 0,
-//                                lpOutBuffer, structSize, ibrBytesReturned, 1000);
-//                        int error = dhNetSDK.CLIENT_GetLastError();
-//                        stPos.read();
-//                        yzCameraInfo = dhCon2Angle(yzCameraInfo, stPos);
-//        sendStatusToMq(infoToStatus(false, yzCameraInfo, statusMap));
-//        GL_CameraInfoMap.put(yzCameraInfo.getId(), yzCameraInfo);
+                                DhNetSDK dhNetSDK = yzCameraInfo.getDhNetSDK();
+                        DH_PTZ_LOCATION_INFO stPos = new DH_PTZ_LOCATION_INFO();
+                        stPos.nChannelID = 0;
+                        int structSize = stPos.size(); // 结构体大小
+                        Pointer lpOutBuffer = stPos.getPointer(); // 结构体指针
+                        IntByReference ibrBytesReturned = new IntByReference(0);
+                        boolean ret = dhNetSDK.CLIENT_QueryRemotDevState(Long.valueOf(yzCameraInfo.getLoginInfo()), DH_DEVSTATE_PTZ_LOCATION, 0,
+                                lpOutBuffer, structSize, ibrBytesReturned, 1000);
+                        int error = dhNetSDK.CLIENT_GetLastError();
+                        stPos.read();
+                        yzCameraInfo = dhCon2Angle(yzCameraInfo, stPos);
+        sendStatusToMq(infoToStatus(false, yzCameraInfo, statusMap));
+        GL_CameraInfoMap.put(yzCameraInfo.getId(), yzCameraInfo);
     }
 
     // 方法：处理GPL相机信息
-    private void processGplCameraInfo(YzCameraInfo yzCameraInfo, Map<String, String> statusMap) {
+    private void processGplCameraInfo(YzCameraInfo yzCameraInfo, Map<String, String> statusMap) throws Exception {
         //处理逻辑
-        //                        GplNetSDK gplNetSDK = yzCameraInfo.getGplNetSDK();
-//                        VS_PTZ_LOCATION_INFO stPos = new VS_PTZ_LOCATION_INFO();
-//                        stPos.nChannelID = 0;
-//                        int structSize = stPos.size(); // 结构体大小
-//                        Pointer lpOutBuffer = stPos.getPointer(); // 结构体指针
-//                        IntByReference ibrBytesReturned = new IntByReference(0);
-//                        boolean ret = gplNetSDK.VSIF_QueryDevState(Long.valueOf(yzCameraInfo.getLoginInfo()), GPL_DEVSTATE_PTZ_LOCATION,
-//                                lpOutBuffer, structSize, ibrBytesReturned, 3000);
-//                        int error = gplNetSDK.VSIF_GetLastError();
-//                        stPos.read();
-//                        yzCameraInfo = gplCon2Angle(yzCameraInfo, stPos);
-        //        sendStatusToMq(infoToStatus(false, yzCameraInfo, statusMap));
-//        GL_CameraInfoMap.put(yzCameraInfo.getId(), yzCameraInfo);
+                                GplNetSDK gplNetSDK = yzCameraInfo.getGplNetSDK();
+                        VS_PTZ_LOCATION_INFO stPos = new VS_PTZ_LOCATION_INFO();
+                        stPos.nChannelID = 0;
+                        int structSize = stPos.size(); // 结构体大小
+                        Pointer lpOutBuffer = stPos.getPointer(); // 结构体指针
+                        IntByReference ibrBytesReturned = new IntByReference(0);
+                        boolean ret = gplNetSDK.VSIF_QueryDevState(Long.valueOf(yzCameraInfo.getLoginInfo()), GPL_DEVSTATE_PTZ_LOCATION,
+                                lpOutBuffer, structSize, ibrBytesReturned, 3000);
+                        int error = gplNetSDK.VSIF_GetLastError();
+                        stPos.read();
+                        yzCameraInfo = gplCon2Angle(yzCameraInfo, stPos);
+                sendStatusToMq(infoToStatus(false, yzCameraInfo, statusMap));
+        GL_CameraInfoMap.put(yzCameraInfo.getId(), yzCameraInfo);
     }
 
     // 多线程执行不同厂商相机信息处理
@@ -258,8 +268,10 @@ public class CameraStatusAndTraceTask {
                 processDhCameraInfo(yzCameraInfo, statusMap);
                 break;
             case "gpl":
-                break;
+                sendStatusToMq(infoToStatus(false, yzCameraInfo, statusMap));
 //                processGplCameraInfo(yzCameraInfo, statusMap);
+                log.info("gpl相机处理");
+                break;
             default:
                 sendStatusToMq(infoToStatus(false, yzCameraInfo, statusMap));
 //                System.out.println("发送高普乐相机状态成功,当前时间:" + Utils.getDate());
@@ -318,7 +330,7 @@ public class CameraStatusAndTraceTask {
         } else if (statusMap.get(yzCameraInfo.getLightCode()).equals("离线")) {
             lwCameraStatusPacket.setIPCSTATUS("离线");
         }
-//        System.out.println("获取相机状态");
+//        System.out.println("获取相机状态"+lwCameraStatusPacket);
         return lwCameraStatusPacket;
     }
 

@@ -2,6 +2,7 @@ package com.mskyeye.trace.proc;
 
 
 import com.alibaba.fastjson2.JSONObject;
+import com.mskyeye.trace.model.TraceProInfo;
 import com.mskyeye.trace.model.YzCameraInfo;
 import com.mskyeye.trace.utils.MD5SaltUtil;
 import com.mskyeye.trace.utils.PostRequestUtil;
@@ -422,5 +423,34 @@ public class HpCameraProc {
             yzCameraInfo.setCurZVal(oldYzCameraInfo.getCurZVal());
         }
         GL_CameraInfoMap.put(yzCameraInfo.getId(), yzCameraInfo);
+    }
+
+    /**
+     * 目标位置经纬高坐标引导
+     *
+     * @param yzCameraInfo
+     * @param traceProInfo
+     * @return
+     * @throws Exception
+     */
+    public void trackingCtrl(YzCameraInfo yzCameraInfo, TraceProInfo traceProInfo) throws Exception {
+        try {
+            JSONObject jsonBody = new JSONObject();
+            JSONObject jsonBody1 = new JSONObject();
+            jsonBody.put("cmd", "deviceTargetLBHGuide");
+            jsonBody1.put("token", yzCameraInfo.getLoginInfo());
+            jsonBody1.put("channelid", traceProInfo.getCameraId());
+            jsonBody1.put("localNumber", 50);
+            jsonBody1.put("targetPosL", traceProInfo.getTraceLat()*10000000);
+            jsonBody1.put("targetPosB", traceProInfo.getTraceLon()*10000000);
+            jsonBody1.put("targetPosH", traceProInfo.getTraceLon()*100);
+            jsonBody.put("param", jsonBody1);
+            String body = jsonBody.toJSONString();
+            String result = PostRequestUtil.sendToHpPostReq(yzCameraInfo.getIp(), String.valueOf(yzCameraInfo.getHttpPort()), body);
+
+            TimeUnit.MILLISECONDS.sleep(200);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

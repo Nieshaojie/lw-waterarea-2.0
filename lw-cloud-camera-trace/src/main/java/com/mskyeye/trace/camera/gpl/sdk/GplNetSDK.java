@@ -41,4 +41,16 @@ public interface GplNetSDK extends Library {
     boolean VSIF_VSPTZControlEx2(Long lLoginID, int nChannelID, int dwPTZCommand, long lParam1, long lParam2, long lParam3, boolean dwStop, Pointer param4);
 
     boolean VSIF_QueryDevState(Long lLoginID, int nType, Pointer pBuf, int nBufLen, IntByReference pRetLen, int waittime);
+
+    // 云台控制方法
+    boolean NET_DVR_PTZControl(int lRealHandle, int dwPTZCommand, int dwStop);
+
+    // 定义云台命令（摄像头支持的 PTZ 命令）
+    int PAN_LEFT = 0;       // 左移
+    int PAN_RIGHT = 1;      // 右移
+    int TILT_UP = 2;        // 上移
+    int TILT_DOWN = 3;      // 下移
+    int ZOOM_IN = 4;        // 变焦放大
+    int ZOOM_OUT = 5;       // 变焦缩小
+    int STOP = 0;           // 停止命令
 }

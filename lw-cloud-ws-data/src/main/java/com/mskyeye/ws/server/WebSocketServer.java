@@ -11,6 +11,7 @@ import com.mskyeye.ws.model.LwAiAlarmPacket;
 import com.mskyeye.ws.model.LwCameraStatusPacket;
 import com.mskyeye.ws.model.LwCarInfoPacket;
 import com.mskyeye.ws.redis.utils.RedisCache;
+import com.mskyeye.ws.utils.AlarmInfoSender;
 import com.mskyeye.ws.utils.WebSocketSession;
 import com.ruoyi.common.core.domain.model.LoginUser;
 import io.netty.handler.codec.http.HttpHeaders;
@@ -19,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.ObjectUtils;
 import org.yeauty.annotation.*;
 import org.yeauty.pojo.Session;
 
@@ -182,6 +184,9 @@ public class WebSocketServer {
                         List<Long> radarIdList = devices.getRadarIdList();
                         if (radarIdList.contains(Long.valueOf(cnt.getSTATIONID()))) {
                             session.sendText(msg);
+                            if(StringUtil.isNotEmpty(cnt.getALARM())) {
+                                    AlarmInfoSender.sendAlarmInfo(cnt);
+                            }
                         }
                     }
                 }

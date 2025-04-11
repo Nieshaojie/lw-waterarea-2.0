@@ -1,4 +1,5 @@
 com\mskyeye\ws\cron\RefreshDeviceInfoTask.class
+com\mskyeye\ws\utils\AlarmInfoSender.class
 com\mskyeye\ws\common\GlobalResources.class
 com\mskyeye\ws\mq\handler\MqHandler.class
 com\mskyeye\ws\mq\handler\MqHandler$2.class

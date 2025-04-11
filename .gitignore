@@ -1,11 +1,76 @@
-/lw-cloud-camera-trace/target/lw-cloud-camera-trace.jar
-/lw-cloud-data-db/target/lw-cloud-data-db.jar
-/lw-cloud-iot-cms/target/lw-cloud-iot-cms.jar
-/lw-cloud-protocol/target/lw-cloud-protocol-1.0.0.jar
-/lw-cloud-track-handle/target/lw-cloud-track-handle.jar
-/lw-cloud-ws-data/target/lw-cloud-ws-data.jar
-*.dall
+#/lw-cloud-camera-trace/target/lw-cloud-camera-trace.jar
+#/lw-cloud-data-db/target/lw-cloud-data-db.jar
+#/lw-cloud-iot-cms/target/lw-cloud-iot-cms.jar
+#/lw-cloud-protocol/target/lw-cloud-protocol-1.0.0.jar
+#/lw-cloud-track-handle/target/lw-cloud-track-handle.jar
+#/lw-cloud-ws-data/target/lw-cloud-ws-data.jar
+#*.dall
+#*.jar
+#*.war
+#*.idea
+#*.zip
+# Ignore build outputs
+########################################
+# Maven & Java Build Outputs
+########################################
+target/
+build/
+*.class
 *.jar
 *.war
-*.idea
+*.log
+*.list
+*.lst
 *.zip
+*.swp
+*.original
+*.xml.versionsBackup
+*.dall
+
+########################################
+# IntelliJ IDEA
+########################################
+.idea/
+*.iml
+*.iws
+*.ipr
+
+########################################
+# Spring Tool Suite
+########################################
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+
+########################################
+# Gradle
+########################################
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
+
+########################################
+# Maven
+!.mvn/wrapper/maven-wrapper.jar
+
+########################################
+# NetBeans
+########################################
+nbproject/private/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+########################################
+# JRebel
+########################################
+rebel.xml
+
+########################################
+# Allow some build/generated source files (if needed)
+!*/build/*.java
+!*/build/*.html
+!*/build/*.xml
