@@ -20,17 +20,35 @@
 
 
     <select id="selectRadarAlarmCalInfoList" resultMap="YzRadarAlarmCalInfoResult">
-        SELECT a.dept_id, e.code, a.area_id, b.points, c.cal_method, c.cal_pron,
-               c.type_value, c.type_name, a.start_time, a.end_time, a.is_inter_alarm
-        FROM yz_radar_alarm_config a
-                 JOIN yz_radar_alarm_area b ON a.area_id = b.id
-                 JOIN yz_radar_alarm_type c ON a.type_id = c.id
-                 JOIN sys_dept d ON a.dept_id = d.dept_id
-                 JOIN (
-            SELECT dept_id, MAX(code) AS code
-            FROM yz_radar_info
-            GROUP BY dept_id
-        ) e ON a.dept_id = e.dept_id
-        WHERE a.is_enable = 1
+--         SELECT a.dept_id, e.code, a.area_id, b.points, c.cal_method, c.cal_pron,
+--                c.type_value, c.type_name, a.start_time, a.end_time, a.is_inter_alarm
+--         FROM yz_radar_alarm_config a
+--                  JOIN yz_radar_alarm_area b ON a.area_id = b.id
+--                  JOIN yz_radar_alarm_type c ON a.type_id = c.id
+--                  JOIN sys_dept d ON a.dept_id = d.dept_id
+--                  JOIN (
+--             SELECT dept_id, MAX(code) AS code
+--             FROM yz_radar_info
+--             GROUP BY dept_id
+--         ) e ON a.dept_id = e.dept_id
+--         WHERE a.is_enable = 1
+SELECT
+    a.dept_id,
+    ri.code,
+    a.area_id,
+    b.points,
+    c.cal_method,
+    c.cal_pron,
+    c.type_value,
+    c.type_name,
+    a.start_time,
+    a.end_time,
+    a.is_inter_alarm
+FROM yz_radar_alarm_config a
+         JOIN yz_radar_alarm_area b ON a.area_id = b.id
+         JOIN yz_radar_alarm_type c ON a.type_id = c.id
+         JOIN sys_dept d ON a.dept_id = d.dept_id
+         JOIN yz_radar_info ri ON a.dept_id = ri.dept_id
+WHERE a.is_enable = 1 ;
     </select>
 </mapper>
