@@ -1,9 +1,0 @@
-server:
-  port: 9980
-
-spring:
-  profiles:
-    active: dev
-  application:
-    name: lw-cloud-iot-cms
-
