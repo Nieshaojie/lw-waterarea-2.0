@@ -184,6 +184,7 @@ public class WebSocketServer {
                         List<Long> radarIdList = devices.getRadarIdList();
                         if (radarIdList.contains(Long.valueOf(cnt.getSTATIONID()))) {
                             session.sendText(msg);
+                            //云南项目添加预警信息
                             if(StringUtil.isNotEmpty(cnt.getALARM())) {
                                     AlarmInfoSender.sendAlarmInfo(cnt);
                             }

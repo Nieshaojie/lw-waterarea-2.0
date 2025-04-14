@@ -124,6 +124,7 @@ public class CameraOrderController {
                 case 6:
                     bResult = true;
                 case 8:
+                    //经纬高跟踪指令
                     bResult = sendTrackingCtrl(traceProInfo);
                     break;
             }

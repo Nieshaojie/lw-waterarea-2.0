@@ -6,9 +6,9 @@ spring:
         #测试地址
 #        server-addr: 192.168.124.89:8848
         #海康服务器
-#        server-addr: 192.168.124.100:8848
+        server-addr: 192.168.124.100:8848
         #本机地址
-        server-addr: 127.0.0.1:8848
+#        server-addr: 127.0.0.1:8848
         #Linux地址
 #        server-addr: 192.168.124.70:8848
         group: CENTRAL_STATION_DATA_SERVER
@@ -16,12 +16,12 @@ spring:
         password: Lw68783883
       config:
         #TODO
-        #测试地址
+#        测试地址
 #        server-addr: 192.168.124.89:8848 #Nacos配置中心地址
         #测试地址
-#        server-addr: 192.168.124.100:8848 #Nacos配置中心地址
+        server-addr: 192.168.124.100:8848 #Nacos配置中心地址
         #本机地址
-        server-addr: 127.0.0.1:8848
+#        server-addr: 127.0.0.1:8848
         #Linux地址
 #        server-addr: 192.168.124.70:8848
         file-extension: yaml #文件拓展格式
@@ -34,8 +34,8 @@ spring:
   redis:
     #TODO
 #    host: 192.168.124.89
-#    host: 192.168.124.100
-    host: 127.0.0.1
+    host: 192.168.124.100
+#    host: 127.0.0.1
 #    host: 192.168.124.70
     port: 6379
 logging:
