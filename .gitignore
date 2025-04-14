@@ -1,17 +1,5 @@
-#/lw-cloud-camera-trace/target/lw-cloud-camera-trace.jar
-#/lw-cloud-data-db/target/lw-cloud-data-db.jar
-#/lw-cloud-iot-cms/target/lw-cloud-iot-cms.jar
-#/lw-cloud-protocol/target/lw-cloud-protocol-1.0.0.jar
-#/lw-cloud-track-handle/target/lw-cloud-track-handle.jar
-#/lw-cloud-ws-data/target/lw-cloud-ws-data.jar
-#*.dall
-#*.jar
-#*.war
-#*.idea
-#*.zip
-# Ignore build outputs
 ########################################
-# Maven & Java Build Outputs
+# Build Outputs (Maven / Gradle / Java)
 ########################################
 target/
 build/
@@ -23,9 +11,12 @@ build/
 *.lst
 *.zip
 *.swp
+*.bak
+*.tmp
 *.original
-*.xml.versionsBackup
 *.dall
+*.xml.versionsBackup
+hs_err_pid*
 
 ########################################
 # IntelliJ IDEA
@@ -36,13 +27,13 @@ build/
 *.ipr
 
 ########################################
-# Spring Tool Suite
+# Spring Tool Suite / Eclipse
 ########################################
 .apt_generated
 .classpath
 .factorypath
 .project
-.settings
+.settings/
 .springBeans
 
 ########################################
@@ -53,7 +44,9 @@ build/
 
 ########################################
 # Maven
-!.mvn/wrapper/maven-wrapper.jar
+########################################
+.mvn/
+!mvn/wrapper/maven-wrapper.jar
 
 ########################################
 # NetBeans
@@ -70,7 +63,19 @@ nbdist/
 rebel.xml
 
 ########################################
-# Allow some build/generated source files (if needed)
+# VSCode
+########################################
+.vscode/
+
+########################################
+# OS Files
+########################################
+.DS_Store
+Thumbs.db
+
+########################################
+# Special Case: Allow some generated sources if needed
+########################################
 !*/build/*.java
 !*/build/*.html
 !*/build/*.xml
