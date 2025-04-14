@@ -184,9 +184,32 @@ public class WebSocketServer {
                         List<Long> radarIdList = devices.getRadarIdList();
                         if (radarIdList.contains(Long.valueOf(cnt.getSTATIONID()))) {
                             session.sendText(msg);
-                            //云南项目添加预警信息
-                            if(StringUtil.isNotEmpty(cnt.getALARM())) {
-                                    AlarmInfoSender.sendAlarmInfo(cnt);
+                            // 云南项目添加预警信息
+                            if (StringUtil.isNotEmpty(cnt.getALARM())) {
+                                String alarmKey = "alarm:info:" + cnt.getTID();
+                                String alarmTimeKey = "alarm:limit:" + cnt.getTID(); // 限流用的Key
+
+                                Integer alarmCount = redisCache.getCacheObject(alarmKey);
+                                long currentTime = System.currentTimeMillis(); // 当前时间毫秒
+
+                                // 从Redis获取上次发送告警的时间戳
+                                Long lastSendTime = redisCache.getCacheObject(alarmTimeKey);
+
+                                if (alarmCount != null && alarmCount > 100) {
+                                    // 如果上次发送时间为空，或距离当前超过10秒，则发送
+                                    if (lastSendTime == null || (currentTime - lastSendTime >= 10000)) {
+                                        AlarmInfoSender.sendAlarmInfo(cnt);
+                                        // 更新Redis中上次发送时间戳
+                                        redisCache.setCacheObject(alarmTimeKey, currentTime);
+                                    }
+                                }  else {
+                                    // 缓存中无值则初始化为1，否则递增
+                                    if (alarmCount == null) {
+                                        redisCache.setCacheObject(alarmKey, 1);
+                                    } else {
+                                        redisCache.setCacheObject(alarmKey, alarmCount + 1);
+                                    }
+                                }
                             }
                         }
                     }
