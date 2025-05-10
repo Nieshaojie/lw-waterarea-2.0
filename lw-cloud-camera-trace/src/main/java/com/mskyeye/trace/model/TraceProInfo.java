@@ -9,7 +9,7 @@ package com.mskyeye.trace.model;
  **/
 public class TraceProInfo {
 
-    private Integer traceType;//跟踪类型: 0:无跟踪 1:联动跟踪 2:框选跟踪 3:图像跟踪 4:光电引导 5:AI巡航 6:雷光警戒 7、警戒抓拍
+    private Integer traceType;//跟踪类型: 0:无跟踪 1:联动跟踪 2:框选跟踪 3:图像跟踪 4:光电引导 5:AI巡航 6:雷光警戒 7、警戒抓拍 8、ai跟踪 9、取消ai跟踪
     private Boolean bTracking = true;//是否跟踪
     private Long targetId;//跟踪目标ID,-1为非目标的跟踪指令
     private Double traceLon;//跟踪纬度
@@ -31,6 +31,16 @@ public class TraceProInfo {
 
     private String alarmAbsUrl;//雷光警戒抓拍视频绝对地址
     private String alarmRelUrl;//雷光警戒抓拍视频相对地址，用于存储数据库
+
+    private Double targetWidth;//雷达目标宽度
+
+    public Double getTargetWidth() {
+        return targetWidth;
+    }
+
+    public void setTargetWidth(Double targetWidth) {
+        this.targetWidth = targetWidth;
+    }
 
     public Integer getTraceType() {
         return traceType;

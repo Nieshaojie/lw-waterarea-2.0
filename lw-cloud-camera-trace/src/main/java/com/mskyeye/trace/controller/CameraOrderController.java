@@ -105,7 +105,7 @@ public class CameraOrderController {
 //                return AjaxResult.error("请先取消该相机的跟踪");
 //            }
             switch (traceType) {
-                //1:联动跟踪 2:框选跟踪 3:图像跟踪 4:光电引导 6:雷光警戒
+                //1:联动跟踪 2:框选跟踪 3:图像跟踪 4:光电引导 6:雷光警戒 8：高普乐ai跟踪 9：高普乐取消ai跟踪
                 case 1:
                     if ((traceProInfo.getManu().equals("dh")) || (traceProInfo.getManu().equals("hik"))) {
                         return AjaxResult.error("该相机暂不支持");
@@ -124,6 +124,14 @@ public class CameraOrderController {
                 case 6:
                     bResult = true;
                 case 8:
+                    gplCameraProc.aiTrackCtrl(traceProInfo);
+                    //标记跟踪
+                    bResult = true;
+                    break;
+                case 9:
+                    gplCameraProc.aiTrackCtrl(traceProInfo);
+                    break;
+                case 10:
                     //经纬高跟踪指令
                     bResult = sendTrackingCtrl(traceProInfo);
                     break;
@@ -257,7 +265,7 @@ public class CameraOrderController {
                     dhCameraProc.ptzControl(yzCameraInfo, pVal, tVal, zVal);
                     break;
                 case "gpl":
-                    gplCameraProc.ptzControl(yzCameraInfo, pVal, tVal, zVal);
+                    gplCameraProc.ptzControl(yzCameraInfo, pVal, tVal, zVal,1);
                     break;
             }
             return AjaxResult.success();
@@ -413,7 +421,7 @@ public class CameraOrderController {
         YzCameraInfo yzCameraInfo = GL_CameraInfoMap.get(traceProInfo.getCameraId());
         //偏移校准值
         double pCorVal = yzCameraInfo.getAngle();
-        double tCorVal = yzCameraInfo.getCurTVal();
+        double tCorVal = yzCameraInfo.gettVal();
         double zFixVal = yzCameraInfo.getzVal();
         double height = yzCameraInfo.getHeight();
         //相对于相机的角度
@@ -440,16 +448,21 @@ public class CameraOrderController {
         Double tVal = calTVal(yzCameraInfo.getName(),dis,dBear);
         if(tVal == null){
             if (yzCameraInfo.getManu().equals("gpl")) {
-                tVal = toDegrees(Math.atan2(height, dis));
+                tVal = toDegrees(Math.atan2(height, dis)) + tCorVal;
                 tVal = tVal < 0 ? 0 : tVal;
-                System.out.println("没有用曲线拟合方法计算T值");
+                System.out.println("没有用曲线拟合方法计算T值——————原始t值："+toDegrees(Math.atan2(height, dis))+"————————补偿值："+tCorVal+"————————最终t值："+tVal);
             }else{
                 tVal = -1 * toDegrees(Math.atan2(height, dis));
             }
         }
         //计算Z值
-        if(yzCameraInfo.getManu().equals("gpl")){
+        if(yzCameraInfo.getManu().equals("gpl") && traceProInfo.getChannelId() ==1){
             Double zVal = calZVal(dis);
+            if(zVal != null){
+                zFixVal = zVal;
+            }
+        } else if (yzCameraInfo.getManu().equals("gpl") && traceProInfo.getChannelId() ==2) {
+            Double zVal = calRZVal(dis);
             if(zVal != null){
                 zFixVal = zVal;
             }
@@ -466,7 +479,7 @@ public class CameraOrderController {
         } else if (yzCameraInfo.getManu().equals("hp")) {
             hpCameraProc.ptzControl(yzCameraInfo, pVal, tVal, zFixVal);
         } else if (yzCameraInfo.getManu().equals("gpl")) {
-            gplCameraProc.ptzControl(yzCameraInfo, pVal, tVal, zFixVal);
+            gplCameraProc.ptzControl(yzCameraInfo, pVal, tVal, zFixVal,traceProInfo.getChannelId());
         }
         traceProInfo.setTraceType(4);
         return true;
@@ -501,6 +514,10 @@ public class CameraOrderController {
 
         } else if (traceProInfo.getManu().equals("gpl")) {
 //            gplCameraProc.aziControl(yzCameraInfo, -1, true);
+            //取消高普乐ai算法跟踪
+            traceProInfo.setTraceType(9);
+            gplCameraProc.aiTrackCtrl(traceProInfo);
+
         } else {
             return null;
         }

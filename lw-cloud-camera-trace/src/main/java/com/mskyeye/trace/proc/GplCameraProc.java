@@ -1,12 +1,22 @@
 package com.mskyeye.trace.proc;
 
 import com.mskyeye.trace.camera.utils.Utils;
+import com.mskyeye.trace.model.TraceProInfo;
 import com.mskyeye.trace.model.YzCameraInfo;
 import com.mskyeye.trace.netty.control.GplCtrlTcpClientService;
+import com.mskyeye.trace.utils.PanTiltCalculator;
+import com.mskyeye.trace.utils.RadarGuideClientService;
 import com.sun.jna.Pointer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import static com.mskyeye.trace.common.GlResources.GL_CameraInfoMap;
 
 /**
  * @ClassName:GplCameraProc
@@ -17,7 +27,9 @@ import java.util.concurrent.TimeUnit;
  **/
 @Component
 public class GplCameraProc {
-
+    private static final Logger log = LoggerFactory.getLogger(GplCameraProc.class);
+    @Autowired
+    private RadarGuideClientService radarService;
     /**
      * 通过PTZ直接引导相机
      *
@@ -28,19 +40,19 @@ public class GplCameraProc {
      * @return
      * @throws Exception
      */
-    public boolean ptzControl(YzCameraInfo yzCameraInfo, double pVal, double tVal, double zVal) throws Exception {
+    public boolean ptzControl(YzCameraInfo yzCameraInfo, double pVal, double tVal, double zVal,Integer channelId) throws Exception {
 
 //        boolean result = yzCameraInfo.getGplNetSDK().VSIF_VSPTZControlEx2(Long.valueOf(yzCameraInfo.getLoginInfo()),
 //                0,0x43, (int) (pVal * 10),(int) (tVal * 10),(int) (zVal * 10),false,new Pointer(0));
 //        if (!result)
 //            System.out.println("错误码是:" + yzCameraInfo.getGplNetSDK().VSIF_GetLastError());
 //        return result;
-
-
+        byte addrCode = (channelId == 1) ? (byte) 0x01 : (byte) 0x02;
+        System.out.println("p值："+pVal+"---t值："+tVal+"---z值："+zVal+"---通道号："+channelId);
 
         byte[] pValInfos = new byte[8];
         pValInfos[0] = (byte) 0xA7;
-        pValInfos[1] = (byte) 0x01;
+        pValInfos[1] = addrCode;
         pValInfos[2] = (byte) 0x02;
         pValInfos[3] = (byte) 0x02;
         Integer iPval = 0;
@@ -76,12 +88,12 @@ public class GplCameraProc {
 //                + " 方位零值" + yzCameraInfo.getAziZeroVal() + " 方位最小值" + yzCameraInfo.getAziMinVal());
 //        System.out.println("原P值:" + pVal + " 计算后的P值:" + iPval);
 //        System.out.println("------------------------------------------");
-        yzCameraInfo.getGplCtrlTcpClient().sendInfo(pValInfos);
+        boolean b = yzCameraInfo.getGplCtrlTcpClient().sendInfo(pValInfos);
 //        TimeUnit.MILLISECONDS.sleep(200);
 
         byte[] tValInfos = new byte[8];
         tValInfos[0] = (byte) 0xA7;
-        tValInfos[1] = (byte) 0x01;
+        tValInfos[1] = addrCode;
         tValInfos[2] = (byte) 0x02;
         tValInfos[3] = (byte) 0x03;
         Integer iTval = (int) (yzCameraInfo.getPitchZeroVal() - tVal / yzCameraInfo.getPitchMultiply());
@@ -90,12 +102,12 @@ public class GplCameraProc {
         tValInfos[5] = tValArray[1];
         tValInfos[6] = (byte) 0xC8;
         tValInfos[7] = checkBitFun(tValInfos);
-        yzCameraInfo.getGplCtrlTcpClient().sendInfo(tValInfos);
+        boolean b1 = yzCameraInfo.getGplCtrlTcpClient().sendInfo(tValInfos);
 //        TimeUnit.MILLISECONDS.sleep(200);
 
         byte[] zValInfos = new byte[8];
         zValInfos[0] = (byte) 0xA7;
-        zValInfos[1] = (byte) 0x01;
+        zValInfos[1] = addrCode;
         zValInfos[2] = (byte) 0x03;
         zValInfos[3] = (byte) 0x0C;
         Integer iZval = (int) (zVal * 16384 / 65);
@@ -104,7 +116,8 @@ public class GplCameraProc {
         zValInfos[5] = zValArray[1];
         zValInfos[6] = (byte) 0x00;
         zValInfos[7] = checkBitFun(zValInfos);
-        yzCameraInfo.getGplCtrlTcpClient().sendInfo(zValInfos);
+        boolean b2 = yzCameraInfo.getGplCtrlTcpClient().sendInfo(zValInfos);
+        System.out.println(b +"---"+ b1+"---" + b2);
 //        TimeUnit.MILLISECONDS.sleep(200);
         return true;
     }
@@ -260,4 +273,60 @@ public class GplCameraProc {
 
         return true;
     }
+
+    public void aiTrackCtrl( TraceProInfo traceProInfo) throws Exception {
+        log.info("当前目标信息：{}",traceProInfo.toString());
+        YzCameraInfo yzCameraInfo = GL_CameraInfoMap.get(traceProInfo.getCameraId());
+        if(traceProInfo.getTraceType() == 8) {
+            //偏移校准值
+            double pCorVal = yzCameraInfo.getAngle();
+            double tCorVal = yzCameraInfo.gettVal();
+            double height = yzCameraInfo.getHeight();
+            //经纬高转换为方位值
+            PanTiltCalculator.LatLonAlt eo = new PanTiltCalculator.LatLonAlt(yzCameraInfo.getLat().doubleValue(), yzCameraInfo.getLon().doubleValue(), height);     // 光电位置
+            PanTiltCalculator.LatLonAlt target = new PanTiltCalculator.LatLonAlt(traceProInfo.getTraceLat(), traceProInfo.getTraceLon(), 0);  // 目标位置
+            PanTiltCalculator.PanTiltView ptv = PanTiltCalculator.calculate(eo, target,traceProInfo.getTargetWidth());
+            //标记跟踪
+            traceProInfo.setTraceType(8);
+            try {
+                // 开启ai跟踪
+                Map<String, Object> startData = new HashMap<>();
+                startData.put("msg", "guide_detect");
+                startData.put("camid", traceProInfo.getChannelId());//通道号
+                startData.put("start", 1);//1:开始联动   0 结束联动
+                startData.put("alarmid", traceProInfo.getTargetId().toString());//报警ID
+                startData.put("scenetype", 2);//AI检测场景 0 天空 1地面 2水面 3不检测
+                startData.put("presetid", -1);//默认字段，填-1
+                startData.put("pan", (ptv.pan - pCorVal + 360) % 360);//雷达引导需跳转方位值(添加校准)
+                startData.put("tilt", ptv.tilt - tCorVal);//雷达引导需跳转俯仰值
+                startData.put("view", ptv.view);//雷达引导需跳转的视场值
+                startData.put("detecttimeout", 30);//AI检测超时时间
+                startData.put("tracktimeout", 300);//跟踪超时时间
+                radarService.sendStartGuide(startData);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        if(traceProInfo.getTraceType() == 9) {
+            try {
+                // 取消ai跟踪
+                Map<String, Object> startData = new HashMap<>();
+                startData.put("msg", "guide_detect");
+                startData.put("camid", traceProInfo.getChannelId());//通道号
+                startData.put("start", 0);//1:开始联动   0 结束联动
+                startData.put("alarmid", traceProInfo.getTargetId());//报警ID
+                startData.put("scenetype", 2);//AI检测场景 0 天空 1地面 2水面 3不检测
+                startData.put("presetid", 0);//默认字段，填-1
+                startData.put("pan", 0.0);//雷达引导需跳转方位值
+                startData.put("tilt", 0.0);//雷达引导需跳转俯仰值
+                startData.put("view", 0.0);//雷达引导需跳转的视场值
+                startData.put("detecttimeout", 0);//AI检测超时时间
+                startData.put("tracktimeout", 0);//跟踪超时时间
+                radarService.sendStartGuide(startData);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 }

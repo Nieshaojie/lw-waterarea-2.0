@@ -26,6 +26,7 @@ import org.yeauty.pojo.Session;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import static com.mskyeye.ws.common.GlobalResources.deviceInfoMap;
 import static com.mskyeye.ws.common.GlobalResources.sessionKV;
@@ -195,19 +196,19 @@ public class WebSocketServer {
                                 // 从Redis获取上次发送告警的时间戳
                                 Long lastSendTime = redisCache.getCacheObject(alarmTimeKey);
 
-                                if (alarmCount != null && alarmCount > 100) {
+                                if (alarmCount != null && alarmCount > 200) {
                                     // 如果上次发送时间为空，或距离当前超过10秒，则发送
                                     if (lastSendTime == null || (currentTime - lastSendTime >= 10000)) {
                                         AlarmInfoSender.sendAlarmInfo(cnt);
                                         // 更新Redis中上次发送时间戳
-                                        redisCache.setCacheObject(alarmTimeKey, currentTime);
+                                        redisCache.setCacheObject(alarmTimeKey, currentTime, 12, TimeUnit.SECONDS);
                                     }
-                                }  else {
+                                } else {
                                     // 缓存中无值则初始化为1，否则递增
                                     if (alarmCount == null) {
-                                        redisCache.setCacheObject(alarmKey, 1);
+                                        redisCache.setCacheObject(alarmKey, 1, 5, TimeUnit.MINUTES); // 设置有效期
                                     } else {
-                                        redisCache.setCacheObject(alarmKey, alarmCount + 1);
+                                        redisCache.setCacheObject(alarmKey, alarmCount + 1, 5, TimeUnit.MINUTES); // 每次递增都刷新有效期
                                     }
                                 }
                             }

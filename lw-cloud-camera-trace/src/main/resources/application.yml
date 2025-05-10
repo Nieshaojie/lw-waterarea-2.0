@@ -14,5 +14,7 @@ mybatis:
     map-underscore-to-camel-case: true
 
 #TODO
-alarm_stg_url: "C://ruoyi/uploadPath/alarm/"
-#alarm_stg_url: "/home/yuzheng/uploadPath/alarm/"
+#alarm_stg_url: "C://ruoyi/uploadPath/alarm/"
+alarm_stg_url: "/home/yuzheng/uploadPath/alarm/"
+radar:
+  ws-url: ws://192.168.0.111:8088/msg

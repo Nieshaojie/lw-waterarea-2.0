@@ -423,41 +423,144 @@ public class GlResources {
 
 
     /**
-     * 计算相机Z值
+     * 计算相机可见光Z值
      *
      * @param dis
      * @return
      */
     public static Double calZVal(Double dis) {
+        //福州
         Double result = null;
         if (dis >= 0 && dis <= 500) {
-            result = 32.0;
+            result = 20.0;
         } else if (dis > 500 && dis <= 1000) {
-            result = 32.0;
+            result = 20.0;
         } else if (dis > 1000 && dis <= 1500) {
-            result = 40.0;
+            result = 30.0;
         } else if (dis > 1500 && dis <= 2000) {
-            result = 47.0;
+            result = 32.0;
         } else if (dis > 2000 && dis <= 2500) {
-            result = 50.0;
+            result = 35.0;
         } else if (dis > 2500 && dis <= 3000) {
-            result = 58.0;
+            result = 40.0;
         } else if (dis > 3000 && dis <= 3500) {
-            result = 59.0;
+            result = 43.0;
         } else if (dis > 3500 && dis <= 4000) {
-            result = 59.0;
+            result = 46.0;
         } else if (dis > 4000 && dis <= 4500) {
-            result = 60.0;
+            result = 50.0;
         } else if (dis > 4500 && dis <= 5000) {
-            result = 60.0;
+            result = 53.0;
         } else if (dis > 5000 && dis <= 5500) {
-            result = 61.0;
+            result = 55.0;
         } else if (dis > 5500 && dis <= 6000) {
-            result = 61.5;
+            result = 58.0;
         } else if (dis > 6000 && dis <= 6500) {
-            result = 62.0;
-        } else if (dis > 6500) {
-            result = 62.5;
+            result = 60.0;
+        } else if (dis > 6500 && dis <= 7500) {
+        result = 63.0;
+        }else if (dis > 7500 && dis <= 8500) {
+            result = 65.0;
+        }else if (dis > 8500 && dis <= 9500) {
+            result = 68.0;
+        }else if (dis > 9500 && dis <= 10500) {
+            result = 70.0;
+        }else if (dis > 10500 && dis <= 12500) {
+            result = 72.0;
+        }else if (dis > 12500 && dis <= 14500) {
+            result = 75.0;
+        }
+        else if (dis > 14500) {
+            result = 80.0;
+        }
+        return result;
+        //云南
+//        Double result = null;
+//        if (dis >= 0 && dis <= 500) {
+//            result = 32.0;
+//        } else if (dis > 500 && dis <= 1000) {
+//            result = 32.0;
+//        } else if (dis > 1000 && dis <= 1500) {
+//            result = 40.0;
+//        } else if (dis > 1500 && dis <= 2000) {
+//            result = 47.0;
+//        } else if (dis > 2000 && dis <= 2500) {
+//            result = 50.0;
+//        } else if (dis > 2500 && dis <= 3000) {
+//            result = 58.0;
+//        } else if (dis > 3000 && dis <= 3500) {
+//            result = 59.0;
+//        } else if (dis > 3500 && dis <= 4000) {
+//            result = 59.0;
+//        } else if (dis > 4000 && dis <= 4500) {
+//            result = 60.0;
+//        } else if (dis > 4500 && dis <= 5000) {
+//            result = 60.0;
+//        } else if (dis > 5000 && dis <= 5500) {
+//            result = 61.0;
+//        } else if (dis > 5500 && dis <= 6000) {
+//            result = 61.5;
+//        } else if (dis > 6000 && dis <= 6500) {
+//            result = 62.0;
+//        } else if (dis > 6500) {
+//            result = 62.5;
+//        }
+//        return result;
+    }
+
+    /**
+     * 计算相机热像Z值
+     *
+     * @param dis
+     * @return
+     */
+    public static Double calRZVal(Double dis) {
+        Double result = null;
+        if (dis >= 0 && dis <= 500) {
+            result = 5.0;
+        } else if (dis > 500 && dis <= 1000) {
+            result = 8.0;
+        } else if (dis > 1000 && dis <= 1500) {
+            result = 10.0;
+        } else if (dis > 1500 && dis <= 2000) {
+            result = 12.0;
+        } else if (dis > 2000 && dis <= 2500) {
+            result = 14.0;
+        } else if (dis > 2500 && dis <= 3000) {
+            result = 16.0;
+        } else if (dis > 3000 && dis <= 3500) {
+            result = 18.0;
+        } else if (dis > 3500 && dis <= 4000) {
+            result = 20.0;
+        } else if (dis > 4000 && dis <= 4500) {
+            result = 23.0;
+        } else if (dis > 4500 && dis <= 5000) {
+            result = 25.0;
+        } else if (dis > 5000 && dis <= 5500) {
+            result = 27.0;
+        } else if (dis > 5500 && dis <= 6000) {
+            result = 29.0;
+        } else if (dis > 6000 && dis <= 6500) {
+            result = 31.0;
+        } else if (dis > 6500 && dis <= 7500) {
+            result = 35.0;
+        }else if (dis > 7500 && dis <= 8500) {
+            result = 36.0;
+        }else if (dis > 8500 && dis <= 9500) {
+            result = 37.0;
+        }else if (dis > 9500 && dis <= 10500) {
+            result = 40.0;
+        }else if (dis > 10500 && dis <= 12500) {
+            result = 43.0;
+        }else if (dis > 12500 && dis <= 14500) {
+            result = 45.0;
+        }else if (dis > 14500 && dis <= 16500) {
+            result = 47.0;
+        }else if (dis > 16500 && dis <= 18500) {
+            result = 50.0;
+        }
+        else if (dis > 18500) {
+            result = 55.0;
         }
         return result;
     }

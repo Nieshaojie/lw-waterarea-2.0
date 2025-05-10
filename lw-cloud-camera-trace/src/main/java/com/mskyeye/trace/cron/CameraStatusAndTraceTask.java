@@ -323,6 +323,10 @@ public class CameraStatusAndTraceTask {
                 case 7:
                     lwCameraStatusPacket.setIPCSTATUS("警戒抓拍");
                     break;
+                case 8:
+                    lwCameraStatusPacket.setIPCSTATUS("AI识别");
+                    break;
+
             }
         }
         if (!statusMap.containsKey(yzCameraInfo.getLightCode())) {
@@ -370,6 +374,7 @@ public class CameraStatusAndTraceTask {
                 //偏移校准值
                 double pCorVal = yzCameraInfo.getAngle();
                 double zFixVal = yzCameraInfo.getzVal();
+                double tCorVal = yzCameraInfo.gettVal();
                 double height = yzCameraInfo.getHeight();
                 //相对于相机的距离
                 double dis = DisAndAngleUtils.gis_Dis(yzCameraInfo.getLat().doubleValue(), yzCameraInfo.getLon().doubleValue(),
@@ -379,7 +384,7 @@ public class CameraStatusAndTraceTask {
                 dBear = dBear < 0 ? 360 + dBear : dBear;
                 double pVal = (dBear - pCorVal) > 360 ? dBear - pCorVal - 360 : dBear - pCorVal;
 
-                double tVal = toDegrees(Math.atan2(height, dis));
+                double tVal = toDegrees(Math.atan2(height, dis))+ tCorVal;
                 tVal = tVal < 0 ? 0 : tVal;
 //                        gplCameraProc.ptzControl(yzCameraInfo, pVal, tVal, zFixVal);//SDK开发使用
                 gplCameraProc.gplLinkTrace(yzCameraInfo, pVal, tVal, zFixVal);//串口开发使用

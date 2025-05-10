@@ -50,6 +50,7 @@ public class GplStatusClientHandler extends ChannelDuplexHandler {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg){
         ByteBuf byteBuf = (ByteBuf) msg;
+//        System.out.println("相机ptz原始值：" + msg.toString());
         try {
             // 创建一个和 ByteBuf 大小相同的 byte 数组
             int len = byteBuf.readableBytes();
@@ -57,6 +58,7 @@ public class GplStatusClientHandler extends ChannelDuplexHandler {
 
             // 将 ByteBuf 的内容读取到 byte 数组中
             byteBuf.readBytes(bytes);
+//            System.out.println("接收到的数据：" + bytesToHex(bytes));
 //                printByteInfo(bytes);
             //方位、俯仰值解析
             if (len == 12 && (bytes[0] & 0xFF) == 0xA7 && (bytes[1] & 0xFF) == 0x01
@@ -94,7 +96,7 @@ public class GplStatusClientHandler extends ChannelDuplexHandler {
                 }
                 //打印 TODO
 //                if(yzCameraInfo.getIsAvAlarm() == 1){
-//                    System.out.println(yzCameraInfo);
+//                    System.out.println("到监听到相机的ptz状态值时进行解析，相机ptz解析后的值：" + yzCameraInfo);
 //                }
                 GlResources.GL_CameraInfoMap.put(cameraId, yzCameraInfo);
             }
@@ -158,4 +160,13 @@ public class GplStatusClientHandler extends ChannelDuplexHandler {
         double result = bg.setScale(num, BigDecimal.ROUND_HALF_UP).doubleValue();
         return result;
     }
+
+    public static String bytesToHex(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : bytes) {
+            sb.append(String.format("%02X ", b));
+        }
+        return sb.toString().trim();
+    }
+
 }

@@ -61,6 +61,7 @@ public class QueryAndLoginCameraTask {
             List<YzCameraInfo> cacheCameraList = cacheList.stream()
                     .map(jsonObject -> mapper.convertValue(jsonObject, YzCameraInfo.class))
                     .collect(Collectors.toList());
+//            System.out.println("缓存中的在线相机信息："+cacheCameraList);
             //相机更新、登录处理
             for (YzCameraInfo newCameraInfo : cacheCameraList) {
                 Long cameraInfoId = newCameraInfo.getId();

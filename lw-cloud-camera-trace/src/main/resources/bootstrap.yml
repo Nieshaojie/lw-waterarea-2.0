@@ -4,9 +4,9 @@ spring:
       discovery:
         #TODO
         #公司地址
-        server-addr: 192.168.124.89:8848
+#        server-addr: 192.168.124.89:8848
         #公司地址
-#        server-addr: 192.168.124.100:8848
+        server-addr: 192.168.0.91:8848
 #        本机地址
 #        server-addr: 127.0.0.1:8848
         #Linux地址
@@ -17,8 +17,8 @@ spring:
       config:
         #TODO
         #公司地址
-        server-addr: 192.168.124.89:8848
-#        server-addr: 192.168.124.100:8848
+#        server-addr: 192.168.124.89:8848
+        server-addr: 192.168.0.91:8848
         #本机地址
 #        server-addr: 127.0.0.1:8848
         #Linux地址
@@ -32,10 +32,10 @@ spring:
   # 包含 Redis 相关的配置
   redis:
     #TODO
-    host: 192.168.124.89
+#    host: 192.168.124.89
 #    host: 127.0.0.1
 #    host: 192.168.124.70
-#    host: 192.168.124.100
+    host: 192.168.0.91
     port: 6379
 
 logging:

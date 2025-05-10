@@ -12,7 +12,7 @@ spring:
       #Linux地址
 #      url: jdbc:mysql://mysql:3306/test?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
         #海康服务器
-      url: jdbc:mysql://192.168.124.100:13306/test?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+      url: jdbc:mysql://192.168.0.91:13306/test?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
       username: root
       password: Lwkj@123!@#
 #      password: 123456
