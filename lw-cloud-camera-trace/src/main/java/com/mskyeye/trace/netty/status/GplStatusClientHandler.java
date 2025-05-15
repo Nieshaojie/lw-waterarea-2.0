@@ -58,11 +58,12 @@ public class GplStatusClientHandler extends ChannelDuplexHandler {
 
             // 将 ByteBuf 的内容读取到 byte 数组中
             byteBuf.readBytes(bytes);
-//            System.out.println("接收到的数据：" + bytesToHex(bytes));
+//            System.out.println("接收到数据：" + bytesToHex(bytes));
 //                printByteInfo(bytes);
             //方位、俯仰值解析
-            if (len == 12 && (bytes[0] & 0xFF) == 0xA7 && (bytes[1] & 0xFF) == 0x01
+            if (len == 12 && (bytes[0] & 0xFF) == 0xA7 && ((bytes[1] & 0xFF) == 0x01 || (bytes[1] & 0xFF) == 0x02)
                     && (bytes[2] & 0xFF) == 0x02 && (bytes[3] & 0xFF) == 0x09) {
+//                System.out.println("接收到可解析的数据：" + bytesToHex(bytes));
                 Double curPval = null, curTval = null;
                 YzCameraInfo yzCameraInfo = GlResources.GL_CameraInfoMap.get(cameraId);
                 //方位值
@@ -101,9 +102,10 @@ public class GplStatusClientHandler extends ChannelDuplexHandler {
                 GlResources.GL_CameraInfoMap.put(cameraId, yzCameraInfo);
             }
         }catch (Exception e){
+            e.printStackTrace();
+        }finally {
             byteBuf.release();
         }
-        byteBuf.release();
     }
 
 

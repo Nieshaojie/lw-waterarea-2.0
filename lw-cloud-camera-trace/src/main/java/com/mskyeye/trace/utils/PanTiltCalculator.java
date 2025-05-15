@@ -83,7 +83,7 @@ public class PanTiltCalculator {
         if (distance <= 0 || width <= 0) {
             return -1;
         }
-        double angleRad = 2 * atan((width / 10.0) / distance);
+        double angleRad = 2 * atan((width / 0.6) / distance);
         return toDegrees(angleRad);
     }
 

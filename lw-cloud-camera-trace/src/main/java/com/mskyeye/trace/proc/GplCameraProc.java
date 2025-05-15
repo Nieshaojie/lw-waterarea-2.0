@@ -274,6 +274,11 @@ public class GplCameraProc {
         return true;
     }
 
+    /**
+     * gpl AI识别跟踪指令
+     * @param traceProInfo
+     * @throws Exception
+     */
     public void aiTrackCtrl( TraceProInfo traceProInfo) throws Exception {
         log.info("当前目标信息：{}",traceProInfo.toString());
         YzCameraInfo yzCameraInfo = GL_CameraInfoMap.get(traceProInfo.getCameraId());
@@ -314,7 +319,7 @@ public class GplCameraProc {
                 startData.put("msg", "guide_detect");
                 startData.put("camid", traceProInfo.getChannelId());//通道号
                 startData.put("start", 0);//1:开始联动   0 结束联动
-                startData.put("alarmid", traceProInfo.getTargetId());//报警ID
+                startData.put("alarmid", traceProInfo.getTargetId().toString());//报警ID
                 startData.put("scenetype", 2);//AI检测场景 0 天空 1地面 2水面 3不检测
                 startData.put("presetid", 0);//默认字段，填-1
                 startData.put("pan", 0.0);//雷达引导需跳转方位值
@@ -328,5 +333,23 @@ public class GplCameraProc {
             }
         }
     }
+
+    /**
+     * gpl 手动跟踪指令
+     * @param traceProInfo
+     * @throws Exception
+     */
+    public void aimTrackCtrl( TraceProInfo traceProInfo,int start ) throws Exception {
+        // 构造trackData map
+        Map<String, Object> trackData = new HashMap<>();
+        trackData.put("msg", "aim_track");
+        trackData.put("camid", traceProInfo.getChannelId());
+        trackData.put("start", start);
+        trackData.put("left", traceProInfo.getLeft());
+        trackData.put("top", traceProInfo.getTop());
+        trackData.put("right", traceProInfo.getRight());
+        trackData.put("bottom", traceProInfo.getBottom());
+        radarService.sendStartGuide(trackData);
+}
 
 }

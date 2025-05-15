@@ -341,6 +341,8 @@ public class CameraOrderController {
             hkCameraProc.boxTrackCtrl(yzCameraInfo, traceProInfo.getChannelId(), positionX, positionY, positionX2, positionY2);
         } else if (traceProInfo.getManu().equals("dh")) {
             return false;
+        }else if (traceProInfo.getManu().equals("gpl")) {
+            gplCameraProc.aimTrackCtrl(traceProInfo,1);
         } else {
             return false;
         }
@@ -517,6 +519,7 @@ public class CameraOrderController {
             //取消高普乐ai算法跟踪
             traceProInfo.setTraceType(9);
             gplCameraProc.aiTrackCtrl(traceProInfo);
+            gplCameraProc.aimTrackCtrl(traceProInfo,0);
 
         } else {
             return null;

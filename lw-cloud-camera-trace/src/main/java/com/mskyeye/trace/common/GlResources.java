@@ -456,17 +456,17 @@ public class GlResources {
         } else if (dis > 5500 && dis <= 6000) {
             result = 58.0;
         } else if (dis > 6000 && dis <= 6500) {
-            result = 60.0;
+            result = 59.0;
         } else if (dis > 6500 && dis <= 7500) {
-        result = 63.0;
+        result = 60.0;
         }else if (dis > 7500 && dis <= 8500) {
-            result = 65.0;
+            result = 62.0;
         }else if (dis > 8500 && dis <= 9500) {
-            result = 68.0;
+            result = 63.0;
         }else if (dis > 9500 && dis <= 10500) {
-            result = 70.0;
+            result = 65.0;
         }else if (dis > 10500 && dis <= 12500) {
-            result = 72.0;
+            result = 70.0;
         }else if (dis > 12500 && dis <= 14500) {
             result = 75.0;
         }
