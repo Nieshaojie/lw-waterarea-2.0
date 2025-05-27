@@ -1,5 +1,6 @@
 package com.mskyeye.trace.cron;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson2.JSONObject;
 import com.google.gson.Gson;
 import com.mskyeye.trace.camera.dhkj.sdk.DhNetSDK;
@@ -33,6 +34,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
@@ -297,6 +299,11 @@ public class CameraStatusAndTraceTask {
         lwCameraStatusPacket.setORIPVAL(yzCameraInfo.getOriPVal());
         lwCameraStatusPacket.setISAVALARM(yzCameraInfo.getIsAvAlarm());
         lwCameraStatusPacket.setISOPENLIGHT(yzCameraInfo.getIsLightOpen());
+        TraceProInfo traceProInfo1 = redisCache.getCacheObject("LGJJ" + yzCameraInfo.getId());
+        if(ObjectUtil.isNotEmpty(traceProInfo1)) {
+            lwCameraStatusPacket.setTRALAT(traceProInfo1.getTraceLat());
+            lwCameraStatusPacket.setTRALON(traceProInfo1.getTraceLon());
+        }
         //TODO
 //        lwCameraStatusPacket.setISOPENLIGHT(1);
         //TODO 1:联动跟踪 2:框选跟踪 3:智能跟踪
@@ -370,7 +377,7 @@ public class CameraStatusAndTraceTask {
             }
             YzCameraInfo yzCameraInfo = GL_CameraInfoMap.get(traceProInfo.getCameraId());
             //新加,警戒抓拍状态,高普乐也需要联动跟踪
-            if (traceProInfo.getTraceType() == 7 && yzCameraInfo.getManu().equals("gpl")) {
+            /*if (traceProInfo.getTraceType() == 7 && yzCameraInfo.getManu().equals("gpl")) {
                 //偏移校准值
                 double pCorVal = yzCameraInfo.getAngle();
                 double zFixVal = yzCameraInfo.getzVal();
@@ -389,7 +396,7 @@ public class CameraStatusAndTraceTask {
 //                        gplCameraProc.ptzControl(yzCameraInfo, pVal, tVal, zFixVal);//SDK开发使用
                 gplCameraProc.gplLinkTrace(yzCameraInfo, pVal, tVal, zFixVal);//串口开发使用
                 continue;
-            }
+            }*/
             if (traceProInfo.getTraceType() == 1) {
                 //高普乐相机跟踪
                 if (yzCameraInfo.getManu().equals("gpl")) {
