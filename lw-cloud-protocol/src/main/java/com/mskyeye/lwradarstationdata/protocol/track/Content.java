@@ -4,6 +4,9 @@ import com.alibaba.fastjson2.annotation.JSONField;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.mskyeye.lwradarstationdata.protocol.utils.serializer.LonLatDoubleSerialize;
 import com.mskyeye.lwradarstationdata.protocol.utils.serializer.OyzFloatSerialize;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -15,6 +18,9 @@ import java.math.BigDecimal;
  * @Date:2023/7/11 10:18
  * @Version:1.0
  **/
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Content implements Serializable {
 
     @JSONField(name = "SOURCE")

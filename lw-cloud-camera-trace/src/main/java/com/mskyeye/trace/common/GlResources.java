@@ -51,6 +51,8 @@ public class GlResources {
 
     public static final String DETECT_KEY = "FISHING_DETECT_MESSAGE_QUEUE_KEY";
 
+    public static final String ALERT_CAPTURE = "yz2.0_info:alert:";
+
 
     /**
      * 计算相机T值
