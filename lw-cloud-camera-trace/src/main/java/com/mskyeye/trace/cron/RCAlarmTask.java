@@ -1,7 +1,9 @@
 package com.mskyeye.trace.cron;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.mskyeye.lwradarstationdata.protocol.track.Content;
 import com.mskyeye.lwradarstationdata.protocol.track.LwTrackPacket;
+import com.mskyeye.trace.model.LwCameraStatusPacket;
 import com.mskyeye.trace.model.TraceProInfo;
 import com.mskyeye.trace.model.YzAlarmEvent;
 import com.mskyeye.trace.model.YzCameraInfo;
@@ -11,11 +13,15 @@ import com.mskyeye.trace.proc.HkCameraProc;
 import com.mskyeye.trace.proc.HpCameraProc;
 import com.mskyeye.trace.service.IYzAlarmEventService;
 import com.mskyeye.trace.utils.DisAndAngleUtils;
+import com.mskyeye.trace.utils.RedisCache;
 import com.mskyeye.trace.utils.StreamGobbler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -25,6 +31,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static com.mskyeye.trace.common.GlResources.*;
 import static java.lang.Math.toDegrees;
@@ -39,6 +46,7 @@ import static java.lang.Math.toDegrees;
 @Component
 public class RCAlarmTask {
 
+    private static final Logger log = LoggerFactory.getLogger(RCAlarmTask.class);
     @Autowired
     private HpCameraProc hpCameraProc;
     @Autowired
@@ -58,52 +66,63 @@ public class RCAlarmTask {
     @Value("${alarm_stg_url}")
     private String alarmStgUrl;
 
+    @Autowired
+    private RedisCache redisCache;
+
     /**
      * 1000ms查询一次雷光警戒缓存，转换成雷光警戒目标
      */
-    @Scheduled(fixedDelay = 1000)
+    @Scheduled(fixedDelay = 500)
     public void targetHandle() throws Exception {
         //预警目标转换成跟踪目标
         if (!GL_RCAlarmMap.isEmpty()) {
             Iterator<Map.Entry<Long, LwTrackPacket>> iter = GL_RCAlarmMap.entrySet().iterator();
+//            System.out.println("1 ---- 转换成雷光警戒目标 准备循环 "+GL_RCAlarmMap.size());
             while (iter.hasNext()) {
                 Map.Entry<Long, LwTrackPacket> entry = iter.next();
                 LwTrackPacket lwTrackPacket = entry.getValue();
                 Content cnt = lwTrackPacket.getITEM().get(0);
                 //TODO
                 //1分钟还没有被分配相机则删除该预警目标
-                if (System.currentTimeMillis() - lwTrackPacket.getTIME() > 60000) {
+                if (System.currentTimeMillis() - lwTrackPacket.getTIME() > 5000) {
                     iter.remove();
+//                    System.out.println("2 ---- 5秒之前的信息则删除该预警目标 "+cnt.getTID());
                     continue;
                 }
                 double minDis = 99999;
                 YzCameraInfo cameraInfo = null;//选定雷光警戒的相机
+//                System.out.println(" 3----循环准备 选定雷光警戒的相机 "+GL_RCAlarmMap.size());
                 for (Map.Entry<Long, YzCameraInfo> entry1 : GL_CameraInfoMap.entrySet()) {
                     YzCameraInfo yzCameraInfo = entry1.getValue();
+//                    System.out.println(" 4----进入循环 选定雷光警戒的相机计算 "+GL_RCAlarmMap.size());
+
                     //计算相机和预警目标的距离
                     double dis = DisAndAngleUtils.gis_Dis(yzCameraInfo.getLat().doubleValue(), yzCameraInfo.getLon().doubleValue(),
                             cnt.getLAT(), cnt.getLON());
-                    //相机必须处于雷光警戒状态
+                    //相机必须处于雷光警戒状态  或者  警戒抓拍状态
                     if (dis < minDis && GL_TraceInfoMap.containsKey(yzCameraInfo.getId())
                             && GL_TraceInfoMap.get(yzCameraInfo.getId()).getTraceType() == 6) {
-                        minDis = dis;
+//                        minDis = dis;
+//                        System.out.println(" 5----循环内 选定雷光警戒的相机更新 "+GL_RCAlarmMap.size());
                         cameraInfo = yzCameraInfo;
                     }
                 }
                 //TODO
                 //要满足小于10公里，否则表示没找到合适的相机
-                if (minDis > DIS_THROS) {
+                /*if (minDis > DIS_THROS) {
                     continue;
-                }
-                if (cameraInfo != null) {
+                }*/
+                TraceProInfo cached = redisCache.getCacheObject(ALERT_CAPTURE + cnt.getTID());
+                if (cameraInfo != null && cached == null){
                     TraceProInfo traceProInfo = GL_TraceInfoMap.get(cameraInfo.getId());
                     traceProInfo.setTraceType(7);
                     traceProInfo.setTargetId(cnt.getTID());
                     traceProInfo.setTraceLat(cnt.getLAT());
                     traceProInfo.setTraceLon(cnt.getLON());
                     traceProInfo.setClock(0);
+                    traceProInfo.setTargetWidth((double)cnt.getSIZEMETRES());
                     GL_TraceInfoMap.put(cameraInfo.getId(), traceProInfo);
-//                    System.out.println("匹配相机为 " + cameraInfo.getName());
+                    System.out.println("6 ----匹配相机为 " + cameraInfo.getName()+ "新增目标id"+cnt.getTID());
                 }
             }
         }
@@ -113,10 +132,10 @@ public class RCAlarmTask {
     /**
      * 1000ms执行一次雷光警戒处理
      */
-    @Scheduled(fixedDelay = 1000)
+    @Scheduled(fixedDelay = 500)
     public void rcAlarmHandle() throws Exception {
-        if(executor != null &&  executor.isTerminated()){
-            executor.shutdown();
+        if (executor == null || executor.isShutdown() || executor.isTerminated()) {
+            executor = Executors.newCachedThreadPool();
         }
         Iterator<Map.Entry<Long, TraceProInfo>> iter = GL_TraceInfoMap.entrySet().iterator();
         while (iter.hasNext()) {
@@ -126,7 +145,15 @@ public class RCAlarmTask {
                 continue;
             }
             YzCameraInfo yzCameraInfo = GL_CameraInfoMap.get(traceProInfo.getCameraId());
+
+            if (!yzCameraInfo.isRcAlarmPaused()) {
+                System.out.println("当前停止跟踪，跳过执行:"+yzCameraInfo.isRcAlarmPaused());
+                return; // 当前停止跟踪，跳过执行
+            }
+            System.out.println("当前正在执行警戒拍照。。。。。。目标id："+traceProInfo.getTargetId());
             if (traceProInfo.getTraceType() == 7) {
+                //缓存当前警戒抓拍的对象，防止10分钟内重复抓拍
+                redisCache.setCacheObject(ALERT_CAPTURE+traceProInfo.getTargetId(),traceProInfo,10,TimeUnit.MINUTES);
                 String[] urlArray = new String[2];
                 Integer clock = traceProInfo.getClock();
                 if (executor == null) {
@@ -135,9 +162,15 @@ public class RCAlarmTask {
                 //第1秒开启引导
                 if (clock == 1) {
                     //相机转到该经纬度
-                    ctrlCameraByLonLat(traceProInfo);
+//                    ctrlCameraByLonLat(traceProInfo);
+//                    System.out.println("当前正在执行警戒拍照。。。。。。开启引导");
+                    traceProInfo.setChannelId(redisCache.getCacheObject(yzCameraInfo.getLightCode()));
+                    gplCameraProc.aiTrackCtrl(traceProInfo);
+                    //缓存目标信息转发前端绘制相机指示线距离
+                    redisCache.setCacheObject("LGJJ"+yzCameraInfo.getId(),traceProInfo,300,TimeUnit.SECONDS);
+                    GL_CameraInfoMap.put(yzCameraInfo.getId(), yzCameraInfo);
                 }
-                //第3秒开始图像跟踪
+               /* //第3秒开始图像跟踪
                 if (clock == 3) {
                     //和普相机开启智能跟踪机制用于辅助抓拍
                     if(yzCameraInfo.getManu().equals("hp")){
@@ -153,9 +186,10 @@ public class RCAlarmTask {
                         //发送图像跟踪指令
                         hpCameraProc.photoTrackingCtrl(yzCameraInfo, traceProInfo.getbTracking(), 2);
                     }
-                }
+                }*/
                 //第5秒开始录制视频
                 if (clock == 5) {
+//                    System.out.println("当前正在执行警戒拍照。。。。。。录制");
                     urlArray = alertCapVideo(yzCameraInfo, traceProInfo);
                     traceProInfo.setAlarmAbsUrl(urlArray[0]);
                     traceProInfo.setAlarmRelUrl(urlArray[1]);
@@ -273,7 +307,9 @@ public class RCAlarmTask {
         LocalTime end = LocalTime.of(6, 0); // 第二天凌晨6点
         String rtspUrl;
         //晚上7点到第二天凌晨6点是热成像,其它时间是可见光
-        if (currentTime.isAfter(start) || currentTime.isBefore(end)) {
+//        if (currentTime.isAfter(start) || currentTime.isBefore(end)) {
+        //红外是2，可见光是1
+        if(traceProInfo.getChannelId() == 2){
             rtspUrl = yzCameraInfo.getThermalRtsp();
         }else{
             rtspUrl = yzCameraInfo.getLightRtsp();

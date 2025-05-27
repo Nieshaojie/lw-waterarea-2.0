@@ -576,7 +576,20 @@ public class CameraOrderController {
             return AjaxResult.error();
         }
     }
+    /**
+     * AI盒子根据PTZ值控制相机
+     * 前端入口
+     * @param ptzControlRequest
+     * @return
+     * @throws Exception
+     */
+    @PostMapping("/ai_ptz_ctrl")
+    public AjaxResult ptzCtrl(@RequestBody PtzControlRequest ptzControlRequest) {
 
+        gplCameraProc.aimPtzCtrl(ptzControlRequest);
+
+        return AjaxResult.success();
+    }
 
     /*public static void main(String[] args) {
 

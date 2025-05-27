@@ -185,7 +185,7 @@ public class WebSocketServer {
                         List<Long> radarIdList = devices.getRadarIdList();
                         if (radarIdList.contains(Long.valueOf(cnt.getSTATIONID()))) {
                             session.sendText(msg);
-                            // 云南项目添加预警信息
+                            /*// 云南项目添加预警信息
                             if (StringUtil.isNotEmpty(cnt.getALARM())) {
                                 String alarmKey = "alarm:info:" + cnt.getTID();
                                 String alarmTimeKey = "alarm:limit:" + cnt.getTID(); // 限流用的Key
@@ -211,7 +211,7 @@ public class WebSocketServer {
                                         redisCache.setCacheObject(alarmKey, alarmCount + 1, 5, TimeUnit.MINUTES); // 每次递增都刷新有效期
                                     }
                                 }
-                            }
+                            }*/
                         }
                     }
                 }

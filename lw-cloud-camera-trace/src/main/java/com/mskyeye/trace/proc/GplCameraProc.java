@@ -1,6 +1,7 @@
 package com.mskyeye.trace.proc;
 
 import com.mskyeye.trace.camera.utils.Utils;
+import com.mskyeye.trace.model.PtzControlRequest;
 import com.mskyeye.trace.model.TraceProInfo;
 import com.mskyeye.trace.model.YzCameraInfo;
 import com.mskyeye.trace.netty.control.GplCtrlTcpClientService;
@@ -11,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -282,7 +284,7 @@ public class GplCameraProc {
     public void aiTrackCtrl( TraceProInfo traceProInfo) throws Exception {
         log.info("当前目标信息：{}",traceProInfo.toString());
         YzCameraInfo yzCameraInfo = GL_CameraInfoMap.get(traceProInfo.getCameraId());
-        if(traceProInfo.getTraceType() == 8) {
+        if(traceProInfo.getTraceType() == 8 || traceProInfo.getTraceType() == 7) {
             //偏移校准值
             double pCorVal = yzCameraInfo.getAngle();
             double tCorVal = yzCameraInfo.gettVal();
@@ -290,9 +292,14 @@ public class GplCameraProc {
             //经纬高转换为方位值
             PanTiltCalculator.LatLonAlt eo = new PanTiltCalculator.LatLonAlt(yzCameraInfo.getLat().doubleValue(), yzCameraInfo.getLon().doubleValue(), height);     // 光电位置
             PanTiltCalculator.LatLonAlt target = new PanTiltCalculator.LatLonAlt(traceProInfo.getTraceLat(), traceProInfo.getTraceLon(), 0);  // 目标位置
-            PanTiltCalculator.PanTiltView ptv = PanTiltCalculator.calculate(eo, target,traceProInfo.getTargetWidth());
+            PanTiltCalculator.PanTiltView ptv = new PanTiltCalculator.PanTiltView(0,0,0);
+            if(ObjectUtils.isEmpty(traceProInfo.getTargetWidth())) {
+                ptv = PanTiltCalculator.calculate(eo, target, 60);
+            }else{
+                System.out.println("目标传宽度————————————————"+traceProInfo.getTargetWidth());
+                ptv = PanTiltCalculator.calculate(eo, target, traceProInfo.getTargetWidth());}
             //标记跟踪
-            traceProInfo.setTraceType(8);
+            //traceProInfo.setTraceType(8);
             try {
                 // 开启ai跟踪
                 Map<String, Object> startData = new HashMap<>();
@@ -351,5 +358,22 @@ public class GplCameraProc {
         trackData.put("bottom", traceProInfo.getBottom());
         radarService.sendStartGuide(trackData);
 }
+
+    /**
+     * gpl ai盒子云台控制
+     * @param ptzControlRequest
+     * @throws Exception
+     */
+    public void aimPtzCtrl( PtzControlRequest ptzControlRequest ) {
+        // 构造 map
+        Map<String, Object> ptzControlData = new HashMap<>();
+        ptzControlData.put("msg", ptzControlRequest.getMsg());
+        ptzControlData.put("camid", ptzControlRequest.getCamid());
+        ptzControlData.put("action", ptzControlRequest.getAction());
+        ptzControlData.put("speed", ptzControlRequest.getSpeed());
+        ptzControlData.put("speedAutoFit", ptzControlRequest.getSpeedAutoFit());
+
+        radarService.sendStartGuide(ptzControlData);
+    }
 
 }

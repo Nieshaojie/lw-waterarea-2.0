@@ -23,6 +23,12 @@ public class LwCameraStatusPacket {
     @JSONField(name = "IPCLON")
     private Double IPCLON;
 
+    @JSONField(name = "TRALAT")
+    private Double TRALAT;
+
+    @JSONField(name = "TRALON")
+    private Double TRALON;
+
     @JSONField(name = "IPCNAME")
     private String IPCNAME;
 
@@ -46,6 +52,22 @@ public class LwCameraStatusPacket {
 
     @JSONField(name = "ISOPENLIGHT")
     private Integer ISOPENLIGHT = 0;//是否已打开光源
+
+    public Double getTRALAT() {
+        return TRALAT;
+    }
+
+    public void setTRALAT(Double TRALAT) {
+        this.TRALAT = TRALAT;
+    }
+
+    public Double getTRALON() {
+        return TRALON;
+    }
+
+    public void setTRALON(Double TRALON) {
+        this.TRALON = TRALON;
+    }
 
     public String getCMDTYPE() {
         return CMDTYPE;

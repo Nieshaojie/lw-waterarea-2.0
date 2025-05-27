@@ -103,6 +103,16 @@ public class YzCameraInfo
 
     private Integer lHandle = -1;//布防返回值(海康独有，用于来安船舶告警)
 
+    private volatile boolean rcAlarmPaused = false;
+
+    public boolean isRcAlarmPaused() {
+        return rcAlarmPaused;
+    }
+
+    public void setRcAlarmPaused(boolean rcAlarmPaused) {
+        this.rcAlarmPaused = rcAlarmPaused;
+    }
+
     /** 备用端口1 */
     private Long sparePort1;
 
