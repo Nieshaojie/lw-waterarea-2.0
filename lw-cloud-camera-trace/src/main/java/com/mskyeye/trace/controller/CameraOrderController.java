@@ -14,6 +14,8 @@ import com.mskyeye.trace.utils.RedisCache;
 import com.mskyeye.trace.utils.StringUtil;
 import com.sun.jna.NativeLong;
 import com.sun.jna.Pointer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,6 +42,7 @@ public class CameraOrderController {
     private static final Integer MAN_TRACE = 1;//联动跟踪
     private static final Integer BOX_TRACE = 2;//框选跟踪
     private static final Integer PHOTO_TRACE = 3;//图像跟踪
+    private static final Logger log = LoggerFactory.getLogger(CameraOrderController.class);
     @Autowired
     private HpCameraProc hpCameraProc;
     @Autowired
@@ -116,6 +119,7 @@ public class CameraOrderController {
                     bResult = sendBoxOrder(traceProInfo);
                     break;
                 case 3:
+                    System.out.println("图像跟踪指令");
                     bResult = sendPhotoOrder(traceProInfo);
                     break;
                 case 4:
@@ -377,16 +381,25 @@ public class CameraOrderController {
      */
     private Boolean sendPhotoOrder(TraceProInfo traceProInfo) throws Exception {
         YzCameraInfo yzCameraInfo = GL_CameraInfoMap.get(traceProInfo.getCameraId());
+//        System.out.println("图像跟踪相机信息：{}"+yzCameraInfo.toString());
         //相机转到该经纬度
         ctrlCameraByLonLat(traceProInfo);
         if (traceProInfo.getManu().equals("hp")) {
-            if (traceProInfo.getChannelId() == 1) {
+            /*if (traceProInfo.getChannelId() == 1) {
                 traceProInfo.setChannelId(2);
             } else if (traceProInfo.getChannelId() == 2) {
                 traceProInfo.setChannelId(1);
-            }
+            }*/
             //发送图像跟踪指令
             hpCameraProc.photoTrackingCtrl(yzCameraInfo, traceProInfo.getbTracking(), traceProInfo.getChannelId());
+            try {
+                Thread.sleep(1500); // 延迟1.5秒（1500毫秒）
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt(); // 恢复中断状态
+                e.printStackTrace(); // 可选：打印异常栈信息
+            }
+            //相机转到该经纬度
+            ctrlCameraByLonLatToHP(traceProInfo);
         } else if (traceProInfo.getManu().equals("hik")) {
             //注:海康相机的图像跟踪需要先发送【起始跟踪指令】,然后定时发送【连续跟踪指令】
             if (!hkCameraProc.photoTraceStart(traceProInfo, yzCameraInfo)) {
@@ -416,6 +429,7 @@ public class CameraOrderController {
         double tCorVal = yzCameraInfo.getCurTVal();
         double zFixVal = yzCameraInfo.getzVal();
         double height = yzCameraInfo.getHeight();
+        double t_Val = yzCameraInfo.gettVal();
         //相对于相机的角度
 //        double dBear = DisAndAngleUtils.get_bearing(yzCameraInfo.getLat().doubleValue(),
 //                yzCameraInfo.getLon().doubleValue(), traceProInfo.getTraceLat(), traceProInfo.getTraceLon());
@@ -441,10 +455,11 @@ public class CameraOrderController {
         if(tVal == null){
             if (yzCameraInfo.getManu().equals("gpl")) {
                 tVal = toDegrees(Math.atan2(height, dis));
+                tVal = tVal + t_Val;
                 tVal = tVal < 0 ? 0 : tVal;
                 System.out.println("没有用曲线拟合方法计算T值");
             }else{
-                tVal = -1 * toDegrees(Math.atan2(height, dis));
+                tVal = -1 * toDegrees(Math.atan2(height, dis))+ t_Val;
             }
         }
         //计算Z值
@@ -454,10 +469,16 @@ public class CameraOrderController {
                 zFixVal = zVal;
             }
         }
+        if(yzCameraInfo.getManu().equals("hp")){
+            Double zVal = calZValHP(dis);
+            if(zVal != null){
+                zFixVal = zVal;
+            }
+        }
 //        double tVal = -1* toDegrees(asin(height/dis));//旧的方法
         System.out.println("计算出的方位角 dBear: " + dBear);
-        System.out.println("相机偏移校准 pCorVal: " + pCorVal);
-        System.out.println("最终 P 角: " + pVal);
+        System.out.println("相机偏移校准 pCorVal: " + pCorVal+" ---- 相机偏移校准 tCorVal: " + t_Val);
+        System.out.println("最终 P 角: " + pVal +"     最终 T 角: " + tVal);
 
         if (yzCameraInfo.getManu().equals("hik")) {
             hkCameraProc.ptzControl(yzCameraInfo, pVal, tVal, zFixVal);
@@ -468,6 +489,46 @@ public class CameraOrderController {
         } else if (yzCameraInfo.getManu().equals("gpl")) {
             gplCameraProc.ptzControl(yzCameraInfo, pVal, tVal, zFixVal);
         }
+        traceProInfo.setTraceType(4);
+        return true;
+    }
+
+    /**
+     * 光电引导
+     *
+     * @param traceProInfo
+     * @return
+     * @throws Exception
+     */
+    private Boolean ctrlCameraByLonLatToHP(TraceProInfo traceProInfo) throws Exception {
+        YzCameraInfo yzCameraInfo = GL_CameraInfoMap.get(traceProInfo.getCameraId());
+        //偏移校准值
+        double pCorVal = yzCameraInfo.getAngle();
+        double zFixVal = yzCameraInfo.getzVal();
+        double height = yzCameraInfo.getHeight();
+        double t_Val = yzCameraInfo.gettVal();
+        //相对于相机的角度
+        double dBear = DisAndAngleUtils.gis_Angle(yzCameraInfo.getLat().doubleValue(),
+                yzCameraInfo.getLon().doubleValue(), traceProInfo.getTraceLat(), traceProInfo.getTraceLon());
+        dBear = dBear < 0 ? 360 + dBear : dBear;
+        //相对于相机的距离
+        double dis = DisAndAngleUtils.gis_Dis(yzCameraInfo.getLat().doubleValue(), yzCameraInfo.getLon().doubleValue(),
+                traceProInfo.getTraceLat(), traceProInfo.getTraceLon());
+        //计算P值
+        double pVal = (dBear - pCorVal) > 360 ? dBear - pCorVal - 360 : dBear - pCorVal;
+        pVal = pVal < 0 ? 360 + pVal : pVal;
+        //TODO 计算出的T值
+        Double tVal = -1 * toDegrees(Math.atan2(height, dis))+ t_Val + 6;
+        //计算Z值
+            Double zVal = calZValHP(dis);
+            if(zVal != null){
+                zFixVal = zVal;
+            }
+        System.out.println("计算出的方位角 dBear: " + dBear);
+        System.out.println("相机偏移校准 pCorVal: " + pCorVal+" ---- 相机偏移校准 tCorVal: " + t_Val);
+        System.out.println("最终 P 角: " + pVal +"     最终 T 角: " + tVal);
+
+        hpCameraProc.ptzControl(yzCameraInfo, pVal, tVal, zFixVal);
         traceProInfo.setTraceType(4);
         return true;
     }
@@ -491,7 +552,7 @@ public class CameraOrderController {
             } else if (traceType == 3) {
                 hpCameraProc.photoTrackingCtrl(yzCameraInfo, false, traceProInfo.getChannelId());
                 //下面这个操作必须添加
-                hpCameraProc.boxTrackCtrl(yzCameraInfo, false, 1, 0, 0, 0, 0);
+                hpCameraProc.boxTrackCtrl(yzCameraInfo, false, traceProInfo.getChannelId(), 0, 0, 0, 0);
             }
         } else if (traceProInfo.getManu().equals("hik")) {
             //使用最基本的云台控制左移<停>指令结束跟踪

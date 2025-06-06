@@ -47,6 +47,14 @@ public class LwCameraStatusPacket {
     @JSONField(name = "ISOPENLIGHT")
     private Integer ISOPENLIGHT = 0;//是否已打开光源
 
+    /** 相机厂家 */
+    @JSONField(name = "MANU")
+    private String MANU;
+
+    public String getMANU() {return MANU;}
+
+    public void setMANU(String MANU) {this.MANU = MANU;}
+
     public String getCMDTYPE() {
         return CMDTYPE;
     }

@@ -64,7 +64,11 @@ public class QueryAndLoginCameraTask {
             //相机更新、登录处理
             for (YzCameraInfo newCameraInfo : cacheCameraList) {
                 Long cameraInfoId = newCameraInfo.getId();
+                System.out.println("相机信息发生变化，重新加载："+GL_CameraInfoMap.get(114L));
                 YzCameraInfo oldCameraInfo = GL_CameraInfoMap.get(cameraInfoId);
+                if(!GL_CameraInfoMap.isEmpty()){
+                    System.out.println("+++++++++++++++++++++++++++++++++"+oldCameraInfo);
+                }
                 //没有该相机或相机需要重新登录
                 if (!GL_CameraInfoMap.containsKey(cameraInfoId) ||
                         (oldCameraInfo.getLoginInfo() != null && oldCameraInfo.getLoginInfo().equals("-1"))) {
@@ -146,6 +150,9 @@ public class QueryAndLoginCameraTask {
                         newCameraInfo.setLoginInfo(null);
                     }
                     GL_CameraInfoMap.put(cameraInfoId, newCameraInfo);
+                    if(cameraInfoId ==114 ) {
+                        System.out.println("相机信息加载：" + GL_CameraInfoMap.get(cameraInfoId) + "---" + newCameraInfo);
+                    }
                     cancelTraceOrder(newCameraInfo);
                     GL_TraceInfoMap.remove(cameraInfoId);
                     continue;
@@ -250,6 +257,7 @@ public class QueryAndLoginCameraTask {
                         newCameraInfo.setGplStatusTcpClient(clientService2);
                     }
                     GL_CameraInfoMap.put(cameraInfoId, newCameraInfo);
+                    System.out.println("相机信息发生变化，重新加载："+GL_CameraInfoMap.get(cameraInfoId));
                     cancelTraceOrder(newCameraInfo);
                     GL_TraceInfoMap.remove(cameraInfoId);
                 }

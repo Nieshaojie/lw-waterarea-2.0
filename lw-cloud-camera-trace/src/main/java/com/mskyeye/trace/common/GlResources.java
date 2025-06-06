@@ -461,4 +461,38 @@ public class GlResources {
         }
         return result;
     }
+
+    /**
+     * 计算相机Z值
+     *
+     * @param dis
+     * @return
+     */
+    public static Double calZValHP(Double dis) {
+        Double result = null;
+        if (dis >= 0 && dis <= 500) {
+            result = 20.0;
+        } else if (dis > 500 && dis <= 1000) {
+            result = 25.0;
+        } else if (dis > 1000 && dis <= 1500) {
+            result = 35.0;
+        } else if (dis > 1500 && dis <= 2000) {
+            result = 45.0;
+        } else if (dis > 2000 && dis <= 2500) {
+            result = 55.0;
+        } else if (dis > 2500 && dis <= 3000) {
+            result = 70.0;
+        } else if (dis > 3000 && dis <= 3500) {
+            result = 80.0;
+        } else if (dis > 3500 && dis <= 4000) {
+            result = 90.0;
+        } else if (dis > 4000 && dis <= 4500) {
+            result = 100.0;
+        } else if (dis > 4500 && dis <= 5000) {
+            result = 110.0;
+        } else {
+            result = 62.5;
+        }
+        return result;
+    }
 }

@@ -531,11 +531,18 @@ public class YzCameraInfo
     @Override
     public String toString() {
         return "YzCameraInfo{" +
+                "id="+id+
                 "name="+name+
                 ",loginInfo=" + loginInfo +
                 ",curPVal=" + curPVal +
                 ", curTVal=" + curTVal +
                 ", curZVal=" + curZVal +
+                ", manu=" + manu +
+                ", name=" + name +
+                ", 修正角度=" + angle +
+                ", 修正P=" + pVal +
+                ", 修正T=" + tVal +
+                ", 修正Z=" + zVal +
                 '}';
     }
 }

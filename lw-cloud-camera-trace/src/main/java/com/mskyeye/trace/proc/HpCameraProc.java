@@ -7,6 +7,8 @@ import com.mskyeye.trace.model.YzCameraInfo;
 import com.mskyeye.trace.utils.MD5SaltUtil;
 import com.mskyeye.trace.utils.PostRequestUtil;
 import com.mskyeye.trace.utils.StringUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.TimeUnit;
@@ -22,6 +24,8 @@ import static com.mskyeye.trace.common.GlResources.GL_CameraInfoMap;
  **/
 @Component
 public class HpCameraProc {
+    private static final Logger log = LoggerFactory.getLogger(HpCameraProc.class);
+
     /**
      * Salt获取
      *
@@ -181,6 +185,7 @@ public class HpCameraProc {
             String result = PostRequestUtil.sendToHpPostReq(yzCameraInfo.getIp(), String.valueOf(yzCameraInfo.getHttpPort()), body);
             TimeUnit.MILLISECONDS.  sleep(200);
             if (StringUtil.isNotEmpty(result) && result.contains("ackvalue")) {
+//                System.out.println("心跳发送成功，返回："+result.toString()+"    相机信息："+yzCameraInfo.toString());
             } else {
 //                System.out.println("************和普接口userOnlineHeart报错*****相机名称为:" + yzCameraInfo.getName());
             }
@@ -391,13 +396,12 @@ public class HpCameraProc {
             jsonBody.put("cmd", "ivpSet");
             jsonBody1.put("token", yzCameraInfo.getLoginInfo());
             jsonBody1.put("channelid", channelid);
-            jsonBody1.put("enable", enable?1:0);
+            jsonBody1.put("enable", /*enable?1:0*/0);
             jsonBody1.put("bAlarmTracking", enable);
             jsonBody1.put("type", 10);
             jsonBody.put("param", jsonBody1);
             String body = jsonBody.toJSONString();
             String result = PostRequestUtil.sendToHpPostReq(yzCameraInfo.getIp(), String.valueOf(yzCameraInfo.getHttpPort()), body);
-
             TimeUnit.MILLISECONDS.sleep(200);
         } catch (Exception e) {
             e.printStackTrace();
@@ -421,6 +425,10 @@ public class HpCameraProc {
             yzCameraInfo.setCurPVal(oldYzCameraInfo.getCurPVal());
             yzCameraInfo.setCurTVal(oldYzCameraInfo.getCurTVal());
             yzCameraInfo.setCurZVal(oldYzCameraInfo.getCurZVal());
+            yzCameraInfo.setAngle(oldYzCameraInfo.getAngle());
+            yzCameraInfo.setpVal(oldYzCameraInfo.getpVal());
+            yzCameraInfo.settVal(oldYzCameraInfo.gettVal());
+            yzCameraInfo.setzVal(oldYzCameraInfo.getzVal());
         }
         GL_CameraInfoMap.put(yzCameraInfo.getId(), yzCameraInfo);
     }

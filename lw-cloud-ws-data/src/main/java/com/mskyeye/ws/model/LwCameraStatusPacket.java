@@ -37,6 +37,13 @@ public class LwCameraStatusPacket {
 
     @JSONField(name = "ZVAL")
     private Double ZVAL;//光电方位Z值
+    /** 相机厂家 */
+    @JSONField(name = "MANU")
+    private String MANU;
+
+    public String getMANU() {return MANU;}
+
+    public void setMANU(String MANU) {this.MANU = MANU;}
 
     public String getCMDTYPE() {
         return CMDTYPE;

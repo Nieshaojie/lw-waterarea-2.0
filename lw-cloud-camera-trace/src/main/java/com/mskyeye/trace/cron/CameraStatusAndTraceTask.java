@@ -297,6 +297,7 @@ public class CameraStatusAndTraceTask {
         lwCameraStatusPacket.setORIPVAL(yzCameraInfo.getOriPVal());
         lwCameraStatusPacket.setISAVALARM(yzCameraInfo.getIsAvAlarm());
         lwCameraStatusPacket.setISOPENLIGHT(yzCameraInfo.getIsLightOpen());
+        lwCameraStatusPacket.setMANU(yzCameraInfo.getManu());
         //TODO
 //        lwCameraStatusPacket.setISOPENLIGHT(1);
         //TODO 1:联动跟踪 2:框选跟踪 3:智能跟踪
