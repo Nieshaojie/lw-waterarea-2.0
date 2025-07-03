@@ -2,7 +2,9 @@ package com.mskyeye.trace.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.mskyeye.trace.camera.gpl.sdk.GplControlHelper;
 import com.mskyeye.trace.camera.gpl.sdk.GplNetSDK;
+import com.mskyeye.trace.config.GplControlTypeEnum;
 import com.mskyeye.trace.model.*;
 import com.mskyeye.trace.proc.DhCameraProc;
 import com.mskyeye.trace.proc.GplCameraProc;
@@ -21,7 +23,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import static com.mskyeye.trace.common.GlResources.*;
 import static java.lang.Math.toDegrees;
@@ -589,6 +590,64 @@ public class CameraOrderController {
         gplCameraProc.aimPtzCtrl(ptzControlRequest);
 
         return AjaxResult.success();
+    }
+
+    /**
+     * AI盒子激光测距功能
+     * 前端入口
+     * @param ptzControlRequest
+     * @return
+     * @throws Exception
+     */
+    @PostMapping("/ai_distance_ctrl")
+    public AjaxResult distanceCtrl(@RequestBody PtzControlRequest ptzControlRequest) {
+
+        gplCameraProc.distanceCtrl(ptzControlRequest);
+
+        return AjaxResult.success();
+    }
+    /**
+     * 统一云台功能控制接口
+     *
+     * @param cameraId       相机信息
+     * @param type       执行指令
+     * @return 是否成功
+     */
+    @PostMapping("/gpl_ctl")
+    public boolean unifiedControl(@RequestParam Long cameraId, @RequestParam int type) {
+        YzCameraInfo info = GL_CameraInfoMap.get(cameraId);
+        System.out.println("相机信息："+cameraId  +info);
+        if (info == null) {
+            System.err.println("未找到相机信息：" + cameraId);
+            return false;
+        }
+
+        GplControlTypeEnum controlType = GplControlTypeEnum.fromCode(type);
+        if (controlType == null) {
+            System.err.println("不支持的控制类型: " + type);
+            return false;
+        }
+        return true;
+//        switch (controlType) {
+//            case SCENE_MODE_NORMAL:
+//                return GplControlHelper.execute(info, cam -> gplCameraProc.setSceneMode(cam, 1, 0));
+//            case SCENE_MODE_OPTICAL_DEFOG:
+//                return GplControlHelper.execute(info, cam -> gplCameraProc.setSceneMode(cam, 1, 1));
+//            case SCENE_MODE_ELECTRONIC_DEFOG_LOW:
+//                return GplControlHelper.execute(info, cam -> gplCameraProc.setSceneMode(cam, 1, 2));
+//            case SCENE_MODE_ELECTRONIC_DEFOG_MEDIUM:
+//                return GplControlHelper.execute(info, cam -> gplCameraProc.setSceneMode(cam, 1, 3));
+//            case SCENE_MODE_ELECTRONIC_DEFOG_HIGH:
+//                return GplControlHelper.execute(info, cam -> gplCameraProc.setSceneMode(cam, 1, 4));
+//            case CROSSHAIR_ON:
+//                return GplControlHelper.execute(info, cam -> gplCameraProc.setCrosshair(cam, 1, true));
+//            case CROSSHAIR_OFF:
+//                return GplControlHelper.execute(info, cam -> gplCameraProc.setCrosshair(cam, 1, false));
+//            case ONE_KEY_FOCUS:
+//                return GplControlHelper.execute(info, cam -> gplCameraProc.oneKeyFocus(cam, 1));
+//            default:
+//                return false;
+//        }
     }
 
     /*public static void main(String[] args) {

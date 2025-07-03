@@ -11,6 +11,10 @@ public interface GplNetSDK extends Library {
 
     /**常量 */
     public static final int GPL_DEVSTATE_PTZ_LOCATION   = 0x0036;  // 查询云台状态信息
+    public static final int VS_EXTPTZ_FOCUSTRIGGER = 0xC9;     // 一键聚焦
+    public static final int VS_EXTPTZ_AUXIOPEN = 0x34;         // 辅助开
+    public static final int VS_EXTPTZ_AUXICLOSE = 0x35;        // 辅助关
+    public static final int VS_EXTPTZ_RUNMODE = 0x31;          // 场景模式
 
     /**接口方法 */
     //  JNA直接调用方法定义，cbDisConnect实际情况并不回调Java代码，仅为定义可以使用如下方式进行定义。
@@ -44,6 +48,10 @@ public interface GplNetSDK extends Library {
 
     // 云台控制方法
     boolean NET_DVR_PTZControl(int lRealHandle, int dwPTZCommand, int dwStop);
+
+    // 判断登录状态
+    boolean VSIF_GetLoginState(NativeLong loginId, IntByReference pState);
+
 
     // 定义云台命令（摄像头支持的 PTZ 命令）
     int PAN_LEFT = 0;       // 左移

@@ -60,6 +60,50 @@ public class YzCameraInfo
     /** 相机厂家 */
     private String manu;
 
+    /** 备用可见光ip */
+    private String ip1;
+
+    public String getIp1() {
+        return ip1;
+    }
+
+    public void setIp1(String ip1) {
+        this.ip1 = ip1;
+    }
+
+    public String getIp2() {
+        return ip2;
+    }
+
+    public void setIp2(String ip2) {
+        this.ip2 = ip2;
+    }
+
+    public Long getSparePort3() {
+        return sparePort3;
+    }
+
+    public void setSparePort3(Long sparePort3) {
+        this.sparePort3 = sparePort3;
+    }
+
+    public Long getSparePort4() {
+        return sparePort4;
+    }
+
+    public void setSparePort4(Long sparePort4) {
+        this.sparePort4 = sparePort4;
+    }
+
+    /** 备用红外ip */
+    private String ip2;
+
+    /** 备用端口1 */
+    private Long sparePort3;
+
+    /** 备用端口2 */
+    private Long sparePort4;
+
 
     /** 报警联动 */
     private String linkFlag;

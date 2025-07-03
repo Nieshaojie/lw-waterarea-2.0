@@ -1,8 +1,10 @@
 package com.mskyeye.trace.proc;
 
+import com.mskyeye.trace.camera.gpl.sdk.GplNetSDK;
 import com.mskyeye.trace.camera.utils.Utils;
 import com.mskyeye.trace.model.PtzControlRequest;
 import com.mskyeye.trace.model.TraceProInfo;
+import com.mskyeye.trace.config.PtzCommand;
 import com.mskyeye.trace.model.YzCameraInfo;
 import com.mskyeye.trace.netty.control.GplCtrlTcpClientService;
 import com.mskyeye.trace.utils.PanTiltCalculator;
@@ -374,6 +376,71 @@ public class GplCameraProc {
         ptzControlData.put("speedAutoFit", ptzControlRequest.getSpeedAutoFit());
 
         radarService.sendStartGuide(ptzControlData);
+    }
+
+    /**
+     * gpl ai盒子云台控制
+     * @param ptzControlRequest
+     * @throws Exception
+     */
+    public void distanceCtrl( PtzControlRequest ptzControlRequest ) {
+        // 构造 map
+        Map<String, Object> ptzControlData = new HashMap<>();
+        ptzControlData.put("msg", ptzControlRequest.getMsg());
+        ptzControlData.put("camid", ptzControlRequest.getCamid());
+        ptzControlData.put("action", ptzControlRequest.getAction());
+        radarService.sendStartGuide(ptzControlData);
+    }
+
+
+
+    /**
+     * 一键聚焦
+     */
+    public boolean oneKeyFocus(YzCameraInfo info, int channelId) {
+        boolean result = info.getGplNetSDK().VSIF_VSPTZControlEx2(
+                Long.parseLong(info.getLoginInfo()), channelId,
+                GplNetSDK.VS_EXTPTZ_FOCUSTRIGGER,
+                0, 0, 0, false, Pointer.NULL);
+        return check(info,"一键聚焦", result);
+    }
+
+    /**
+     * 十字丝开关
+     * @param enable true=开, false=关
+     */
+    public boolean setCrosshair(YzCameraInfo info, int channelId, boolean enable) {
+        int cmd = enable ? GplNetSDK.VS_EXTPTZ_AUXIOPEN : GplNetSDK.VS_EXTPTZ_AUXICLOSE;
+        int auxId = 0;
+        boolean result = info.getGplNetSDK().VSIF_VSPTZControlEx2(
+                Long.parseLong(info.getLoginInfo()), channelId,
+                cmd, auxId, 0, 0, false, Pointer.NULL);
+        return check(info,"十字丝 " + (enable ? "开启" : "关闭"), result);
+    }
+
+    /**
+     * 切换场景模式
+     * @param modeId 模式号：0=常规，1=光学透雾，2~4=电子透雾（低中高）
+     */
+    public boolean setSceneMode(YzCameraInfo info, int channelId, int modeId) {
+        boolean result = info.getGplNetSDK().VSIF_VSPTZControlEx2(
+                Long.parseLong(info.getLoginInfo()), channelId,
+                GplNetSDK.VS_EXTPTZ_RUNMODE,
+                modeId, 0, 0, false, Pointer.NULL);
+        return check(info,"切换场景模式[" + modeId + "]", result);
+    }
+
+    /**
+     * 错误码输出
+     */
+    private boolean check(YzCameraInfo info,String action, boolean success) {
+        if (!success) {
+            int err = info.getGplNetSDK().VSIF_GetLastError();
+            System.err.printf("%s 失败，错误码：0x%x%n", action, err);
+        } else {
+            System.out.println(action + " 成功");
+        }
+        return success;
     }
 
 }
