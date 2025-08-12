@@ -454,7 +454,7 @@ public class CameraOrderController {
         Double tVal = calTVal(yzCameraInfo.getName(),dis,dBear);
         if(tVal == null){
             if (yzCameraInfo.getManu().equals("gpl")) {
-                tVal = toDegrees(Math.atan2(height, dis));
+                tVal = toDegrees(Math.atan2(height, dis)) ;
                 tVal = tVal + t_Val;
                 tVal = tVal < 0 ? 0 : tVal;
                 System.out.println("没有用曲线拟合方法计算T值");

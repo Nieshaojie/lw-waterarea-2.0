@@ -4,6 +4,7 @@ import com.mskyeye.trace.camera.utils.Utils;
 import com.mskyeye.trace.model.YzCameraInfo;
 import com.mskyeye.trace.netty.control.GplCtrlTcpClientService;
 import com.sun.jna.Pointer;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.TimeUnit;
@@ -16,6 +17,7 @@ import java.util.concurrent.TimeUnit;
  * @Version:1.0
  **/
 @Component
+@Slf4j
 public class GplCameraProc {
 
     /**
@@ -28,56 +30,35 @@ public class GplCameraProc {
      * @return
      * @throws Exception
      */
+    private String toHexString(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : bytes) {
+            sb.append(String.format("%02X ", b));
+        }
+        return sb.toString().trim();
+    }
+
     public boolean ptzControl(YzCameraInfo yzCameraInfo, double pVal, double tVal, double zVal) throws Exception {
-
-//        boolean result = yzCameraInfo.getGplNetSDK().VSIF_VSPTZControlEx2(Long.valueOf(yzCameraInfo.getLoginInfo()),
-//                0,0x43, (int) (pVal * 10),(int) (tVal * 10),(int) (zVal * 10),false,new Pointer(0));
-//        if (!result)
-//            System.out.println("错误码是:" + yzCameraInfo.getGplNetSDK().VSIF_GetLastError());
-//        return result;
-
-
 
         byte[] pValInfos = new byte[8];
         pValInfos[0] = (byte) 0xA7;
         pValInfos[1] = (byte) 0x01;
         pValInfos[2] = (byte) 0x02;
         pValInfos[3] = (byte) 0x02;
-        Integer iPval = 0;
-        //声光报警器的P值按照T值的计算方式来
-//        if(yzCameraInfo.getIsAvAlarm() == 0){
-//            iPval = (int) ((360.0 + yzCameraInfo.getAziMultiply() * yzCameraInfo.getAziZeroVal() - pVal) % 360.0 / yzCameraInfo.getAziMultiply());
-//        }else if(yzCameraInfo.getIsAvAlarm() == 1){
-//            iPval = (int) (yzCameraInfo.getAziZeroVal() - ((360.0 + pVal) % 360.0)/ yzCameraInfo.getAziMultiply());
-//        }
-//        iPval = (int) (yzCameraInfo.getAziZeroVal() - ((360.0 + pVal) % 360.0)/ yzCameraInfo.getAziMultiply());
 
-//        if (yzCameraInfo.getIsAvAlarm() == 0) {
-//            iPval = (int) (pVal/ yzCameraInfo.getAziMultiply() + yzCameraInfo.getAziZeroVal());
-//            if(iPval > 65000){
-//                iPval = iPval - 65000 + yzCameraInfo.getAziMinVal();
-//            }
-//        } else if (yzCameraInfo.getIsAvAlarm() == 1) {
-//            iPval = (int) ((yzCameraInfo.getAziZeroVal() - pVal) / yzCameraInfo.getAziMultiply());
-//        }
-
-        iPval = (int) ((360 - pVal)/ yzCameraInfo.getAziMultiply() + yzCameraInfo.getAziZeroVal());
+        Integer iPval = (int) ((360 - pVal)/ yzCameraInfo.getAziMultiply() + yzCameraInfo.getAziZeroVal());
         if (iPval > 65000) {
             iPval = iPval - 65000 + yzCameraInfo.getAziMinVal();
         }
-
         byte[] pValArray = numConvert(iPval);
         pValInfos[4] = pValArray[0];
         pValInfos[5] = pValArray[1];
         pValInfos[6] = (byte) 0xC8;
         pValInfos[7] = checkBitFun(pValInfos);
-//        System.out.println(byteArrayToHexString(pValInfos));
-//        System.out.println("方位比值:" + yzCameraInfo.getAziMultiply()
-//                + " 方位零值" + yzCameraInfo.getAziZeroVal() + " 方位最小值" + yzCameraInfo.getAziMinVal());
-//        System.out.println("原P值:" + pVal + " 计算后的P值:" + iPval);
-//        System.out.println("------------------------------------------");
+
+        // 打印日志
+        System.out.println("发送 P 指令:"+ toHexString(pValInfos));
         yzCameraInfo.getGplCtrlTcpClient().sendInfo(pValInfos);
-//        TimeUnit.MILLISECONDS.sleep(200);
 
         byte[] tValInfos = new byte[8];
         tValInfos[0] = (byte) 0xA7;
@@ -90,8 +71,9 @@ public class GplCameraProc {
         tValInfos[5] = tValArray[1];
         tValInfos[6] = (byte) 0xC8;
         tValInfos[7] = checkBitFun(tValInfos);
+
+        System.out.println("发送 T 指令:"+ toHexString(tValInfos));
         yzCameraInfo.getGplCtrlTcpClient().sendInfo(tValInfos);
-//        TimeUnit.MILLISECONDS.sleep(200);
 
         byte[] zValInfos = new byte[8];
         zValInfos[0] = (byte) 0xA7;
@@ -104,8 +86,8 @@ public class GplCameraProc {
         zValInfos[5] = zValArray[1];
         zValInfos[6] = (byte) 0x00;
         zValInfos[7] = checkBitFun(zValInfos);
+        System.out.println("发送 Z 指令:" + toHexString(zValInfos));
         yzCameraInfo.getGplCtrlTcpClient().sendInfo(zValInfos);
-//        TimeUnit.MILLISECONDS.sleep(200);
         return true;
     }
 
