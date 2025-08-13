@@ -59,7 +59,7 @@ public class GplCameraProc {
         // 打印日志
         System.out.println("发送 P 指令:"+ toHexString(pValInfos));
         yzCameraInfo.getGplCtrlTcpClient().sendInfo(pValInfos);
-
+        TimeUnit.MILLISECONDS.sleep(30);
         byte[] tValInfos = new byte[8];
         tValInfos[0] = (byte) 0xA7;
         tValInfos[1] = (byte) 0x01;
@@ -74,7 +74,7 @@ public class GplCameraProc {
 
         System.out.println("发送 T 指令:"+ toHexString(tValInfos));
         yzCameraInfo.getGplCtrlTcpClient().sendInfo(tValInfos);
-
+        TimeUnit.MILLISECONDS.sleep(30);
         byte[] zValInfos = new byte[8];
         zValInfos[0] = (byte) 0xA7;
         zValInfos[1] = (byte) 0x01;
@@ -88,6 +88,7 @@ public class GplCameraProc {
         zValInfos[7] = checkBitFun(zValInfos);
         System.out.println("发送 Z 指令:" + toHexString(zValInfos));
         yzCameraInfo.getGplCtrlTcpClient().sendInfo(zValInfos);
+        TimeUnit.MILLISECONDS.sleep(30);
         return true;
     }
 

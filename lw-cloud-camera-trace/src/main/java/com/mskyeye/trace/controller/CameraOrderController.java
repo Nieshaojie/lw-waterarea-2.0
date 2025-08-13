@@ -454,12 +454,11 @@ public class CameraOrderController {
         Double tVal = calTVal(yzCameraInfo.getName(),dis,dBear);
         if(tVal == null){
             if (yzCameraInfo.getManu().equals("gpl")) {
-                tVal = toDegrees(Math.atan2(height, dis)) ;
-                tVal = tVal + t_Val;
-                tVal = tVal < 0 ? 0 : tVal;
-                System.out.println("没有用曲线拟合方法计算T值");
+                tVal = toDegrees(Math.atan2(height, dis)) + t_Val;
+                tVal = Math.max(-180, Math.min(180, tVal));
+                System.out.println("没有用曲线拟合方法计算T值——————原始t值："+toDegrees(Math.atan2(height, dis))+"————————补偿值："+t_Val+"————————最终t值："+tVal);
             }else{
-                tVal = -1 * toDegrees(Math.atan2(height, dis))+ t_Val;
+                tVal = -1 * toDegrees(Math.atan2(height, dis));
             }
         }
         //计算Z值

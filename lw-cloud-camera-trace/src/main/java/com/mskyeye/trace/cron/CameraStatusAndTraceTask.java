@@ -380,7 +380,7 @@ public class CameraStatusAndTraceTask {
                 dBear = dBear < 0 ? 360 + dBear : dBear;
                 double pVal = (dBear - pCorVal) > 360 ? dBear - pCorVal - 360 : dBear - pCorVal;
 
-                double tVal = toDegrees(Math.atan2(height, dis));
+                double tVal = toDegrees(Math.atan2(height, dis)) ;
                 tVal = tVal < 0 ? 0 : tVal;
 //                        gplCameraProc.ptzControl(yzCameraInfo, pVal, tVal, zFixVal);//SDK开发使用
                 gplCameraProc.gplLinkTrace(yzCameraInfo, pVal, tVal, zFixVal);//串口开发使用
@@ -393,6 +393,7 @@ public class CameraStatusAndTraceTask {
                     double pCorVal = yzCameraInfo.getAngle();
                     double zFixVal = yzCameraInfo.getzVal();
                     double height = yzCameraInfo.getHeight();
+                    double t_Val = yzCameraInfo.gettVal();
                     //相对于相机的距离
                     double dis = DisAndAngleUtils.gis_Dis(yzCameraInfo.getLat().doubleValue(), yzCameraInfo.getLon().doubleValue(),
                             traceProInfo.getTraceLat(), traceProInfo.getTraceLon());
@@ -410,9 +411,9 @@ public class CameraStatusAndTraceTask {
                     Double tVal = calTVal(yzCameraInfo.getName(),dis,dBear);
                     if(tVal == null){
                         if (yzCameraInfo.getManu().equals("gpl")) {
-                            tVal = toDegrees(Math.atan2(height, dis));
-                            tVal = tVal < 0 ? 0 : tVal;
-                            System.out.println("没有用曲线拟合方法计算T值");
+                            tVal = toDegrees(Math.atan2(height, dis)) + t_Val;
+                            tVal = Math.max(-180, Math.min(180, tVal));
+                            System.out.println("没有用曲线拟合方法计算T值，补偿t："+ t_Val);
                         }else{
                             tVal = -1 * toDegrees(Math.atan2(height, dis));
                         }
