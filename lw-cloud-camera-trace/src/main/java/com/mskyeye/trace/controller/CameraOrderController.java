@@ -261,7 +261,7 @@ public class CameraOrderController {
                     dhCameraProc.ptzControl(yzCameraInfo, pVal, tVal, zVal);
                     break;
                 case "gpl":
-                    gplCameraProc.ptzControl(yzCameraInfo, pVal, tVal, zVal);
+                    gplCameraProc.ptzControl(yzCameraInfo, pVal, tVal, zVal,1);
                     break;
             }
             return AjaxResult.success();
@@ -486,7 +486,7 @@ public class CameraOrderController {
         } else if (yzCameraInfo.getManu().equals("hp")) {
             hpCameraProc.ptzControl(yzCameraInfo, pVal, tVal, zFixVal);
         } else if (yzCameraInfo.getManu().equals("gpl")) {
-            gplCameraProc.ptzControl(yzCameraInfo, pVal, tVal, zFixVal);
+            gplCameraProc.ptzControl(yzCameraInfo, pVal, tVal, zFixVal,traceProInfo.getChannelId());
         }
         traceProInfo.setTraceType(4);
         return true;

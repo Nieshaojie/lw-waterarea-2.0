@@ -59,7 +59,7 @@ public class GplStatusClientHandler extends ChannelDuplexHandler {
             byteBuf.readBytes(bytes);
 //                printByteInfo(bytes);
             //方位、俯仰值解析
-            if (len == 12 && (bytes[0] & 0xFF) == 0xA7 && (bytes[1] & 0xFF) == 0x01
+            if (len == 12 && (bytes[0] & 0xFF) == 0xA7 && ((bytes[1] & 0xFF) == 0x01 || (bytes[1] & 0xFF) == 0x02)
                     && (bytes[2] & 0xFF) == 0x02 && (bytes[3] & 0xFF) == 0x09) {
                 Double curPval = null, curTval = null;
                 YzCameraInfo yzCameraInfo = GlResources.GL_CameraInfoMap.get(cameraId);

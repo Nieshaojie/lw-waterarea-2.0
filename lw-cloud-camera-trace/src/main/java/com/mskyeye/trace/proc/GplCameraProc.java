@@ -38,8 +38,9 @@ public class GplCameraProc {
         return sb.toString().trim();
     }
 
-    public boolean ptzControl(YzCameraInfo yzCameraInfo, double pVal, double tVal, double zVal) throws Exception {
+    public boolean ptzControl(YzCameraInfo yzCameraInfo, double pVal, double tVal, double zVal,Integer channelId) throws Exception {
 
+        byte addrCode = (channelId == 1) ? (byte) 0x01 : (byte) 0x02;
         byte[] pValInfos = new byte[8];
         pValInfos[0] = (byte) 0xA7;
         pValInfos[1] = (byte) 0x01;
@@ -77,7 +78,7 @@ public class GplCameraProc {
         TimeUnit.MILLISECONDS.sleep(30);
         byte[] zValInfos = new byte[8];
         zValInfos[0] = (byte) 0xA7;
-        zValInfos[1] = (byte) 0x01;
+        zValInfos[1] = addrCode;
         zValInfos[2] = (byte) 0x03;
         zValInfos[3] = (byte) 0x0C;
         Integer iZval = (int) (zVal * 16384 / 65);

@@ -413,7 +413,7 @@ public class RCAlarmTask {
         //TODO 计算出的T值
         double tVal = -1 * toDegrees(Math.atan2(height, dis));
         if (yzCameraInfo.getManu().equals("gpl")) {
-            tVal = toDegrees(Math.atan2(height, dis));
+            tVal = toDegrees(Math.atan2(height, dis)) + tCorVal;
             tVal = tVal < 0 ? 0 : tVal;
         }
         if (yzCameraInfo.getManu().equals("hik")) {
@@ -423,7 +423,7 @@ public class RCAlarmTask {
         } else if (yzCameraInfo.getManu().equals("hp")) {
             hpCameraProc.ptzControl(yzCameraInfo, pVal, tVal, zFixVal);
         } else if (yzCameraInfo.getManu().equals("gpl")) {
-            gplCameraProc.ptzControl(yzCameraInfo, pVal, tVal, zFixVal);
+            gplCameraProc.ptzControl(yzCameraInfo, pVal, tVal, zFixVal,traceProInfo.getChannelId());
         }
         return true;
     }
