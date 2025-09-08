@@ -145,6 +145,16 @@ public class YzCameraInfo
     /** 是否开启强光 */
     private Integer isLightOpen;//0:否 1:是
 
+    private volatile boolean rcAlarmPaused = false;
+
+    public boolean isRcAlarmPaused() {
+        return rcAlarmPaused;
+    }
+
+    public void setRcAlarmPaused(boolean rcAlarmPaused) {
+        this.rcAlarmPaused = rcAlarmPaused;
+    }
+
     public Long getId() {
         return id;
     }

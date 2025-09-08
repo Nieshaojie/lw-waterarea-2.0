@@ -11,6 +11,7 @@ import com.mskyeye.trace.proc.HkCameraProc;
 import com.mskyeye.trace.proc.HpCameraProc;
 import com.mskyeye.trace.service.IYzAlarmEventService;
 import com.mskyeye.trace.utils.DisAndAngleUtils;
+import com.mskyeye.trace.utils.RedisCache;
 import com.mskyeye.trace.utils.StreamGobbler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +26,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static com.mskyeye.trace.common.GlResources.*;
 import static java.lang.Math.toDegrees;
@@ -58,6 +60,9 @@ public class RCAlarmTask {
     @Value("${alarm_stg_url}")
     private String alarmStgUrl;
 
+    @Autowired
+    private RedisCache redisCache;
+
     /**
      * 1000ms查询一次雷光警戒缓存，转换成雷光警戒目标
      */
@@ -86,16 +91,17 @@ public class RCAlarmTask {
                     //相机必须处于雷光警戒状态
                     if (dis < minDis && GL_TraceInfoMap.containsKey(yzCameraInfo.getId())
                             && GL_TraceInfoMap.get(yzCameraInfo.getId()).getTraceType() == 6) {
-                        minDis = dis;
+//                        minDis = dis;
                         cameraInfo = yzCameraInfo;
                     }
                 }
                 //TODO
                 //要满足小于10公里，否则表示没找到合适的相机
-                if (minDis > DIS_THROS) {
+                /*if (minDis > DIS_THROS) {
                     continue;
-                }
-                if (cameraInfo != null) {
+                }*/
+                TraceProInfo cached = redisCache.getCacheObject(ALERT_CAPTURE + cnt.getTID());
+                if (cameraInfo != null && cached == null){
                     TraceProInfo traceProInfo = GL_TraceInfoMap.get(cameraInfo.getId());
                     traceProInfo.setTraceType(7);
                     traceProInfo.setTargetId(cnt.getTID());
@@ -115,8 +121,8 @@ public class RCAlarmTask {
      */
     @Scheduled(fixedDelay = 1000)
     public void rcAlarmHandle() throws Exception {
-        if(executor != null &&  executor.isTerminated()){
-            executor.shutdown();
+        if (executor == null || executor.isShutdown() || executor.isTerminated()) {
+            executor = Executors.newCachedThreadPool();
         }
         Iterator<Map.Entry<Long, TraceProInfo>> iter = GL_TraceInfoMap.entrySet().iterator();
         while (iter.hasNext()) {
@@ -126,7 +132,15 @@ public class RCAlarmTask {
                 continue;
             }
             YzCameraInfo yzCameraInfo = GL_CameraInfoMap.get(traceProInfo.getCameraId());
+
+            if (!yzCameraInfo.isRcAlarmPaused()) {
+                System.out.println("当前停止跟踪，跳过执行:"+yzCameraInfo.isRcAlarmPaused());
+                return; // 当前停止跟踪，跳过执行
+            }
+            System.out.println("当前正在执行警戒拍照。。。。。。目标id："+traceProInfo.getTargetId());
             if (traceProInfo.getTraceType() == 7) {
+                //缓存当前警戒抓拍的对象，防止10分钟内重复抓拍
+                redisCache.setCacheObject(ALERT_CAPTURE+traceProInfo.getTargetId(),traceProInfo,10, TimeUnit.MINUTES);
                 String[] urlArray = new String[2];
                 Integer clock = traceProInfo.getClock();
                 if (executor == null) {
@@ -136,6 +150,9 @@ public class RCAlarmTask {
                 if (clock == 1) {
                     //相机转到该经纬度
                     ctrlCameraByLonLat(traceProInfo);
+                    //缓存目标信息转发前端绘制相机指示线距离
+                    redisCache.setCacheObject("LGJJ"+yzCameraInfo.getId(),traceProInfo,300,TimeUnit.SECONDS);
+                    GL_CameraInfoMap.put(yzCameraInfo.getId(), yzCameraInfo);
                 }
                 //第3秒开始图像跟踪
                 if (clock == 3) {
@@ -416,6 +433,13 @@ public class RCAlarmTask {
             tVal = toDegrees(Math.atan2(height, dis)) + tCorVal;
             tVal = tVal < 0 ? 0 : tVal;
         }
+        //计算Z值
+        if(yzCameraInfo.getManu().equals("gpl")){
+            Double zVal = calZVal(dis);
+            if(zVal != null){
+                zFixVal = zVal;
+            }
+        }
         if (yzCameraInfo.getManu().equals("hik")) {
             hkCameraProc.ptzControl(yzCameraInfo, pVal, tVal, zFixVal);
         } else if (yzCameraInfo.getManu().equals("dh")) {
@@ -423,7 +447,7 @@ public class RCAlarmTask {
         } else if (yzCameraInfo.getManu().equals("hp")) {
             hpCameraProc.ptzControl(yzCameraInfo, pVal, tVal, zFixVal);
         } else if (yzCameraInfo.getManu().equals("gpl")) {
-            gplCameraProc.ptzControl(yzCameraInfo, pVal, tVal, zFixVal,traceProInfo.getChannelId());
+            gplCameraProc.ptzControl(yzCameraInfo, pVal, tVal, zFixVal,1);
         }
         return true;
     }

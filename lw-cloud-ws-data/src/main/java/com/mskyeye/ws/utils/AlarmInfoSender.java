@@ -8,7 +8,7 @@ import java.util.Map;
 
 public class AlarmInfoSender {
 
-    private static final String ALARM_INFO_URL = "http://localhost:8081/system/alarm/info";
+    private static final String ALARM_INFO_URL = "http://36.139.130.155:8081/system/alarm/info";
 
     /**
      * 发送预警信息

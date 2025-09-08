@@ -486,7 +486,7 @@ public class CameraOrderController {
         } else if (yzCameraInfo.getManu().equals("hp")) {
             hpCameraProc.ptzControl(yzCameraInfo, pVal, tVal, zFixVal);
         } else if (yzCameraInfo.getManu().equals("gpl")) {
-            gplCameraProc.ptzControl(yzCameraInfo, pVal, tVal, zFixVal,traceProInfo.getChannelId());
+            gplCameraProc.ptzControl(yzCameraInfo, pVal, tVal, zFixVal,1);
         }
         traceProInfo.setTraceType(4);
         return true;

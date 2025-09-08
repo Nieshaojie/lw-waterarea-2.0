@@ -7,7 +7,10 @@ import com.mskyeye.trace.proc.GplCameraProc;
 import com.mskyeye.trace.proc.HkCameraProc;
 import com.mskyeye.trace.proc.HpCameraProc;
 import com.mskyeye.trace.utils.AjaxResult;
+import com.mskyeye.trace.utils.RedisCache;
 import com.mskyeye.trace.utils.StringUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,7 +32,7 @@ import static com.mskyeye.trace.common.GlResources.GL_TraceInfoMap;
 @RestController
 @RequestMapping("/rc_alarm")
 public class RCAlarmController {
-
+    private static final Logger log = LoggerFactory.getLogger(RCAlarmController.class);
     @Autowired
     private HpCameraProc hpCameraProc;
     @Autowired
@@ -38,6 +41,8 @@ public class RCAlarmController {
     private DhCameraProc dhCameraProc;
     @Autowired
     private GplCameraProc gplCameraProc;
+    @Autowired
+    private RedisCache redisCache;
 
     @PostMapping("/order")
     public AjaxResult traceOrder(@RequestBody TraceProInfo traceProInfo) {
@@ -45,6 +50,8 @@ public class RCAlarmController {
         Boolean bResult = false;
         try {
             YzCameraInfo yzCameraInfo = GL_CameraInfoMap.get(traceProInfo.getCameraId());
+            yzCameraInfo.setRcAlarmPaused(traceProInfo.getbTracking());
+            log.info("设置相机是否警戒状态："+traceProInfo.getbTracking());
             traceProInfo.setManu(yzCameraInfo.getManu());
 
             if (StringUtil.isEmpty(yzCameraInfo)) {
@@ -57,8 +64,6 @@ public class RCAlarmController {
                         return AjaxResult.error("请关闭该相机的AI巡航");
                     } else if (traceProInfo1.getTraceType() == 1 || traceProInfo1.getTraceType() == 2 || traceProInfo1.getTraceType() == 3) {
                         return AjaxResult.error("请关闭该相机的跟踪");
-                    } else if(traceProInfo1.getTraceType() == 7){
-                        return AjaxResult.error("请先等待抓拍完毕");
                     }
                 }
             }
