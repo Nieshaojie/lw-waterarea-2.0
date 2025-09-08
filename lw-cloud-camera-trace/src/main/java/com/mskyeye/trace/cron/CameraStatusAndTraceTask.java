@@ -378,6 +378,7 @@ public class CameraStatusAndTraceTask {
                 double pCorVal = yzCameraInfo.getAngle();
                 double zFixVal = yzCameraInfo.getzVal();
                 double height = yzCameraInfo.getHeight();
+                double t_Val = yzCameraInfo.gettVal();
                 //相对于相机的距离
                 double dis = DisAndAngleUtils.gis_Dis(yzCameraInfo.getLat().doubleValue(), yzCameraInfo.getLon().doubleValue(),
                         traceProInfo.getTraceLat(), traceProInfo.getTraceLon());
@@ -388,6 +389,14 @@ public class CameraStatusAndTraceTask {
 
                 double tVal = toDegrees(Math.atan2(height, dis)) ;
                 tVal = tVal < 0 ? 0 : tVal;
+                if (yzCameraInfo.getManu().equals("gpl")) {
+                    tVal = toDegrees(Math.atan2(height, dis)) + t_Val;
+                    tVal = tVal < -90 ? 0 : tVal;
+                    System.out.println("没有用曲线拟合方法计算T值——————原始t值："+toDegrees(Math.atan2(height, dis))+"————————补偿值："+t_Val+"————————最终t值："+tVal);
+                }else{
+                    tVal = -1 * toDegrees(Math.atan2(height, dis));
+                }
+
 //                        gplCameraProc.ptzControl(yzCameraInfo, pVal, tVal, zFixVal);//SDK开发使用
                 gplCameraProc.gplLinkTrace(yzCameraInfo, pVal, tVal, zFixVal);//串口开发使用
                 continue;
