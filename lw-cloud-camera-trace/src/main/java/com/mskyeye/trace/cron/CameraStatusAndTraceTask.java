@@ -1,5 +1,6 @@
 package com.mskyeye.trace.cron;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson2.JSONObject;
 import com.google.gson.Gson;
 import com.mskyeye.trace.camera.dhkj.sdk.DhNetSDK;
@@ -298,6 +299,11 @@ public class CameraStatusAndTraceTask {
         lwCameraStatusPacket.setISAVALARM(yzCameraInfo.getIsAvAlarm());
         lwCameraStatusPacket.setISOPENLIGHT(yzCameraInfo.getIsLightOpen());
         lwCameraStatusPacket.setMANU(yzCameraInfo.getManu());
+        TraceProInfo traceProInfo1 = redisCache.getCacheObject("LGJJ" + yzCameraInfo.getId());
+        if(ObjectUtil.isNotEmpty(traceProInfo1)) {
+            lwCameraStatusPacket.setTRALAT(traceProInfo1.getTraceLat());
+            lwCameraStatusPacket.setTRALON(traceProInfo1.getTraceLon());
+        }
         //TODO
 //        lwCameraStatusPacket.setISOPENLIGHT(1);
         //TODO 1:联动跟踪 2:框选跟踪 3:智能跟踪

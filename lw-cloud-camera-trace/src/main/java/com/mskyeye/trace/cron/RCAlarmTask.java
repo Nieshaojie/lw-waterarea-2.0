@@ -419,6 +419,7 @@ public class RCAlarmTask {
         double tCorVal = yzCameraInfo.getCurTVal();
         double zFixVal = yzCameraInfo.getzVal();
         double height = yzCameraInfo.getHeight();
+        double t_Val = yzCameraInfo.gettVal();
         //相对于相机的角度
         double dBear = DisAndAngleUtils.gis_Angle(yzCameraInfo.getLat().doubleValue(),
                 yzCameraInfo.getLon().doubleValue(), traceProInfo.getTraceLat(), traceProInfo.getTraceLon());
@@ -428,10 +429,20 @@ public class RCAlarmTask {
                 traceProInfo.getTraceLat(), traceProInfo.getTraceLon());
         double pVal = (dBear - pCorVal) > 360 ? dBear - pCorVal - 360 : dBear - pCorVal;
         //TODO 计算出的T值
-        double tVal = -1 * toDegrees(Math.atan2(height, dis));
+        /*double tVal = -1 * toDegrees(Math.atan2(height, dis));
         if (yzCameraInfo.getManu().equals("gpl")) {
             tVal = toDegrees(Math.atan2(height, dis)) + tCorVal;
             tVal = tVal < 0 ? 0 : tVal;
+        }*/
+        Double tVal = calTVal(yzCameraInfo.getName(),dis,dBear);
+        if(tVal == null){
+            if (yzCameraInfo.getManu().equals("gpl")) {
+                tVal = toDegrees(Math.atan2(height, dis)) + t_Val;
+                tVal = tVal < -90 ? 0 : tVal;
+                System.out.println("没有用曲线拟合方法计算T值——————原始t值："+toDegrees(Math.atan2(height, dis))+"————————补偿值："+t_Val+"————————最终t值："+tVal);
+            }else{
+                tVal = -1 * toDegrees(Math.atan2(height, dis));
+            }
         }
         //计算Z值
         if(yzCameraInfo.getManu().equals("gpl")){
