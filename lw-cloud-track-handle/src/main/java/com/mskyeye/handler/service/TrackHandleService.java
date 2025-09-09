@@ -102,6 +102,9 @@ public class TrackHandleService {
                         if (cnt.getSTATUS().equals(DEL_TARGET)) {
                             //历史航迹点Map需要及时删除该预警目标
                             oldTrackMap.remove(cnt.getTID());
+                            radarTrackMap.remove(cnt.getTID());
+                            aisTrackMap.remove(cnt.getTID());
+                            mergeResultMap.remove(cnt.getTID());
                             mqConnectionUtil.getChannel().basicPublish(mqConnectionUtil.EXCHANGE_NAME, PRO_TRACK_QUEUE_ROUTING_KEY1,
                                     properties, new Gson().toJson(twp).getBytes(StandardCharsets.UTF_8));
                             mqConnectionUtil.getChannel().basicPublish(mqConnectionUtil.EXCHANGE_NAME, PRO_TRACK_QUEUE_ROUTING_KEY2,
@@ -161,7 +164,7 @@ public class TrackHandleService {
                         }
                         //AIS真实目标处理
                         else if (cnt.getSOURCE() == AIS_TARGET) {
-                            AisTrackCache aisTrackCache = parseToAisTar(cnt, twp.getTIME());//解析成AIS目标
+                            AisTrackCache aisTrackCache = parseToAisTar(cnt, twp.getTIME(),false);//解析成AIS目标
                             GlobalResources.aisTrackMap.put(aisTrackCache.getTargetId(), aisTrackCache);//插入或更新AIS缓存map
                             //如果不是融合目标,给告警处理模块。否则,舍弃该AIS数据
                             if (GlobalResources.mergeResultMap.containsKey(aisTrackCache.getIMmsi())) {
@@ -185,7 +188,7 @@ public class TrackHandleService {
                         }
                         //AIS外推目标处理
                         else if (cnt.getSOURCE() == AIS_FWD_PRETARGET || cnt.getSOURCE() == AIS_NEG_PRTARGET) {
-                            AisTrackCache aisTrackCache = parseToAisTar(cnt, twp.getTIME());//解析成AIS目标
+                            AisTrackCache aisTrackCache = parseToAisTar(cnt, twp.getTIME(),true);//解析成AIS目标
                             GlobalResources.aisTrackMap.put(aisTrackCache.getTargetId(), aisTrackCache);//插入或更新AIS缓存map
                             //如果不是融合目标,给告警处理模块。否则,舍弃该AIS外推数据
                             if (GlobalResources.mergeResultMap.containsKey(aisTrackCache.getIMmsi())) {
@@ -245,7 +248,7 @@ public class TrackHandleService {
      * @return
      * @throws Exception
      */
-    private AisTrackCache parseToAisTar(Content cnt, Long time) throws Exception {
+    private AisTrackCache parseToAisTar(Content cnt, Long time,boolean extrapolated) throws Exception {
         AisTrackCache aisTrackCache = new AisTrackCache();
 
         aisTrackCache.setStationId(cnt.getSTATIONID());
@@ -254,7 +257,7 @@ public class TrackHandleService {
         aisTrackCache.setShipLat(cnt.getLAT());
         aisTrackCache.setShipLon(cnt.getLON());
         aisTrackCache.setRefreshTime(time);
-
+        aisTrackCache.setExtrapolated(extrapolated);
         return aisTrackCache;
     }
 
