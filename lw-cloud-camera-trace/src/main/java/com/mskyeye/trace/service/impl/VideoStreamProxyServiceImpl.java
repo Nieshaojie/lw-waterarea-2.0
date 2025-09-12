@@ -39,7 +39,12 @@ public class VideoStreamProxyServiceImpl implements VideoStreamProxyService {
         String app = null;
         String[] parts = url.split("/");
 
-        if (parts.length >= 2) {
+        if (parts.length == 2) {
+            // 只有一层，例如 /output1
+            app = liveConfig.getApp();  // 用默认app
+            stream = parts[1];
+        } else {
+            // 至少两层，例如 /cjcxx/chn1_stream1
             app = parts[parts.length - 2];
             stream = parts[parts.length - 1];
         }

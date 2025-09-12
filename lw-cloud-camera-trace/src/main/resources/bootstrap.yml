@@ -40,5 +40,5 @@ spring:
 
 logging:
   level:
-    com.mskyeye.trace: error
+    com.mskyeye.trace: INFO
     com.alibaba.nacos.client.config.impl: WARN

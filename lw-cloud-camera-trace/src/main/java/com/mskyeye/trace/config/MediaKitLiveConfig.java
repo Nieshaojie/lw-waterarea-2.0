@@ -42,7 +42,7 @@ public class MediaKitLiveConfig {
     /**
      * ZLMediaKit api 端口号
      */
-    private Integer apiPort = 80;
+    private Integer apiPort = 81;
 
 
     /**
@@ -119,13 +119,15 @@ public class MediaKitLiveConfig {
      */
     public  String buildFlvUrl(String app,String stream) {
         StringBuilder streamUrl = new StringBuilder();
-        String url = streamUrl.append("ws://")
+        String url = streamUrl.append("http://")
                 .append(this.getIp())
+                .append(":")
+                .append(apiPort)
                 .append("/")
                 .append(app)
                 .append("/")
                 .append(stream)
-                .append(".live.flv")
+                .append("/hls.m3u8")
                 .toString();
         return url;
     }
