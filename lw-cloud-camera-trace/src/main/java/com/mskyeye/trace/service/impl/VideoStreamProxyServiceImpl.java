@@ -15,8 +15,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.mskyeye.trace.constant.ThirdServiceConst;
 
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author nie
@@ -39,15 +42,23 @@ public class VideoStreamProxyServiceImpl implements VideoStreamProxyService {
         String app = null;
         String[] parts = url.split("/");
 
-        if (parts.length == 2) {
-            // 只有一层，例如 /output1
-            app = liveConfig.getApp();  // 用默认app
-            stream = parts[1];
+// 过滤掉空字符串的情况（因为有可能前面有 rtsp://，会出现空段）
+        List<String> validParts = Arrays.stream(parts)
+                .filter(p -> p != null && !p.isEmpty())
+                .collect(Collectors.toList());
+
+        if (validParts.size() == 1) {
+            // 只有一个名字，没有 app，用默认
+            app = liveConfig.getApp();
+            stream = validParts.get(0);
+        } else if (validParts.size() >= 2) {
+            // 至少有两层，取最后两层
+            app = validParts.get(validParts.size() - 2);
+            stream = validParts.get(validParts.size() - 1);
         } else {
-            // 至少两层，例如 /cjcxx/chn1_stream1
-            app = parts[parts.length - 2];
-            stream = parts[parts.length - 1];
+            throw new ServiceException("url格式不正确: " + url);
         }
+
 
         LiveParamsDTO params = new LiveParamsDTO();
         params.setSecret(liveConfig.getSecret());
