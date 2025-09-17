@@ -387,14 +387,16 @@ public class CameraStatusAndTraceTask {
                 dBear = dBear < 0 ? 360 + dBear : dBear;
                 double pVal = (dBear - pCorVal) > 360 ? dBear - pCorVal - 360 : dBear - pCorVal;
 
-                double tVal = toDegrees(Math.atan2(height, dis)) ;
-                tVal = tVal < 0 ? 0 : tVal;
-                if (yzCameraInfo.getManu().equals("gpl")) {
-                    tVal = toDegrees(Math.atan2(height, dis)) + t_Val;
-                    tVal = tVal < -90 ? 0 : tVal;
-                    System.out.println("没有用曲线拟合方法计算T值——————原始t值："+toDegrees(Math.atan2(height, dis))+"————————补偿值："+t_Val+"————————最终t值："+tVal);
-                }else{
-                    tVal = -1 * toDegrees(Math.atan2(height, dis));
+                //TODO 计算出的T值
+                Double tVal = calTVal(yzCameraInfo.getName(),dis,dBear);
+                if(tVal == null){
+                    if (yzCameraInfo.getManu().equals("gpl")) {
+                        tVal = toDegrees(Math.atan2(height, dis)) + t_Val;
+                        tVal = tVal < -90 ? 0 : tVal;
+                        System.out.println("没有用曲线拟合方法计算T值——————原始t值："+toDegrees(Math.atan2(height, dis))+"————————补偿值："+t_Val+"————————最终t值："+tVal);
+                    }else{
+                        tVal = -1 * toDegrees(Math.atan2(height, dis));
+                    }
                 }
 
 //                        gplCameraProc.ptzControl(yzCameraInfo, pVal, tVal, zFixVal);//SDK开发使用
