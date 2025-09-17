@@ -67,6 +67,102 @@ public class GlResources {
         double p1, p2, p3, p4, p5, p6, p7, p8 = 0;
         double x = dis;
         switch (name) {
+            case "福保文化城":
+                if (bear >= 0 && bear <= 160) {
+                    result = null;
+                } else if (bear > 160 && bear <= 180) {
+                    p1 = -4.3487e-18;
+                    p2 = 9.7445e-14;
+                    p3 = -8.5033e-10;
+                    p4 = 3.6376e-06;
+                    p5 = -0.0078565;
+                    p6 = 7.5225;
+                    x = x > 6000 ? 6000 : x;
+                    result = p1 * Math.pow(x, 5) + p2 * Math.pow(x, 4) + p3 * Math.pow(x, 3)
+                            + p4 * Math.pow(x, 2) + p5 * x + p6;
+                } else if (bear > 180 && bear <= 200) {
+                    p1 = -2.6667e-18;
+                    p2 = 5.8928e-14;
+                    p3 = -5.121e-10;
+                    p4 = 2.221e-06;
+                    p5 = -0.0050801;
+                    p6 = 5.2997;
+                    x = x > 6000 ? 6000 : x;
+                    result = p1 * Math.pow(x, 5) + p2 * Math.pow(x, 4) + p3 * Math.pow(x, 3)
+                            + p4 * Math.pow(x, 2) + p5 * x + p6;
+                } else if (bear > 200 && bear <= 220) {
+                    p1 = -1.641e-18;
+                    p2 = 3.2121e-14;
+                    p3 = -2.4005e-10;
+                    p4 = 8.6754e-07;
+                    p5 = -0.0016946;
+                    p6 = 1.3367;
+                    x = x > 6500 ? 6500 : x;
+                    result = p1 * Math.pow(x, 5) + p2 * Math.pow(x, 4) + p3 * Math.pow(x, 3)
+                            + p4 * Math.pow(x, 2) + p5 * x + p6;
+                } else if (bear > 220 && bear <= 240) {
+                    p1 = 2.9744e-18;
+                    p2 = -6.1632e-14;
+                    p3 = 4.9237e-10;
+                    p4 = -1.8678e-06;
+                    p5 = 0.0032306;
+                    p6 = -2.0782;
+                    x = x > 6500 ? 6500 : x;
+                    result = p1 * Math.pow(x, 5) + p2 * Math.pow(x, 4) + p3 * Math.pow(x, 3)
+                            + p4 * Math.pow(x, 2) + p5 * x + p6;
+                } else if (bear > 240 && bear <= 260) {
+                    p1 = -5.3333e-17;
+                    p2 = 1.0236e-12;
+                    p3 = -7.7376e-09;
+                    p4 = 2.8748e-05;
+                    p5 = -0.052661;
+                    p6 = 37.2879;
+                    x = x > 6500 ? 6500 : x;
+                    result = p1 * Math.pow(x, 5) + p2 * Math.pow(x, 4) + p3 * Math.pow(x, 3)
+                            + p4 * Math.pow(x, 2) + p5 * x + p6;
+                } else if (bear > 260 && bear <= 280) {
+                    p1 = -2.5333e-17;
+                    p2 = 4.6455e-13;
+                    p3 = -3.342e-09;
+                    p4 = 1.1781e-05;
+                    p5 = -0.020573;
+                    p6 = 13.4468;
+                    x = x > 6500 ? 6500 : x;
+                    result = p1 * Math.pow(x, 5) + p2 * Math.pow(x, 4) + p3 * Math.pow(x, 3)
+                            + p4 * Math.pow(x, 2) + p5 * x + p6;
+                } else if (bear > 280 && bear <= 300) {
+                    p1 = -1.6e-17;
+                    p2 = 3.5152e-13;
+                    p3 = -2.9545e-09;
+                    p4 = 1.1947e-05;
+                    p5 = -0.023528;
+                    p6 = 17.0721;
+                    x = x > 6500 ? 6500 : x;
+                    result = p1 * Math.pow(x, 5) + p2 * Math.pow(x, 4) + p3 * Math.pow(x, 3)
+                            + p4 * Math.pow(x, 2) + p5 * x + p6;
+                }else if (bear > 300 && bear <= 320) {
+                    p1 = -6.4e-17;
+                    p2 = 1.1855e-12;
+                    p3 = -8.583e-09;
+                    p4 = 3.0353e-05;
+                    p5 = -0.052682;
+                    p6 = 34.9457;
+                    x = x > 6500 ? 6500 : x;
+                    result = p1 * Math.pow(x, 5) + p2 * Math.pow(x, 4) + p3 * Math.pow(x, 3)
+                            + p4 * Math.pow(x, 2) + p5 * x + p6;
+                }
+                else if (bear > 320 && bear <= 360) {
+                    p1 = -1.2e-17;
+                    p2 = 2.7909e-13;
+                    p3 = -2.4289e-09;
+                    p4 = 1.0044e-05;
+                    p5 = -0.020147;
+                    p6 = 14.6975;
+                    x = x > 6500 ? 6500 : x;
+                    result = p1 * Math.pow(x, 5) + p2 * Math.pow(x, 4) + p3 * Math.pow(x, 3)
+                            + p4 * Math.pow(x, 2) + p5 * x + p6;
+                }
+                break;
             case "松树园":
                 if (bear >= 0 && bear <= 190) {
                     p1 = -8.9977e-12;
