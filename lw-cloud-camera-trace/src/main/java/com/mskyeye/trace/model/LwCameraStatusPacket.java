@@ -51,6 +51,28 @@ public class LwCameraStatusPacket {
     @JSONField(name = "MANU")
     private String MANU;
 
+    @JSONField(name = "TRALAT")
+    private Double TRALAT;
+
+    @JSONField(name = "TRALON")
+    private Double TRALON;
+
+    public Double getTRALAT() {
+        return TRALAT;
+    }
+
+    public void setTRALAT(Double TRALAT) {
+        this.TRALAT = TRALAT;
+    }
+
+    public Double getTRALON() {
+        return TRALON;
+    }
+
+    public void setTRALON(Double TRALON) {
+        this.TRALON = TRALON;
+    }
+
     public String getMANU() {return MANU;}
 
     public void setMANU(String MANU) {this.MANU = MANU;}

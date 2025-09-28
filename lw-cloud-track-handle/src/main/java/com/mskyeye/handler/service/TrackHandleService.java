@@ -449,9 +449,9 @@ public class TrackHandleService {
                 }
                 cnt.setALARM(alarmInfo);
                 //有该预警目标,更新信息
-                if (oldTrackMap.containsKey(cnt.getTID())) {
+                 /*if (oldTrackMap.containsKey(cnt.getTID())) {
                     oldTrackMap.put(cnt.getTID(), lwTrackPacket);
-                } else if (!alarmInfo.equals("") && !oldTrackMap.containsKey(cnt.getTID())) {
+                } else*/ if (!alarmInfo.equals("") /*&& !oldTrackMap.containsKey(cnt.getTID())*/) {
                     mqConnectionUtil.getChannel().basicPublish(mqConnectionUtil.EXCHANGE_NAME, "new_alarm.key",
                             properties, new Gson().toJson(lwTrackPacket).getBytes(StandardCharsets.UTF_8));
                     oldTrackMap.put(cnt.getTID(), lwTrackPacket);

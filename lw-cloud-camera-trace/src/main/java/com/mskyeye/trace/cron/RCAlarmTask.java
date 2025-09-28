@@ -11,6 +11,7 @@ import com.mskyeye.trace.proc.HkCameraProc;
 import com.mskyeye.trace.proc.HpCameraProc;
 import com.mskyeye.trace.service.IYzAlarmEventService;
 import com.mskyeye.trace.utils.DisAndAngleUtils;
+import com.mskyeye.trace.utils.RedisCache;
 import com.mskyeye.trace.utils.StreamGobbler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +26,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static com.mskyeye.trace.common.GlResources.*;
 import static java.lang.Math.toDegrees;
@@ -57,6 +59,9 @@ public class RCAlarmTask {
 
     @Value("${alarm_stg_url}")
     private String alarmStgUrl;
+
+    @Autowired
+    private RedisCache redisCache;
 
     /**
      * 1000ms查询一次雷光警戒缓存，转换成雷光警戒目标
@@ -95,7 +100,8 @@ public class RCAlarmTask {
                 if (minDis > DIS_THROS) {
                     continue;
                 }
-                if (cameraInfo != null) {
+                TraceProInfo cached = redisCache.getCacheObject(ALERT_CAPTURE + cnt.getTID());
+                if (cameraInfo != null && cached == null){
                     TraceProInfo traceProInfo = GL_TraceInfoMap.get(cameraInfo.getId());
                     traceProInfo.setTraceType(7);
                     traceProInfo.setTargetId(cnt.getTID());
@@ -126,7 +132,15 @@ public class RCAlarmTask {
                 continue;
             }
             YzCameraInfo yzCameraInfo = GL_CameraInfoMap.get(traceProInfo.getCameraId());
+
+            if (!yzCameraInfo.isRcAlarmPaused()) {
+                System.out.println("当前停止跟踪，跳过执行:"+yzCameraInfo.isRcAlarmPaused());
+                return; // 当前停止跟踪，跳过执行
+            }
+            System.out.println("当前正在执行警戒拍照。。。。。。目标id："+traceProInfo.getTargetId());
             if (traceProInfo.getTraceType() == 7) {
+                //缓存当前警戒抓拍的对象，防止10分钟内重复抓拍
+                redisCache.setCacheObject(ALERT_CAPTURE+traceProInfo.getTargetId(),traceProInfo,10, TimeUnit.MINUTES);
                 String[] urlArray = new String[2];
                 Integer clock = traceProInfo.getClock();
                 if (executor == null) {
@@ -402,6 +416,7 @@ public class RCAlarmTask {
         double tCorVal = yzCameraInfo.getCurTVal();
         double zFixVal = yzCameraInfo.getzVal();
         double height = yzCameraInfo.getHeight();
+        double t_Val = yzCameraInfo.gettVal();
         //相对于相机的角度
         double dBear = DisAndAngleUtils.gis_Angle(yzCameraInfo.getLat().doubleValue(),
                 yzCameraInfo.getLon().doubleValue(), traceProInfo.getTraceLat(), traceProInfo.getTraceLon());
@@ -411,10 +426,20 @@ public class RCAlarmTask {
                 traceProInfo.getTraceLat(), traceProInfo.getTraceLon());
         double pVal = (dBear - pCorVal) > 360 ? dBear - pCorVal - 360 : dBear - pCorVal;
         //TODO 计算出的T值
-        double tVal = -1 * toDegrees(Math.atan2(height, dis));
+        /*double tVal = -1 * toDegrees(Math.atan2(height, dis));
         if (yzCameraInfo.getManu().equals("gpl")) {
-            tVal = toDegrees(Math.atan2(height, dis));
+            tVal = toDegrees(Math.atan2(height, dis)) + tCorVal;
             tVal = tVal < 0 ? 0 : tVal;
+        }*/
+        Double tVal = calTVal(yzCameraInfo.getName(),dis,dBear);
+        if(tVal == null) {
+            if (yzCameraInfo.getManu().equals("gpl")) {
+                tVal = toDegrees(Math.atan2(height, dis)) + t_Val;
+                tVal = tVal < -90 ? 0 : tVal;
+                System.out.println("没有用曲线拟合方法计算T值——————原始t值：" + toDegrees(Math.atan2(height, dis)) + "————————补偿值：" + t_Val + "————————最终t值：" + tVal);
+            } else {
+                tVal = -1 * toDegrees(Math.atan2(height, dis));
+            }
         }
         if (yzCameraInfo.getManu().equals("hik")) {
             hkCameraProc.ptzControl(yzCameraInfo, pVal, tVal, zFixVal);
