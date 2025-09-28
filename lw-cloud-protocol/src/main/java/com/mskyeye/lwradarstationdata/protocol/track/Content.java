@@ -18,7 +18,7 @@ import java.math.BigDecimal;
 public class Content implements Serializable {
 
     @JSONField(name = "SOURCE")
-    private Integer SOURCE;//数据源类型：0：雷达目标；1：AIS目标；2：雷达和AIS融合目标 3：正向外推AIS,4：反向外推AIS,5:北斗目标
+    private Integer SOURCE;//数据源类型：0：雷达目标；1：AIS目标；2：雷达和AIS融合目标 3：正向外推AIS,4：反向外推AIS,5:北斗目标 6：反无雷达
 
     @JSONField(name = "STATIONID")
     private Integer STATIONID;//探测站ID
@@ -98,6 +98,28 @@ public class Content implements Serializable {
 
     @JSONField(name = "SHIPWIDTH")
     private Integer SHIPWIDTH;
+
+    @JSONField(name = "TYPE")
+    private Integer TYPE;
+
+    @JSONField(name = "ALT")
+    private Double ALT;
+
+    public Double getALT() {
+        return ALT;
+    }
+
+    public void setALT(Double ALT) {
+        this.ALT = ALT;
+    }
+
+    public Integer getTYPE() {
+        return TYPE;
+    }
+
+    public void setTYPE(Integer TYPE) {
+        this.TYPE = TYPE;
+    }
 
     public Integer getSOURCE() {
         return SOURCE;

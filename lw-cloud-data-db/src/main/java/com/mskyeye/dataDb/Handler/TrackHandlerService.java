@@ -54,7 +54,7 @@ public class TrackHandlerService{
                 LwTrackPacket lwTrackPacket = JSON.parseObject(new String(body, CharsetUtil.UTF_8), LwTrackPacket.class);
                 Content cnt = lwTrackPacket.getITEM().get(0);
                 //抽取操作
-                if(count < 5){
+                if(count < 10){
                     ++count;
                     return;
                 }else{

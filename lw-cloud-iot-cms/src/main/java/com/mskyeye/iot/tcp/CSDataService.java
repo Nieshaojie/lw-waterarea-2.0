@@ -1,9 +1,6 @@
 package com.mskyeye.iot.tcp;
 
-import com.mskyeye.iot.mq.handler.AisStaticDataToMqHandler;
-import com.mskyeye.iot.mq.handler.RadarStatusDataToRedisHandler;
-import com.mskyeye.iot.mq.handler.ServerHeartbeatHandler;
-import com.mskyeye.iot.mq.handler.TrackToMqHandler;
+import com.mskyeye.iot.mq.handler.*;
 import com.mskyeye.iot.mq.util.MqConnectionUtil;
 import com.mskyeye.iot.utils.IpUtil;
 import com.mskyeye.iot.utils.MarshallingCodeFactory;
@@ -43,6 +40,9 @@ public class CSDataService implements ApplicationRunner {
 
     @Autowired
     private ServerHeartbeatHandler serverHeartbeatHandler;
+
+    @Autowired
+    private FlyTrackToMqHandler flyTrackToMqHandler;
 
     @Autowired
     private TrackToMqHandler trackToMqHandler;
@@ -85,6 +85,7 @@ public class CSDataService implements ApplicationRunner {
                     ch.pipeline().addLast(MarshallingCodeFactory.buildMarshallingDecoder());
                     ch.pipeline().addLast(serverHeartbeatHandler);
                     ch.pipeline().addLast(trackToMqHandler);  //航迹处理
+                    ch.pipeline().addLast(flyTrackToMqHandler);  //反无航迹处理
                     ch.pipeline().addLast(aisStaticDataToMqHandler);  //AIS静态数据处理
                     ch.pipeline().addLast(radarStatusDataToRedisHandler);  //雷达状态数据处理
                 }

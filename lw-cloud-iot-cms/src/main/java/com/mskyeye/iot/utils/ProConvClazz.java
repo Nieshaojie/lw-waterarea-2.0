@@ -1,5 +1,6 @@
 package com.mskyeye.iot.utils;
 
+import com.mskyeye.lwradarstationdata.protocol.radar.custom.FlyTrackTcpPacket;
 import com.mskyeye.lwradarstationdata.protocol.radar.custom.TrackTcpPacket;
 import com.mskyeye.lwradarstationdata.protocol.track.Content;
 import com.mskyeye.lwradarstationdata.protocol.track.LwTrackPacket;
@@ -56,6 +57,44 @@ public class ProConvClazz {
         content.setWEIGHT(trackTcpPacket.getWeight());
 
         content.setSTRENGTH(trackTcpPacket.getStrength());
+
+        List<Content> list = new ArrayList<>();
+
+        list.add(content);
+
+        trackWSPacket.setITEM(list);
+
+        trackWSPacket.setTIME(System.currentTimeMillis());//用服务器时间,防止各雷达站时间不同步
+
+        return trackWSPacket;
+    }
+
+    //航迹数据TCP转websocket
+    public static LwTrackPacket flyTrackTcp2WS(FlyTrackTcpPacket trackTcpPacket) throws Exception{
+
+        LwTrackPacket trackWSPacket = new LwTrackPacket();
+
+        Content content = new Content();
+
+        content.setSOURCE(6);
+
+        content.setSTATIONID(trackTcpPacket.getStationId());
+
+        content.setTID(trackTcpPacket.getTargetId());
+
+        content.setSTATUS((int) trackTcpPacket.getBAdd());
+
+        content.setTYPE(trackTcpPacket.getType());
+
+        content.setALT(trackTcpPacket.getAlt());
+
+        content.setLAT(trackTcpPacket.getLat());
+
+        content.setLON(trackTcpPacket.getLon());
+
+        content.setSPEED((float)trackTcpPacket.getSpeed3D());
+
+
 
         List<Content> list = new ArrayList<>();
 

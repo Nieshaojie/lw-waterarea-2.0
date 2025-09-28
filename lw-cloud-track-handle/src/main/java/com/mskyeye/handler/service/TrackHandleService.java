@@ -40,6 +40,8 @@ public class TrackHandleService {
 
     private static final Integer RADAR_TARGET = 0;
 
+    private static final Integer FLY_RADAR_TARGET = 6;
+
     private static final Integer AIS_TARGET = 1;
 
     private static final Integer BEIDOU_TARGET = 5;
@@ -129,6 +131,29 @@ public class TrackHandleService {
                                     break;
                                 }
                             }
+                            //预警处理
+                            //TODO
+                            twp = alarmHandler(twp);
+                            if (StringUtil.isNotEmpty(twp)) {
+                                mqConnectionUtil.getChannel().basicPublish(mqConnectionUtil.EXCHANGE_NAME, PRO_TRACK_QUEUE_ROUTING_KEY1,
+                                        properties, new Gson().toJson(twp).getBytes(StandardCharsets.UTF_8));
+                                mqConnectionUtil.getChannel().basicPublish(mqConnectionUtil.EXCHANGE_NAME, PRO_TRACK_QUEUE_ROUTING_KEY2,
+                                        properties, new Gson().toJson(twp).getBytes(StandardCharsets.UTF_8));
+                                mqConnectionUtil.getChannel().basicPublish(mqConnectionUtil.EXCHANGE_NAME, PRO_TRACK_QUEUE_ROUTING_KEY3,
+                                        properties, new Gson().toJson(twp).getBytes(StandardCharsets.UTF_8));
+                            }
+                        }
+                        //反无雷达目标处理
+                        if (cnt.getSOURCE() == FLY_RADAR_TARGET) {
+                            RadarTrackCache radarTrackCache = parseToFlyRadarTar(cnt, twp.getTIME());//解析成雷达目标
+                            if (radarTrackMap.containsKey(radarTrackCache.getTargetId())) {
+                                Integer refNum = radarTrackMap.get(radarTrackCache.getTargetId()).getRefNum();
+                                if (refNum < ALARM_THROS) {
+                                    refNum = refNum + 1;
+                                }
+                                radarTrackCache.setRefNum(refNum);
+                            }
+                            radarTrackMap.put(radarTrackCache.getTargetId(), radarTrackCache);//插入或更新雷达缓存map
                             //预警处理
                             //TODO
                             twp = alarmHandler(twp);
@@ -234,6 +259,26 @@ public class TrackHandleService {
     }
 
     /**
+     * 航迹数据包解析成雷达航迹缓存对象
+     *
+     * @param cnt
+     * @return
+     * @throws Exception
+     */
+    private RadarTrackCache parseToFlyRadarTar(Content cnt, Long time) throws Exception {
+        RadarTrackCache radarTrackCache = new RadarTrackCache();
+
+        radarTrackCache.setStationId(cnt.getSTATIONID());
+        radarTrackCache.setTargetId(cnt.getTID());
+        radarTrackCache.setShipLat(cnt.getLAT());
+        radarTrackCache.setShipLon(cnt.getLON());
+        radarTrackCache.setAlt(cnt.getALT());
+        radarTrackCache.setRefreshTime(time);
+
+        return radarTrackCache;
+    }
+
+    /**
      * 航迹数据包解析成AIS航迹缓存对象
      *
      * @param cnt
@@ -321,7 +366,7 @@ public class TrackHandleService {
             }
         }
         //雷达目标
-        else if (cnt.getSOURCE() == 0) {
+        else if (cnt.getSOURCE() == 0 || cnt.getSOURCE() == 6) {
             //只有连续多少帧以上才判断为稳定目标,才有预警价值
             if(!radarTrackMap.containsKey(cnt.getTID()) || radarTrackMap.get(cnt.getTID()).getRefNum() < ALARM_THROS){
                 cnt.setALARM("");

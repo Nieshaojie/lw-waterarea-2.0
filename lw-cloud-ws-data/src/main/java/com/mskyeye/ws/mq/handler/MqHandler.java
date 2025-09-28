@@ -45,6 +45,7 @@ public class MqHandler implements ApplicationRunner {
                                        byte[] body) throws IOException {
                 // body 即消息体
                 String msg = new String(body, CharsetUtil.UTF_8);
+                log.info("收到航迹信息：{}",msg);
                 webSocketServer.sendTrackMsgToAll(msg);
             }
         };

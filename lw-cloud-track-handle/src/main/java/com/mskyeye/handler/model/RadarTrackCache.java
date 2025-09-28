@@ -20,6 +20,8 @@ public class RadarTrackCache {
 
     private double shipLat;                             /*纬度*/
 
+    private double alt;                                 /*高度*/
+
     private Integer refNum = 0;                                /*更新的连续帧数,用于判断是否为稳定目标*/
 
     private Long refreshTime;                           /*更新时间*/
