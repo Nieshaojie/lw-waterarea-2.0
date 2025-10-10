@@ -451,15 +451,18 @@ public class CameraOrderController {
         double pVal = (dBear - pCorVal) > 360 ? dBear - pCorVal - 360 : dBear - pCorVal;
         pVal = pVal < 0 ? 360 + pVal : pVal;
         //TODO 计算出的T值
+        // 目标与相机高度差
+        double targetHeight = traceProInfo.getTraceAlt() == null ? 0 : traceProInfo.getTraceAlt();
+        double heightDiff = targetHeight - height;
         Double tVal = calTVal(yzCameraInfo.getName(),dis,dBear);
         if(tVal == null){
             if (yzCameraInfo.getManu().equals("gpl")) {
-                tVal = toDegrees(Math.atan2(height, dis)) ;
+                tVal = toDegrees(Math.atan2(heightDiff, dis)) ;
                 tVal = tVal + t_Val;
                 tVal = tVal < 0 ? 0 : tVal;
                 System.out.println("没有用曲线拟合方法计算T值");
             }else{
-                tVal = -1 * toDegrees(Math.atan2(height, dis))+ t_Val;
+                tVal = -1 * toDegrees(Math.atan2(heightDiff, dis))+ t_Val;
             }
         }
         //计算Z值

@@ -1,5 +1,7 @@
 package com.mskyeye.trace.model;
 
+import com.alibaba.fastjson2.annotation.JSONField;
+
 /**
  * @ClassName:TraceProInfo
  * @Description:跟踪协议信息
@@ -14,6 +16,7 @@ public class TraceProInfo {
     private Long targetId;//跟踪目标ID,-1为非目标的跟踪指令
     private Double traceLon;//跟踪纬度
     private Double traceLat;//跟踪纬度
+    private Double traceAlt;//跟踪高度
     private Long cameraId;//相机ID
     private String manu;//相机厂家
     private Integer channelId = 1;//1:可见光 2:热成像
@@ -31,6 +34,14 @@ public class TraceProInfo {
 
     private String alarmAbsUrl;//雷光警戒抓拍视频绝对地址
     private String alarmRelUrl;//雷光警戒抓拍视频相对地址，用于存储数据库
+
+    public Double getTraceAlt() {
+        return traceAlt;
+    }
+
+    public void setTraceAlt(Double traceAlt) {
+        this.traceAlt = traceAlt;
+    }
 
     public Integer getTraceType() {
         return traceType;
