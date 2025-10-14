@@ -47,7 +47,12 @@ public class GplStatusClientHandler extends ChannelDuplexHandler {
         this.cameraId = cameraId;
     }
 
-    @Override
+    /**
+     * A7协议解析高普乐相机ptz状态值
+     * @param ctx
+     * @param msg
+     */
+    /*@Override
     public void channelRead(ChannelHandlerContext ctx, Object msg){
         ByteBuf byteBuf = (ByteBuf) msg;
         try {
@@ -102,7 +107,51 @@ public class GplStatusClientHandler extends ChannelDuplexHandler {
             byteBuf.release();
         }
         byteBuf.release();
+    }*/
+
+    /**
+     * Pelco-D协议解析高普乐相机ptz状态值
+     * @param ctx
+     * @param msg
+     */
+    @Override
+    public void channelRead(ChannelHandlerContext ctx, Object msg) {
+        ByteBuf byteBuf = (ByteBuf) msg;
+        try {
+            int len = byteBuf.readableBytes();
+            byte[] bytes = new byte[len];
+            byteBuf.readBytes(bytes);
+
+            // 判断是否为有效数据帧
+            if (len == 7 && (bytes[0] & 0xFF) == 0xFF) {
+                int cmd = bytes[3] & 0xFF;
+                YzCameraInfo yzCameraInfo = GlResources.GL_CameraInfoMap.get(cameraId);
+
+                // 水平角度反馈
+                if (cmd == 0x59) {
+                    int val = ((bytes[4] & 0xFF) << 8) | (bytes[5] & 0xFF);
+                    double angle = val / 100.0;
+                    yzCameraInfo.setCurPVal(doubleFormate(2, angle) + yzCameraInfo.getAngle());
+                }
+                // 俯仰角度反馈
+                else if (cmd == 0x5B) {
+                    int val = ((bytes[4] & 0xFF) << 8) | (bytes[5] & 0xFF);
+                    double angle = val / 100.0;
+                    yzCameraInfo.setCurTVal(doubleFormate(2, angle) +yzCameraInfo.gettVal());
+                }
+
+                GlResources.GL_CameraInfoMap.put(cameraId, yzCameraInfo);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            byteBuf.release();
+        }
     }
+
+
+
 
 
     @Override

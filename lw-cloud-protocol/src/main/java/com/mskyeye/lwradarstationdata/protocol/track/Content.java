@@ -99,8 +99,8 @@ public class Content implements Serializable {
     @JSONField(name = "SHIPWIDTH")
     private Integer SHIPWIDTH;
 
-    @JSONField(name = "TYPE")
-    private Integer TYPE;
+    @JSONField(name = "FLYTYPE")
+    private Integer FLYTYPE;
 
     @JSONField(name = "ALT")
     private Double ALT;
@@ -113,12 +113,12 @@ public class Content implements Serializable {
         this.ALT = ALT;
     }
 
-    public Integer getTYPE() {
-        return TYPE;
+    public Integer getFLYTYPE() {
+        return FLYTYPE;
     }
 
-    public void setTYPE(Integer TYPE) {
-        this.TYPE = TYPE;
+    public void setFLYTYPE(Integer FLYTYPE) {
+        this.FLYTYPE = FLYTYPE;
     }
 
     public Integer getSOURCE() {

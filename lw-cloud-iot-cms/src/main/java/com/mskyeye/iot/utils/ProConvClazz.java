@@ -84,7 +84,7 @@ public class ProConvClazz {
 
         content.setSTATUS((int) trackTcpPacket.getBAdd());
 
-        content.setTYPE(trackTcpPacket.getType());
+        content.setFLYTYPE(trackTcpPacket.getType());
 
         content.setALT(trackTcpPacket.getAlt());
 

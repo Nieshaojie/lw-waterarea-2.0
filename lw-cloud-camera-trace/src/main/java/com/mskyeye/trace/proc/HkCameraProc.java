@@ -235,7 +235,7 @@ public class HkCameraProc {
         yzCameraInfo.setLoginInfo(String.valueOf(loginId));
         yzCameraInfo.setHkNetSDK(hkNetSDK);
 //        TODO 修改回调函数方法参数
-        try {
+        /*try {
             if (yzCameraInfo.getName().equals("大英界") || yzCameraInfo.getName().equals("叶郢渡口")) {
                 //注册回调函数
                 hkNetSDK.NET_DVR_SetDVRMessageCallBack_V50(0, callback, null);
@@ -247,12 +247,12 @@ public class HkCameraProc {
                     log.info("布防通道启用成功，lHandle = {}", lHandle);
                 }else {
                     int errorCode = hkNetSDK.NET_DVR_GetLastError();
-                    log.error("布防通道启用失败，错误码: {}", errorCode);
+//                    log.error("布防通道启用失败，错误码: {}", errorCode);
                 }
             }
         }catch (Exception e){
             log.error("启用布防上传通道时发生异常", e);
-        }
+        }*/
 //        System.out.println("hikLogin 相机登录信息："+yzCameraInfo);
         return yzCameraInfo;
     }
