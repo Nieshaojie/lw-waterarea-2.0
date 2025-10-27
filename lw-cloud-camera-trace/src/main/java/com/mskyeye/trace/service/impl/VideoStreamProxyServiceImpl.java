@@ -15,8 +15,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.mskyeye.trace.constant.ThirdServiceConst;
 
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author nie
@@ -38,10 +41,21 @@ public class VideoStreamProxyServiceImpl implements VideoStreamProxyService {
         String stream = null;
         String app = null;
         String[] parts = url.split("/");
+// 过滤掉空字符串的情况（因为有可能前面有 rtsp://，会出现空段）
+        List<String> validParts = Arrays.stream(parts)
+                .filter(p -> p != null && !p.isEmpty())
+                .collect(Collectors.toList());
 
-        if (parts.length >= 2) {
-            app = parts[parts.length - 2];
-            stream = parts[parts.length - 1];
+        if (validParts.size() == 1) {
+            // 只有一个名字，没有 app，用默认
+            app = liveConfig.getApp();
+            stream = validParts.get(0);
+        } else if (validParts.size() >= 2) {
+            // 至少有两层，取最后两层
+            app = validParts.get(validParts.size() - 2);
+            stream = validParts.get(validParts.size() - 1);
+        } else {
+            throw new ServiceException("url格式不正确: " + url);
         }
 
         LiveParamsDTO params = new LiveParamsDTO();
@@ -77,9 +91,9 @@ public class VideoStreamProxyServiceImpl implements VideoStreamProxyService {
             throw new ServiceException(String.format("开启直播时出现未知错误：{%s}", checkResp));
         }
         // 拼接webrtc直播地址
-        //String otherUrl = liveConfig.buildWebRtcUrl(stream); // 获取直播的webrtc地址
+        String otherUrl = liveConfig.buildWebRtcUrl(app,stream); // 获取直播的webrtc地址
         //拼接ws.flv播放地址
-        String otherUrl = liveConfig.buildFlvUrl(app,stream);
+//        String otherUrl = liveConfig.buildFlvUrl(app,stream);
         return otherUrl;
     }
 

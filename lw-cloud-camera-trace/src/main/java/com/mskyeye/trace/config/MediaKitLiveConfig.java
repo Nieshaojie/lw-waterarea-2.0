@@ -97,15 +97,15 @@ public class MediaKitLiveConfig {
      *
      * @return
      */
-    public  String buildWebRtcUrl(String deviceSn) {
+    public  String buildWebRtcUrl(String app,String deviceSn) {
         StringBuilder streamUrl = new StringBuilder();
         String url = streamUrl.append("http://")
                 .append(this.getIp())
                 .append(":")
-                .append(this.getWebrtcPort())
+                .append(this.getApiPort())
                 .append("/index/api/webrtc")
                 .append("?app=")
-                .append(this.getApp())
+                .append(app)
                 .append("&stream=")
                 .append(deviceSn)
                 .append("&type=play").toString();
@@ -119,13 +119,15 @@ public class MediaKitLiveConfig {
      */
     public  String buildFlvUrl(String app,String stream) {
         StringBuilder streamUrl = new StringBuilder();
-        String url = streamUrl.append("ws://")
+        String url = streamUrl.append("http://")
                 .append(this.getIp())
+                .append(":")
+                .append(apiPort)
                 .append("/")
                 .append(app)
                 .append("/")
                 .append(stream)
-                .append(".live.flv")
+                .append("/hls.m3u8")
                 .toString();
         return url;
     }

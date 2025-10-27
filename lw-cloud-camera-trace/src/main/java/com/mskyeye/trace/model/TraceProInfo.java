@@ -11,7 +11,7 @@ import com.alibaba.fastjson2.annotation.JSONField;
  **/
 public class TraceProInfo {
 
-    private Integer traceType;//跟踪类型: 0:无跟踪 1:联动跟踪 2:框选跟踪 3:图像跟踪 4:光电引导 5:AI巡航 6:雷光警戒 7、警戒抓拍
+    private Integer traceType;//跟踪类型: 0:无跟踪 1:联动跟踪 2:框选跟踪 3:图像跟踪 4:光电引导 5:AI巡航 6:雷光警戒 7、警戒抓拍 8、Ai跟踪
     private Boolean bTracking = true;//是否跟踪
     private Long targetId;//跟踪目标ID,-1为非目标的跟踪指令
     private Double traceLon;//跟踪纬度

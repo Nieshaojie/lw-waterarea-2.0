@@ -271,7 +271,7 @@ public class CameraStatusAndTraceTask {
             case "gpl":
                 sendStatusToMq(infoToStatus(false, yzCameraInfo, statusMap));
 //                processGplCameraInfo(yzCameraInfo, statusMap);
-                log.info("gpl相机处理");
+                //log.info("gpl相机处理");
                 break;
             default:
                 sendStatusToMq(infoToStatus(false, yzCameraInfo, statusMap));
@@ -329,6 +329,9 @@ public class CameraStatusAndTraceTask {
                     break;
                 case 7:
                     lwCameraStatusPacket.setIPCSTATUS("警戒抓拍");
+                    break;
+                case 8:
+                    lwCameraStatusPacket.setIPCSTATUS("AI跟踪");
                     break;
             }
         }

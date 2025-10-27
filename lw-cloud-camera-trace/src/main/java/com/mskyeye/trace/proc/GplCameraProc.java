@@ -3,8 +3,10 @@ package com.mskyeye.trace.proc;
 import com.mskyeye.trace.camera.utils.Utils;
 import com.mskyeye.trace.model.YzCameraInfo;
 import com.mskyeye.trace.netty.control.GplCtrlTcpClientService;
+import com.mskyeye.trace.netty.control.service.CameraLensControl;
 import com.sun.jna.Pointer;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.TimeUnit;
@@ -241,5 +243,135 @@ public class GplCameraProc {
                 + "】 当前时间:" + Utils.getDate());
 
         return true;
+    }
+
+
+    // 命令字定义（根据 PELCO-DV1.7）
+    private static final byte CMD_PAN_TO  = 0x4B; // 指定水平至设定位置
+    private static final byte CMD_TILT_TO = 0x4D; // 指定俯仰至设定位置
+    private static final byte CMD_ZOOM_TO = 0x4F; // 指定变倍至设定位置
+
+    private static final byte DEFAULT_ADDR = 0x01;
+    private static final byte DEFAULT_SPEED = 0x3F;
+
+    /**
+     * 根据 PELCO-DV1.7 协议，控制云台水平、俯仰、变倍至指定位置。
+     * @param yzCameraInfo 摄像机信息（用于发送通道）
+     * @param pVal 水平角（度，0~360）
+     * @param tVal 俯仰角（度，0~360，0°向下角度值增大）
+     * @param zVal 变倍值（0~0x4000）
+     */
+    public boolean ptzControlPD(YzCameraInfo yzCameraInfo, double pVal, double tVal, double zVal) throws Exception {
+        // ---- 水平控制 ----
+        Integer iPval = (int) ((360 - pVal)/ yzCameraInfo.getAziMultiply() + yzCameraInfo.getAziZeroVal());
+        byte[] panCmd = buildPelcoDFrame(DEFAULT_ADDR, CMD_PAN_TO, encodeAngle(pVal));
+        log.info("发送水平控制: {}", toHex(panCmd));
+        yzCameraInfo.getGplCtrlTcpClient().sendInfo(panCmd);
+
+        Thread.sleep(25);
+
+        // ---- 俯仰控制 ----
+        //Integer iTval = (int) (yzCameraInfo.getPitchZeroVal() + tVal / yzCameraInfo.getPitchMultiply());
+        byte[] tiltCmd = buildPelcoDFrame(DEFAULT_ADDR, CMD_TILT_TO, encodeTilt(tVal));
+        log.info("发送俯仰控制: {}", toHex(tiltCmd));
+        yzCameraInfo.getGplCtrlTcpClient().sendInfo(tiltCmd);
+
+        Thread.sleep(25);
+
+        // ---- 变倍控制 ----
+//        Integer iZval = (int) (zVal * 16384 / 65);
+        byte[] zoomCmd = buildPelcoDFrameZ(DEFAULT_ADDR, CMD_ZOOM_TO, encodeZoom( zVal));
+        System.out.println(toHex(zoomCmd));
+        yzCameraInfo.getGplCtrlTcpClient().sendInfo(zoomCmd);
+        return true;
+    }
+
+    /**
+     * 构造标准帧：FF XX 00 CMD D1 D2 SUM
+     */
+    private byte[] buildPelcoDFrame(int addr, int cmd, int[] dataBytes) {
+        byte[] frame = new byte[7];
+        frame[0] = (byte) 0xFF;
+        frame[1] = (byte) addr;
+        frame[2] = DEFAULT_SPEED; // 速度位默认0
+        frame[3] = (byte) cmd;
+        frame[4] = (byte) dataBytes[0];
+        frame[5] = (byte) dataBytes[1];
+        frame[6] = calcChecksum(frame);
+        return frame;
+    }
+
+    private byte[] buildPelcoDFrameZ(int addr, int cmd, int[] dataBytes) {
+        byte[] frame = new byte[7];
+        frame[0] = (byte) 0xFF;
+        frame[1] = (byte) addr;
+        frame[2] = 0x00; // 速度位默认0
+        frame[3] = (byte) cmd;
+        frame[4] = (byte) dataBytes[0];
+        frame[5] = (byte) dataBytes[1];
+        frame[6] = calcChecksum(frame);
+        return frame;
+    }
+
+    /**
+     * 校验和：从第2字节到第6字节累加取低8位
+     */
+    private byte calcChecksum(byte[] frame) {
+        int sum = 0;
+        for (int i = 1; i <= 5; i++) {
+            sum += (frame[i] & 0xFF);
+        }
+        return (byte) (sum & 0xFF);
+    }
+
+    /**
+     * 水平角编码：角度×100
+     * 例：45° -> 4500 -> 0x11 0x94
+     */
+    private int[] encodeAngle(double degrees) {
+        degrees = normalize360(degrees);
+        int val = (int) Math.round(degrees * 100);
+        return new int[]{(val >> 8) & 0xFF, val & 0xFF};
+    }
+
+    /**
+     * 俯仰角编码：0°向下角度值增大，0°向上为360°递减
+     * 如果你输入的 tVal 是“物理意义上的角度（向上为正）”，
+     * 则需转换为协议角度。
+     */
+    private int[] encodeTilt(double tVal) {
+        // 归一化物理角度到0~360
+        tVal = ((tVal % 360) + 360) % 360;
+
+        // 协议角度映射：0°向下值增大，向上递减
+        double protoAngle = 360 - tVal; // 协议角度
+        protoAngle = (protoAngle + 360) % 360; // 保证0~360
+
+        // 转换为协议值，单位100
+        int val = (int) Math.round(protoAngle * 100);
+        // 高低位拆分
+        int high = (val >> 8) & 0xFF;
+        int low = val & 0xFF;
+
+        return new int[]{high, low};
+    }
+
+
+    /**
+     * 变倍编码：0x0000 - 0x4000
+     */
+    private int[] encodeZoom(double zoomVal) {
+        int val = (int) Math.round(Math.max(0, Math.min(zoomVal, 0x4000)));
+        return new int[]{(val >> 8) & 0xFF, val & 0xFF};
+    }
+
+    private double normalize360(double degrees) {
+        return ((degrees % 360) + 360) % 360;
+    }
+
+    private String toHex(byte[] arr) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : arr) sb.append(String.format("%02X ", b));
+        return sb.toString().trim();
     }
 }

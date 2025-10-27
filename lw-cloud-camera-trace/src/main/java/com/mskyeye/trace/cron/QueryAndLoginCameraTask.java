@@ -145,8 +145,16 @@ public class QueryAndLoginCameraTask {
                         clientService2.setCameraId(newCameraInfo.getId());
                         clientService2.createTcpConn();
 
+                        //连接AI控制口
+                        GplCtrlTcpClientService clientService3 = new GplCtrlTcpClientService();
+                        clientService3.setCsAddr(newCameraInfo.getAiIp());
+                        clientService3.setCsPort(Math.toIntExact(newCameraInfo.getAiPort()));
+                        clientService3.setCameraId(newCameraInfo.getId());
+                        clientService3.createTcpConn();
+
                         newCameraInfo.setGplCtrlTcpClient(clientService1);
                         newCameraInfo.setGplStatusTcpClient(clientService2);
+                        newCameraInfo.setGplAiCtrlTcpClient(clientService3);
                         newCameraInfo.setLoginInfo(null);
                     }
                     GL_CameraInfoMap.put(cameraInfoId, newCameraInfo);

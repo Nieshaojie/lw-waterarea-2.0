@@ -127,6 +127,15 @@ public class YzCameraInfo
     /** 高普乐相机俯仰最小值 */
     private Integer pitchMinVal;
 
+    /** ip */
+    private String aiIp;
+
+    /** 相机Ai端口 */
+    private Long aiPort;
+
+    /** 高普乐相机控制口对象 **/
+    private GplCtrlTcpClientService gplAiCtrlTcpClient;
+
     /** 高普乐相机控制口对象 **/
     private GplCtrlTcpClientService gplCtrlTcpClient;
 
@@ -146,6 +155,30 @@ public class YzCameraInfo
     private Integer isLightOpen;//0:否 1:是
 
     private volatile boolean rcAlarmPaused = false;
+
+    public GplCtrlTcpClientService getGplAiCtrlTcpClient() {
+        return gplAiCtrlTcpClient;
+    }
+
+    public void setGplAiCtrlTcpClient(GplCtrlTcpClientService gplAiCtrlTcpClient) {
+        this.gplAiCtrlTcpClient = gplAiCtrlTcpClient;
+    }
+
+    public String getAiIp() {
+        return aiIp;
+    }
+
+    public void setAiIp(String aiIp) {
+        this.aiIp = aiIp;
+    }
+
+    public Long getAiPort() {
+        return aiPort;
+    }
+
+    public void setAiPort(Long aiPort) {
+        this.aiPort = aiPort;
+    }
 
     public boolean isRcAlarmPaused() {
         return rcAlarmPaused;

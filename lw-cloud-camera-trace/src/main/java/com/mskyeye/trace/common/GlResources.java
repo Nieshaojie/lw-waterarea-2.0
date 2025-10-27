@@ -465,6 +465,30 @@ public class GlResources {
     }
 
     /**
+     * 根据距离生成 Pelco-D 绝对变倍值
+     * @param dis 距离，单位米
+     * @return 变倍值，范围 0~0x4000
+     */
+    public static double calcZoomByDistance(double dis) {
+        final int MIN_ZOOM = 0;      // Pelco-D 最小值
+        final int MAX_ZOOM = 0x4000; // Pelco-D 最大值
+        final double MIN_DIS = 1; // 0.1km
+        final double MAX_DIS = 500; // 2km
+
+        if (dis <= MIN_DIS) {
+            return MIN_ZOOM;
+        } else if (dis >= MAX_DIS) {
+            return MAX_ZOOM;
+        } else {
+            // 线性映射 -> 0~0x4000
+            double ratio = (dis - MIN_DIS) / (MAX_DIS - MIN_DIS);
+            int zoomVal = (int) Math.round(MIN_ZOOM + ratio * (MAX_ZOOM - MIN_ZOOM));
+            return zoomVal;
+        }
+    }
+
+
+    /**
      * 计算相机Z值
      *
      * @param dis

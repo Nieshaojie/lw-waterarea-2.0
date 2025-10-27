@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.mskyeye.trace.camera.gpl.sdk.GplNetSDK;
 import com.mskyeye.trace.model.*;
+import com.mskyeye.trace.netty.control.service.CameraLensControl;
 import com.mskyeye.trace.proc.DhCameraProc;
 import com.mskyeye.trace.proc.GplCameraProc;
 import com.mskyeye.trace.proc.HkCameraProc;
@@ -53,6 +54,8 @@ public class CameraOrderController {
     private GplCameraProc gplCameraProc;
     @Autowired
     private RedisCache redisCache;
+    @Autowired
+    private CameraLensControl GplControl;
 
     /**
      * 跟踪命令接口
@@ -127,9 +130,10 @@ public class CameraOrderController {
                     break;
                 case 6:
                     bResult = true;
-                case 8:
-                    //经纬高跟踪指令
-                    bResult = sendTrackingCtrl(traceProInfo);
+                case 8://高普乐AI跟踪
+                   /* //经纬高跟踪指令
+                    bResult = sendTrackingCtrl(traceProInfo);*/
+                    bResult =sendAiTraceOrder(traceProInfo);
                     break;
             }
             if (bResult == true) {
@@ -306,6 +310,37 @@ public class CameraOrderController {
     }
 
     /**
+     * 发送AI跟踪指令
+     *
+     * @param traceProInfo
+     * @return
+     * @throws Exception
+     */
+    private Boolean sendAiTraceOrder(TraceProInfo traceProInfo) throws Exception {
+        YzCameraInfo yzCameraInfo = GL_CameraInfoMap.get(traceProInfo.getCameraId());
+        //调用云台前先关闭ai跟踪
+        GplControl.stopAiTrack(yzCameraInfo);
+        //相机转到该经纬度
+        ctrlCameraByLonLat(traceProInfo);
+        //延迟2秒，开启ai跟踪
+        // ===== 延迟2秒，开启AI自动跟踪 =====
+        new Thread(() -> {
+            try {
+                Thread.sleep(3000);
+                log.info("三秒后自动开启AI跟踪...");
+                GplControl.startAiTrack(yzCameraInfo);
+                log.info("AI自动跟踪指令已发送");
+            } catch (Exception e) {
+                log.error("开启AI自动跟踪失败", e);
+            }
+        }).start();
+        //标记ai跟踪
+        traceProInfo.setTraceType(8);
+//        TimeUnit.MILLISECONDS.sleep(3000);
+        return true;
+    }
+
+    /**
      * 发送框选跟踪指令
      *
      * @param traceProInfo
@@ -457,9 +492,8 @@ public class CameraOrderController {
         Double tVal = calTVal(yzCameraInfo.getName(),dis,dBear);
         if(tVal == null){
             if (yzCameraInfo.getManu().equals("gpl")) {
-                tVal = toDegrees(Math.atan2(heightDiff, dis)) ;
-                tVal = tVal + t_Val;
-                tVal = tVal < 0 ? 0 : tVal;
+                tVal = Math.toDegrees(Math.atan2(heightDiff, dis)) + t_Val;
+//                tVal = tVal < 0 ? 0 : tVal;
                 System.out.println("没有用曲线拟合方法计算T值");
             }else{
                 tVal = -1 * toDegrees(Math.atan2(heightDiff, dis))+ t_Val;
@@ -467,7 +501,7 @@ public class CameraOrderController {
         }
         //计算Z值
         if(yzCameraInfo.getManu().equals("gpl")){
-            Double zVal = calZVal(dis);
+            Double zVal = calcZoomByDistance(dis);
             if(zVal != null){
                 zFixVal = zVal;
             }
@@ -490,7 +524,7 @@ public class CameraOrderController {
         } else if (yzCameraInfo.getManu().equals("hp")) {
             hpCameraProc.ptzControl(yzCameraInfo, pVal, tVal, zFixVal);
         } else if (yzCameraInfo.getManu().equals("gpl")) {
-            gplCameraProc.ptzControl(yzCameraInfo, pVal, tVal, zFixVal);
+            gplCameraProc.ptzControlPD(yzCameraInfo, pVal, tVal, zFixVal);
         }
         traceProInfo.setTraceType(4);
         return true;
@@ -564,7 +598,11 @@ public class CameraOrderController {
         } else if (traceProInfo.getManu().equals("dh")) {
 
         } else if (traceProInfo.getManu().equals("gpl")) {
-//            gplCameraProc.aziControl(yzCameraInfo, -1, true);
+            //gplCameraProc.aziControl(yzCameraInfo, -1, true);
+            //取消AI跟踪
+            if (traceType == 8) {
+                GplControl.stopAiTrack(yzCameraInfo);
+            }
         } else {
             return null;
         }
