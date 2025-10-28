@@ -63,4 +63,6 @@ public class TrackTcpPacket {
 
     private long tLastUpdatetime;            //更新时间
 
+    private double alt;                        //高度信息
+
 }

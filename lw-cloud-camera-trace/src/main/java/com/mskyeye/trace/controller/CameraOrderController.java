@@ -93,6 +93,7 @@ public class CameraOrderController {
             if (!traceProInfo.getbTracking()) {
                 //如果相机没有在跟踪，不做任何操作
                 if (GL_TraceInfoMap.isEmpty() || !GL_TraceInfoMap.containsKey(yzCameraInfo.getId())) {
+                    GplControl.stopAiTrack(yzCameraInfo);
                     return AjaxResult.success();
                 }
                 cancelTraceOrder(traceProInfo, yzCameraInfo);
@@ -326,7 +327,7 @@ public class CameraOrderController {
         // ===== 延迟2秒，开启AI自动跟踪 =====
         new Thread(() -> {
             try {
-                Thread.sleep(3000);
+                Thread.sleep(2000);
                 log.info("三秒后自动开启AI跟踪...");
                 GplControl.startAiTrack(yzCameraInfo);
                 log.info("AI自动跟踪指令已发送");

@@ -58,6 +58,8 @@ public class ProConvClazz {
 
         content.setSTRENGTH(trackTcpPacket.getStrength());
 
+        content.setALT(trackTcpPacket.getAlt());
+
         List<Content> list = new ArrayList<>();
 
         list.add(content);

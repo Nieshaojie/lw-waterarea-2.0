@@ -473,7 +473,7 @@ public class GlResources {
         final int MIN_ZOOM = 0;      // Pelco-D 最小值
         final int MAX_ZOOM = 0x4000; // Pelco-D 最大值
         final double MIN_DIS = 1; // 0.1km
-        final double MAX_DIS = 500; // 2km
+        final double MAX_DIS = 650; // 2km
 
         if (dis <= MIN_DIS) {
             return MIN_ZOOM;

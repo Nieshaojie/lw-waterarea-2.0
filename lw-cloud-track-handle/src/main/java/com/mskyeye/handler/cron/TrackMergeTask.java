@@ -104,7 +104,7 @@ public class TrackMergeTask {
      * @throws Exception
      */
     private RadarTrackCache srcMatchRadarTarByAis(AisTrackCache cnt) throws Exception {
-        double minDis = Double.parseDouble(mergeDis);//最短距离
+        /*double minDis = Double.parseDouble(mergeDis);//最短距离
         RadarTrackCache matchRadarTrack = null;
         for (RadarTrackCache value : GlobalResources.radarTrackMap.values()) {
             double dis = DataCalUtil.GetDistance(value.getShipLon(), value.getShipLat(),
@@ -113,7 +113,21 @@ public class TrackMergeTask {
                 matchRadarTrack = value;
             }
         }
+        return matchRadarTrack;*/
+        double minDis = Double.parseDouble(mergeDis);
+        double best = Double.MAX_VALUE;
+        RadarTrackCache matchRadarTrack = null;
+
+        for (RadarTrackCache radar : GlobalResources.radarTrackMap.values()) {
+            double dis = DataCalUtil.GetDistance(radar.getShipLon(), radar.getShipLat(),
+                    cnt.getShipLon(), cnt.getShipLat());
+            if (dis < minDis && dis < best) {
+                best = dis;
+                matchRadarTrack = radar;
+            }
+        }
         return matchRadarTrack;
+
     }
 
     /**

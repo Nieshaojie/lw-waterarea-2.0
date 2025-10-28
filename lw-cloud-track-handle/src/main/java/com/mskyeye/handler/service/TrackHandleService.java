@@ -154,6 +154,18 @@ public class TrackHandleService {
                                 radarTrackCache.setRefNum(refNum);
                             }
                             radarTrackMap.put(radarTrackCache.getTargetId(), radarTrackCache);//插入或更新雷达缓存map
+                            for (Map.Entry<Long, MergeTrackCache> entry : GlobalResources.mergeResultMap.entrySet()) {
+                                if (cnt.getTID() == entry.getValue().getMerRadarId().longValue()) {
+                                    Long mmsi = entry.getKey();
+                                    //融合目标加上AIS静态数据
+                                    cnt = insertAisStaticInfo(cnt, mmsi);
+//                                    cnt.setTID(mmsi.longValue());//融合航迹的批号要换成mmsi
+                                    cnt.setMMSI(mmsi);
+                                    //标志位更改为融合目标
+                                    cnt.setSOURCE(MERGE_TARGET);
+                                    break;
+                                }
+                            }
                             //预警处理
                             //TODO
                             twp = alarmHandler(twp);
@@ -293,6 +305,7 @@ public class TrackHandleService {
         aisTrackCache.setIMmsi(cnt.getMMSI());
         aisTrackCache.setShipLat(cnt.getLAT());
         aisTrackCache.setShipLon(cnt.getLON());
+        aisTrackCache.setAlt(cnt.getALT());
         aisTrackCache.setRefreshTime(time);
 
         return aisTrackCache;

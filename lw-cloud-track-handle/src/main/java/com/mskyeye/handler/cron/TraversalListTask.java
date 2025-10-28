@@ -36,7 +36,7 @@ public class TraversalListTask {
         Iterator<Map.Entry<Long, AisTrackCache>> iter1 = GlobalResources.aisTrackMap.entrySet().iterator();
         while (iter1.hasNext()) {
             Map.Entry<Long,AisTrackCache> entry = iter1.next();
-            if (System.currentTimeMillis() - entry.getValue().getRefreshTime() > 300000) {
+            if (System.currentTimeMillis() - entry.getValue().getRefreshTime() > 5000) {
                 iter1.remove();
             }
         }
