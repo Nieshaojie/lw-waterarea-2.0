@@ -22,13 +22,13 @@ import java.util.Map;
 @Component
 public class TraversalListTask {
 
-    @Scheduled(fixedDelay = 10000)
+    @Scheduled(fixedDelay = 3000)
     public void run() {
 
         Iterator<Map.Entry<Long, RadarTrackCache>> iter = GlobalResources.radarTrackMap.entrySet().iterator();
         while (iter.hasNext()) {
             Map.Entry<Long,RadarTrackCache> entry = iter.next();
-            if (System.currentTimeMillis() - entry.getValue().getRefreshTime() > 30000) {
+            if (System.currentTimeMillis() - entry.getValue().getRefreshTime() > 5000) {
                 iter.remove();
             }
         }

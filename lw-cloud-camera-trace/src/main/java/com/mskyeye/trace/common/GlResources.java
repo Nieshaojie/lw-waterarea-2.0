@@ -465,26 +465,88 @@ public class GlResources {
     }
 
     /**
-     * 根据距离生成 Pelco-D 绝对变倍值
-     * @param dis 距离，单位米
+     * 根据水平距离和高度差生成 Pelco-D 绝对变倍值
+     * @param horizontalDis 水平距离，单位米
+     * @param heightDiff 高度差，单位米（目标高度 - 相机高度）
      * @return 变倍值，范围 0~0x4000
      */
-    public static double calcZoomByDistance(double dis) {
+    /*public static double calcZoomByDistance(double horizontalDis, double heightDiff) {
         final int MIN_ZOOM = 0;      // Pelco-D 最小值
         final int MAX_ZOOM = 0x4000; // Pelco-D 最大值
-        final double MIN_DIS = 1; // 0.1km
-        final double MAX_DIS = 650; // 2km
+        final double MIN_DIS = 0; // 最小距离 10m
+        final double MAX_DIS = 700; // 最大距离 1km
 
-        if (dis <= MIN_DIS) {
+        // 计算实际目标距离（斜距）
+        double actualDis = Math.sqrt(horizontalDis * horizontalDis + heightDiff * heightDiff);
+        System.out.println("目标距离："+actualDis);
+        if (actualDis <= MIN_DIS) {
             return MIN_ZOOM;
-        } else if (dis >= MAX_DIS) {
+        } else if (actualDis >= MAX_DIS) {
             return MAX_ZOOM;
         } else {
             // 线性映射 -> 0~0x4000
-            double ratio = (dis - MIN_DIS) / (MAX_DIS - MIN_DIS);
+            double ratio = (actualDis - MIN_DIS) / (MAX_DIS - MIN_DIS);
             int zoomVal = (int) Math.round(MIN_ZOOM + ratio * (MAX_ZOOM - MIN_ZOOM));
             return zoomVal;
         }
+    }*/
+   /* // 区间上限（米）对应倍率
+    private static final double[] DISTANCES = {200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100};
+    private static final double[] RATIOS    = {9,   12,  15,  20,  22,  25,  28,  34,  38,  43};
+    // 对应的 Pelco-D 十进制值
+    private static final double[] PELCOD_VALUES = {10302, 11820, 12631, 13332, 13821, 14322, 14900, 15555, 16174, 16805};
+
+    *//**
+     * 根据水平距离和高度差计算斜距对应的 Pelco-D 值
+     * @param horizontalDis 水平距离（米）
+     * @param heightDiff 高度差（米）
+     * @return 对应 Pelco-D 值（double）
+     *//*
+    public static double calcZoomByDistance(double horizontalDis, double heightDiff) {
+        double actualDis = Math.sqrt(horizontalDis * horizontalDis + heightDiff * heightDiff);
+        // 遍历区间
+        for (int i = 0; i < DISTANCES.length; i++) {
+            if (actualDis <= DISTANCES[i]) {
+                return PELCOD_VALUES[i];
+            }
+        }
+        // 超出最大距离，返回最大 Pelco-D
+        return PELCOD_VALUES[PELCOD_VALUES.length - 1];
+    }*/
+    // 区间上限（米）对应倍率
+    private static final double[] DISTANCES = {200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100};
+    private static final double[] PELCOD_VALUES = {10302, 11820, 12631, 13332, 13821, 14322, 14900, 15555, 16174, 16805};
+
+    /**
+     * 根据水平距离和高度差计算斜距对应的 Pelco-D 值（线性插值）
+     * @param horizontalDis 水平距离（米）
+     * @param heightDiff 高度差（米）
+     * @return 对应 Pelco-D 值（double）
+     */
+    public static double calcZoomByDistance(double horizontalDis, double heightDiff) {
+        double actualDis = Math.sqrt(horizontalDis * horizontalDis + heightDiff * heightDiff);
+
+        // 小于最小区间
+        if (actualDis <= DISTANCES[0]) {
+            return PELCOD_VALUES[0];
+        }
+
+        // 遍历区间，进行线性插值
+        for (int i = 1; i < DISTANCES.length; i++) {
+            if (actualDis <= DISTANCES[i]) {
+                double d0 = DISTANCES[i - 1];
+                double d1 = DISTANCES[i];
+                double v0 = PELCOD_VALUES[i - 1];
+                double v1 = PELCOD_VALUES[i];
+
+                // 线性插值
+                double ratio = (actualDis - d0) / (d1 - d0);
+                return v0 + ratio * (v1 - v0);
+            }
+        }
+
+        // 超出最大区间，返回最大 Pelco-D
+        return PELCOD_VALUES[PELCOD_VALUES.length - 1];
     }
 
 

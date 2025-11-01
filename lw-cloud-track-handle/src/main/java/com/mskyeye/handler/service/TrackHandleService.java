@@ -161,6 +161,7 @@ public class TrackHandleService {
                                     cnt = insertAisStaticInfo(cnt, mmsi);
 //                                    cnt.setTID(mmsi.longValue());//融合航迹的批号要换成mmsi
                                     cnt.setMMSI(mmsi);
+                                    cnt.setSN(entry.getValue().getSn());
                                     //标志位更改为融合目标
                                     cnt.setSOURCE(MERGE_TARGET);
                                     break;
@@ -306,6 +307,7 @@ public class TrackHandleService {
         aisTrackCache.setShipLat(cnt.getLAT());
         aisTrackCache.setShipLon(cnt.getLON());
         aisTrackCache.setAlt(cnt.getALT());
+        aisTrackCache.setSn(cnt.getSN());
         aisTrackCache.setRefreshTime(time);
 
         return aisTrackCache;

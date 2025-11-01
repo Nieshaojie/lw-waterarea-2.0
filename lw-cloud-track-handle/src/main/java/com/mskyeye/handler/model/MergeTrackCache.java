@@ -22,4 +22,6 @@ public class MergeTrackCache {
 
     private Long refreshTime;                           /*更新时间*/
 
+    private String sn;
+
 }

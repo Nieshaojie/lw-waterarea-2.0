@@ -105,6 +105,17 @@ public class Content implements Serializable {
     @JSONField(name = "ALT")
     private Double ALT;
 
+    @JSONField(name = "SN")
+    private String SN;
+
+    public String getSN() {
+        return SN;
+    }
+
+    public void setSN(String SN) {
+        this.SN = SN;
+    }
+
     public Double getALT() {
         return ALT;
     }

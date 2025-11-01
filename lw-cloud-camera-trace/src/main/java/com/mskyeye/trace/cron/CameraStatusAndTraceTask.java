@@ -335,11 +335,11 @@ public class CameraStatusAndTraceTask {
                     break;
             }
         }
-        if (!statusMap.containsKey(yzCameraInfo.getLightCode())) {
+        /*if (!statusMap.containsKey(yzCameraInfo.getLightCode())) {
             lwCameraStatusPacket.setIPCSTATUS("离线");
         } else if (statusMap.get(yzCameraInfo.getLightCode()).equals("离线")) {
             lwCameraStatusPacket.setIPCSTATUS("离线");
-        }
+        }*/
 //        System.out.println("获取相机状态"+lwCameraStatusPacket);
         return lwCameraStatusPacket;
     }

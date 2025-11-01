@@ -322,12 +322,12 @@ public class CameraOrderController {
         //调用云台前先关闭ai跟踪
         GplControl.stopAiTrack(yzCameraInfo);
         //相机转到该经纬度
-        ctrlCameraByLonLat(traceProInfo);
+//        ctrlCameraByLonLat(traceProInfo);
         //延迟2秒，开启ai跟踪
         // ===== 延迟2秒，开启AI自动跟踪 =====
         new Thread(() -> {
             try {
-                Thread.sleep(2000);
+//                Thread.sleep(2000);
                 log.info("三秒后自动开启AI跟踪...");
                 GplControl.startAiTrack(yzCameraInfo);
                 log.info("AI自动跟踪指令已发送");
@@ -502,7 +502,8 @@ public class CameraOrderController {
         }
         //计算Z值
         if(yzCameraInfo.getManu().equals("gpl")){
-            Double zVal = calcZoomByDistance(dis);
+            Double zVal = calcZoomByDistance(dis,heightDiff);
+            System.out.println("--------变倍参数是------："+zVal);
             if(zVal != null){
                 zFixVal = zVal;
             }

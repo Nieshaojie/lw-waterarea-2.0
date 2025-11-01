@@ -25,4 +25,6 @@ public class AisTrackCache {
     private Long refreshTime;                           /*更新时间*/
 
     private double alt;                                 /*高度*/
+
+    private String sn;
 }

@@ -1,5 +1,6 @@
 package com.mskyeye.handler.cron;
 
+import com.mskyeye.common.utils.StringUtil;
 import com.mskyeye.handler.common.GlobalResources;
 import com.mskyeye.handler.model.AisTrackCache;
 import com.mskyeye.handler.model.MergeTrackCache;
@@ -64,6 +65,10 @@ public class TrackMergeTask {
                     newCacheVal.setMerRadarId(radarTrackCache.getTargetId());
                     newCacheVal.setRefreshTime(System.currentTimeMillis());
                     newCacheVal.setMatchNum(1);
+                    if(StringUtil.isNotEmpty(value.getSn())){
+                        newCacheVal.setSn(value.getSn());
+                    }
+
 //                    GlobalResources.mergeHandleMap.put(newCacheVal.getMerAisMmsi(),newCacheVal);
                     //TODO 第一次匹配上就融合
                     GlobalResources.mergeResultMap.put(value.getTargetId(),newCacheVal);

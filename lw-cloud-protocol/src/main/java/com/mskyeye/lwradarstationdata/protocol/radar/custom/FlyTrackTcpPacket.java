@@ -61,4 +61,5 @@ public class FlyTrackTcpPacket implements Serializable {
     private double lat;
     private double lon;
     private double alt;
+    private String sn;
 }
