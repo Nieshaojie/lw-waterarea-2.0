@@ -1,6 +1,9 @@
 package com.mskyeye.ws.mq.handler;
 
+import com.alibaba.fastjson2.JSON;
+import com.mskyeye.lwradarstationdata.protocol.track.LwTrackPacket;
 import com.mskyeye.ws.mq.utils.MqConnectionUtil;
+import com.mskyeye.ws.mq.utils.MqttMessageSender;
 import com.mskyeye.ws.server.WebSocketServer;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.DefaultConsumer;
@@ -32,6 +35,8 @@ public class MqHandler implements ApplicationRunner {
     private MqConnectionUtil mqConnUtil;
     @Autowired
     private WebSocketServer webSocketServer;
+    @Autowired
+    private MqttMessageSender mqttMessageSender;
     @Override
     public void run(ApplicationArguments args) throws Exception {
         //初始化消息队列配置
@@ -45,8 +50,18 @@ public class MqHandler implements ApplicationRunner {
                                        byte[] body) throws IOException {
                 // body 即消息体
                 String msg = new String(body, CharsetUtil.UTF_8);
-                log.info("收到航迹信息：{}",msg);
+                //log.info("收到航迹信息：{}",msg);
                 webSocketServer.sendTrackMsgToAll(msg);
+
+                // 2. 转发到苏州融合效能测试平台 MQTT
+                try {
+                    LwTrackPacket packet = JSON.parseObject(msg, LwTrackPacket.class);
+                    if(packet.getITEM().get(0).getSOURCE() == 2) {
+                        mqttMessageSender.sendTrackToPlatform(packet);
+                    }
+                } catch (Exception e) {
+                    log.error("航迹数据解析或转发失败", e);
+                }
             }
         };
         // 监听队列，自动返回完成

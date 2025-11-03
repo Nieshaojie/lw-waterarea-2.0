@@ -22,7 +22,7 @@ public class RadarTrackCache {
 
     private double alt;                                 /*高度*/
 
-    private double sn;                                  /*无人机sn*/
+    private String sn;                                  /*无人机sn*/
 
     private Integer refNum = 0;                                /*更新的连续帧数,用于判断是否为稳定目标*/
 

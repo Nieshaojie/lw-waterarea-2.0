@@ -42,7 +42,7 @@ public class FlyTrackToMqHandler extends ChannelInboundHandlerAdapter {
 //            log.info("收到反无航迹信息：{}",rtp);
 //            rtp.setISpeed(rtp.getISpeed()*1.944f);//转换成节
             LwTrackPacket trackWSPacket = ProConvClazz.flyTrackTcp2WS(rtp);
-            log.info("对象转换：{}",trackWSPacket);
+            log.info("对象转换：{}",trackWSPacket.getITEM().get(0));
             mcUtil.getChannel().basicPublish(mcUtil.EXCHANGE_NAME,"track.key",
                     properties, new Gson().toJson(trackWSPacket).getBytes(StandardCharsets.UTF_8));
         }

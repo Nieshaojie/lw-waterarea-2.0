@@ -65,6 +65,6 @@ public class TrackTcpPacket {
 
     private double alt;                        //高度信息
 
-    private double sn;
+    private String sn;
 
 }

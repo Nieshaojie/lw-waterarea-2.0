@@ -39,6 +39,7 @@ public class TrackToMqHandler extends ChannelInboundHandlerAdapter {
         if (msg instanceof TrackTcpPacket) {
             TrackTcpPacket rtp = (TrackTcpPacket) msg;
             rtp.setISpeed(rtp.getISpeed()*1.944f);//转换成节
+            log.info("收到rid消息：{}",rtp);
             LwTrackPacket trackWSPacket = ProConvClazz.trackTcp2WS(rtp);
             mcUtil.getChannel().basicPublish(mcUtil.EXCHANGE_NAME,"track.key",
                     properties, new Gson().toJson(trackWSPacket).getBytes(StandardCharsets.UTF_8));
