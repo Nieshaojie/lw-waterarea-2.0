@@ -61,6 +61,7 @@ public class MqttMessageSender {
             json.put("uavSn", c.getSN() != null ? c.getSN() : "unknown"); // 无人机 SN
             json.put("batchNum", c.getSN() != null ? c.getSN() : "unknown"); // 与 uavSn 一致
             json.put("time", System.currentTimeMillis());        // 当前 UTC 毫秒时间戳
+            json.put("T2", System.currentTimeMillis());
             json.put("sourceType", "fusion");                     // 数据来源类型
             json.put("velocityV", 0.0);                          // 垂直速度（默认 0）
             json.put("type", "1");                               // 固定值：监视类目标数据

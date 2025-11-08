@@ -514,15 +514,15 @@ public class GlResources {
         return PELCOD_VALUES[PELCOD_VALUES.length - 1];
     }*/
     // 区间上限（米）对应倍率
-    private static final double[] DISTANCES = {200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100};
+   /* private static final double[] DISTANCES = {200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100};
     private static final double[] PELCOD_VALUES = {10302, 11820, 12631, 13332, 13821, 14322, 14900, 15555, 16174, 16805};
 
-    /**
+    *//**
      * 根据水平距离和高度差计算斜距对应的 Pelco-D 值（线性插值）
      * @param horizontalDis 水平距离（米）
      * @param heightDiff 高度差（米）
      * @return 对应 Pelco-D 值（double）
-     */
+     *//*
     public static double calcZoomByDistance(double horizontalDis, double heightDiff) {
         double actualDis = Math.sqrt(horizontalDis * horizontalDis + heightDiff * heightDiff);
 
@@ -547,7 +547,99 @@ public class GlResources {
 
         // 超出最大区间，返回最大 Pelco-D
         return PELCOD_VALUES[PELCOD_VALUES.length - 1];
+    }*/
+
+    /**
+     * 根据水平距离和高度差计算对应的 Pelco/Sony 变倍值
+     * 目标：200~1000 米线性放大到 1.0x ~ 40.0x，返回对应的编码值（十进制 double）
+     */
+    public static double calcZoomByDistance(double horizontalDis, double heightDiff) {
+        // 计算斜距
+        double actualDis = Math.sqrt(horizontalDis * horizontalDis + heightDiff * heightDiff);
+
+        // 距离范围（米）
+        final double MIN_DISTANCE = 100.0;
+        final double MAX_DISTANCE = 1200.0;
+
+        // 目标倍率范围
+        final double MIN_ZOOM = 1.0;
+        final double MAX_ZOOM = 40.0;
+
+        // Step 1: 距离 -> 倍率（线性映射并 clamp）
+        double zoom;
+        if (actualDis <= MIN_DISTANCE) {
+            zoom = MIN_ZOOM;
+        } else if (actualDis >= MAX_DISTANCE) {
+            zoom = MAX_ZOOM;
+        } else {
+            double r = (actualDis - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE);
+            zoom = MIN_ZOOM + r * (MAX_ZOOM - MIN_ZOOM);
+        }
+
+        // Step 2: Sony/Pelco 编码表（关键点，确保包含 40.0x -> 0x4AB5）
+        // 这里使用表中关键倍率点进行线性插值。你可以根据需要把表扩得更密。
+        double[] ZOOM_RATIOS = {
+                1.0, 1.5, 2.0, 3.0, 4.0, 5.0,
+                6.0, 8.0, 10.0, 12.0, 16.0, 20.0,
+                25.0, 30.0, 31.0, 32.0, 33.0, 34.0,
+                35.0, 36.0, 37.0, 38.0, 39.0, 40.0
+        };
+
+        // 对应表值来自你给的 Sony 表（十六进制转为十进制）
+        // 请注意：这些值来源于你提供的编码表的关键点，最后一项确保为 0x4AB5（40.0x）
+        double[] SONY_CODES = {
+                0x0000, // 1.0x
+                0xCB7,  // 1.5x -> 0xCB7 (from list)
+                0x1519, // 2.0x
+                0x1FF4, // 3.0x
+                0x2682, // 4.0x
+                0x2B88, // 5.0x
+                0x2F71, // 6.0x
+                0x3512, // 8.0x
+                0x38D1, // 10.0x
+                0x3B6A, // 12.0x
+                0x3E3F, // 16.0x
+                0x3F21, // 20.0x
+                0x3F93, // 25.0x
+                0x4000, // 30.0x
+                0x4176, // 31.0x
+                0x42BA, // 32.0x
+                0x43E9, // 33.0x
+                0x4519, // 34.0x
+                0x461F, // 35.0x
+                0x4726, // 36.0x
+                0x4819, // 37.0x
+                0x490C, // 38.0x
+                0x49EA, // 39.0x
+                0x4AB5  // 40.0x  <-- 确保最大倍率映射到这里
+        };
+
+        // 安全检查：长度一致
+        if (ZOOM_RATIOS.length != SONY_CODES.length) {
+            throw new IllegalStateException("ZOOM_RATIOS and SONY_CODES length mismatch");
+        }
+
+        // Step 3: 倍率 -> 编码 插值（保持你原来方法的风格）
+        if (zoom <= ZOOM_RATIOS[0]) {
+            return SONY_CODES[0];
+        }
+        for (int i = 1; i < ZOOM_RATIOS.length; i++) {
+            if (zoom <= ZOOM_RATIOS[i]) {
+                double z0 = ZOOM_RATIOS[i - 1];
+                double z1 = ZOOM_RATIOS[i];
+                double v0 = SONY_CODES[i - 1];
+                double v1 = SONY_CODES[i];
+                double t = (zoom - z0) / (z1 - z0);
+                return v0 + t * (v1 - v0);
+            }
+        }
+
+        // 超出最大倍率，返回最大编码（理论上不会到这里，因为 zoom 已 clamp）
+        return SONY_CODES[SONY_CODES.length - 1];
     }
+
+
+
 
 
     /**

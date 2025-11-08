@@ -322,7 +322,7 @@ public class CameraOrderController {
         //调用云台前先关闭ai跟踪
         GplControl.stopAiTrack(yzCameraInfo);
         //相机转到该经纬度
-//        ctrlCameraByLonLat(traceProInfo);
+        ctrlCameraByLonLat(traceProInfo);
         //延迟2秒，开启ai跟踪
         // ===== 延迟2秒，开启AI自动跟踪 =====
         new Thread(() -> {

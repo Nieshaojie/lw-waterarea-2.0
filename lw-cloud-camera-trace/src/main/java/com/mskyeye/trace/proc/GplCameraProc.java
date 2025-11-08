@@ -281,7 +281,7 @@ public class GplCameraProc {
         // ---- 变倍控制 ----
 //        Integer iZval = (int) (zVal * 16384 / 65);
         byte[] zoomCmd = buildPelcoDFrameZ(DEFAULT_ADDR, CMD_ZOOM_TO, encodeZoom( zVal));
-        System.out.println(toHex(zoomCmd));
+        log.info("发送俯仰控制: {}", toHex(zoomCmd));
         yzCameraInfo.getGplCtrlTcpClient().sendInfo(zoomCmd);
         return true;
     }
@@ -358,10 +358,10 @@ public class GplCameraProc {
 
 
     /**
-     * 变倍编码：0x0000 - 0x4000
+     * 变倍编码：0x0000 - 0x4AB5
      */
     private int[] encodeZoom(double zoomVal) {
-        int val = (int) Math.round(Math.max(0, Math.min(zoomVal, 0x4000)));
+        int val = (int) Math.round(Math.max(0, Math.min(zoomVal, 0x4AB5)));
         return new int[]{(val >> 8) & 0xFF, val & 0xFF};
     }
 
