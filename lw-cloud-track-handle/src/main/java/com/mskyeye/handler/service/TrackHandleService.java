@@ -381,7 +381,7 @@ public class TrackHandleService {
             }
         }
         //雷达目标
-        else if (cnt.getSOURCE() == 0 || cnt.getSOURCE() == 6) {
+        if (cnt.getSOURCE() == 0 || cnt.getSOURCE() == 6 || cnt.getSOURCE() == 2 || cnt.getSOURCE() == 1) {
             //只有连续多少帧以上才判断为稳定目标,才有预警价值
             if(!radarTrackMap.containsKey(cnt.getTID()) || radarTrackMap.get(cnt.getTID()).getRefNum() < ALARM_THROS){
                 cnt.setALARM("");

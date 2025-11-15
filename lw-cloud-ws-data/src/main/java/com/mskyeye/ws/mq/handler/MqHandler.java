@@ -1,6 +1,7 @@
 package com.mskyeye.ws.mq.handler;
 
 import com.alibaba.fastjson2.JSON;
+import com.mskyeye.common.utils.StringUtil;
 import com.mskyeye.lwradarstationdata.protocol.track.LwTrackPacket;
 import com.mskyeye.ws.mq.utils.MqConnectionUtil;
 import com.mskyeye.ws.mq.utils.MqttMessageSender;
@@ -58,6 +59,8 @@ public class MqHandler implements ApplicationRunner {
                     LwTrackPacket packet = JSON.parseObject(msg, LwTrackPacket.class);
                     if(packet.getITEM().get(0).getSOURCE() == 2) {
                         mqttMessageSender.sendTrackToPlatform(packet);
+                    } else if (packet.getITEM().get(0).getSOURCE() == 6 && StringUtil.isNotEmpty(packet.getITEM().get(0).getALARM())) {
+                        mqttMessageSender.sendTrackToPlatformRD(packet);
                     }
                 } catch (Exception e) {
                     log.error("航迹数据解析或转发失败", e);
