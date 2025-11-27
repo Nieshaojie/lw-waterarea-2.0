@@ -2,9 +2,11 @@ package com.mskyeye.ws.mq.handler;
 
 import com.alibaba.fastjson2.JSON;
 import com.mskyeye.common.utils.StringUtil;
+import com.mskyeye.lwradarstationdata.protocol.track.Content;
 import com.mskyeye.lwradarstationdata.protocol.track.LwTrackPacket;
 import com.mskyeye.ws.mq.utils.MqConnectionUtil;
-import com.mskyeye.ws.mq.utils.MqttMessageSender;
+//import com.mskyeye.ws.mq.utils.MqttMessageSender;
+import com.mskyeye.ws.redis.utils.RedisCache;
 import com.mskyeye.ws.server.WebSocketServer;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.DefaultConsumer;
@@ -19,6 +21,7 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @ClassName:MqHandler
@@ -36,8 +39,10 @@ public class MqHandler implements ApplicationRunner {
     private MqConnectionUtil mqConnUtil;
     @Autowired
     private WebSocketServer webSocketServer;
+    /*@Autowired
+    private MqttMessageSender mqttMessageSender;*/
     @Autowired
-    private MqttMessageSender mqttMessageSender;
+    RedisCache redisCache;
     @Override
     public void run(ApplicationArguments args) throws Exception {
         //初始化消息队列配置
@@ -55,16 +60,21 @@ public class MqHandler implements ApplicationRunner {
                 webSocketServer.sendTrackMsgToAll(msg);
 
                 // 2. 转发到苏州融合效能测试平台 MQTT
-                try {
+               /* try {
                     LwTrackPacket packet = JSON.parseObject(msg, LwTrackPacket.class);
-                    if(packet.getITEM().get(0).getSOURCE() == 2) {
-                        mqttMessageSender.sendTrackToPlatform(packet);
-                    } else if (packet.getITEM().get(0).getSOURCE() == 6 && StringUtil.isNotEmpty(packet.getITEM().get(0).getALARM())) {
-                        mqttMessageSender.sendTrackToPlatformRD(packet);
+                    if (packet == null || packet.getITEM() == null || packet.getITEM().isEmpty()) {
+                        log.warn("航迹包为空或 ITEM 内无数据：{}", msg);
+                        return;
                     }
+                    Long T1 = calculateT1(packet.getITEM().get(0));   // 迁移后的 T1 逻辑
+                    *//*if(packet.getITEM().get(0).getSOURCE() == 2) {
+                        mqttMessageSender.sendTrackToPlatform(packet,T1);
+                    } else if (packet.getITEM().get(0).getSOURCE() == 6 && StringUtil.isNotEmpty(packet.getITEM().get(0).getALARM())) {
+                        mqttMessageSender.sendTrackToPlatformRD(packet,T1);
+                    }*//*
                 } catch (Exception e) {
                     log.error("航迹数据解析或转发失败", e);
-                }
+                }*/
             }
         };
         // 监听队列，自动返回完成
@@ -115,4 +125,36 @@ public class MqHandler implements ApplicationRunner {
         // 监听队列，自动返回完成
         mqConnUtil.getChannel().basicConsume(MqConnectionUtil.CAR_TRACK_QUEUE_NAME, true, consumer3);
     }
+
+    /**
+     * 生成目标唯一 Key（保证跨系统一致）
+     */
+    private String buildT1Key(Content content) {
+        return "t1_time:" + content.getTID();
+    }
+
+    /**
+     * 获取 / 计算 T1：首次发现时间（毫秒）
+     *
+     * 极端逻辑：
+     * 1) Redis 中不存在 → 第一次出现 → T1 = 当前时间
+     * 2) 已存在 → 返回旧 T1，并自动刷新缓存 TTL
+     * 3) 超过 TTL（10 秒）→ 自动过期 → 下次重新算新的 T1
+     */
+    public Long calculateT1(Content content) {
+        String key = buildT1Key(content);
+        Long t1 = redisCache.getCacheObject(key);
+        long now = System.currentTimeMillis();
+
+        if (t1 == null) {
+            // 目标第一次出现
+            redisCache.setCacheObject(key, now, 10, TimeUnit.SECONDS);
+            return now;
+        }
+
+        // 刷新 TTL（保持目标持续状态）
+        redisCache.expire(key, 10, TimeUnit.SECONDS);
+        return t1;
+    }
+
 }
