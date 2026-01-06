@@ -2,6 +2,10 @@ package com.mskyeye.trace.proc;
 
 
 import com.alibaba.fastjson2.JSONObject;
+import com.mskyeye.trace.enums.PtzDirection;
+import com.mskyeye.trace.enums.PtzFocusAction;
+import com.mskyeye.trace.enums.PtzSpeedMapper;
+import com.mskyeye.trace.enums.PtzZoomAction;
 import com.mskyeye.trace.model.TraceProInfo;
 import com.mskyeye.trace.model.YzCameraInfo;
 import com.mskyeye.trace.utils.MD5SaltUtil;
@@ -461,4 +465,201 @@ public class HpCameraProc {
             e.printStackTrace();
         }
     }
+
+
+    /**
+     * 云台方向控制统一入口
+     *
+     * 能力：
+     * 1. 支持 8 个方向 + STOP
+     * 2. STOP 是显式命令
+     * 3. 支持自动停止（避免云台失控）
+     * 4. 前端速度等级与设备速度解耦
+     *
+     * @param yzCameraInfo 相机登录信息
+     * @param direction   云台方向（含 STOP）
+     * @param speedLevel  前端速度等级（0-100，STOP 时忽略）
+     */
+    public boolean ptzDirectionControl(YzCameraInfo yzCameraInfo,
+                                       PtzDirection direction,
+                                       int speedLevel) {
+        try {
+            JSONObject param = new JSONObject();
+            param.put("token", yzCameraInfo.getLoginInfo());
+            param.put("channelid", 0);
+            param.put("actionid", direction.getActionId());
+
+            // ====== 方向需要速度时才下发 ======
+            if (direction.needSpeed()) {
+                int deviceSpeed = PtzSpeedMapper.toDeviceSpeed(speedLevel);
+
+                // 有些设备需要声明速度模式
+                param.put("bptzSpeedAb", 0);
+
+                // 单轴 or 双轴速度
+                for (String field : direction.getSpeedFields()) {
+                    param.put(field, deviceSpeed);
+                }
+
+            }
+
+            JSONObject body = new JSONObject();
+            body.put("cmd", "ptzControl");
+            body.put("param", param);
+
+            PostRequestUtil.sendToHpPostReq(
+                    yzCameraInfo.getIp(),
+                    String.valueOf(yzCameraInfo.getHttpPort()),
+                    body.toJSONString()
+            );
+            return true;
+        } catch (Exception e) {
+            log.error("ptzDirectionControl failed, dir={}", direction, e);
+            return false;
+        }
+    }
+
+    /**
+     * 镜头变倍（Zoom）控制
+     *
+     * 能力：
+     * 1. 支持 放大 / 缩小 / 停止
+     * 2. 前端速度等级与设备真实速度解耦
+     * 3. 支持自动停止，防止镜头长时间运动
+     *
+     * @param yzCameraInfo 相机信息
+     * @param action       镜头动作（ZOOM_IN / ZOOM_OUT / ZOOM_STOP）
+     * @param speedLevel   前端速度等级（0-100，STOP 时忽略）
+     * @param type   相机通道 0：可见光 1：热像
+     */
+    public boolean ptzZoomControl(YzCameraInfo yzCameraInfo,
+                                  PtzZoomAction action,
+                                  int speedLevel,int type) {
+        try {
+            JSONObject param = new JSONObject();
+            param.put("token", yzCameraInfo.getLoginInfo());
+            param.put("channelid", type);
+            param.put("actionid", action.getActionId());
+
+            // ====== 只有需要速度的动作才下发速度 ======
+            if (action.needSpeed()) {
+                int deviceSpeed = PtzSpeedMapper.toDeviceSpeed(speedLevel);
+
+                // 镜头速度字段（设备定义）
+                param.put("ptzzoomspeed", deviceSpeed);
+
+            }
+
+            JSONObject body = new JSONObject();
+            body.put("cmd", "ptzControl");
+            body.put("param", param);
+
+            PostRequestUtil.sendToHpPostReq(
+                    yzCameraInfo.getIp(),
+                    String.valueOf(yzCameraInfo.getHttpPort()),
+                    body.toJSONString()
+            );
+            return true;
+        } catch (Exception e) {
+            log.error("ptzZoomControl failed, action={}", action, e);
+            return false;
+        }
+    }
+
+    /**
+     * 镜头聚焦（Focus）控制
+     *
+     * 特点：
+     * 1. 行为模型与方向 / Zoom 完全一致
+     * 2. 支持自动停止，防止“对焦打满”
+     * 3. STOP 是明确命令
+     *
+     * @param yzCameraInfo 相机信息
+     * @param action       聚焦动作（NEAR / FAR / STOP）
+     * @param speedLevel   前端速度等级（0-100，STOP 忽略）
+     */
+    public boolean ptzFocusControl(YzCameraInfo yzCameraInfo,
+                                   PtzFocusAction action,
+                                   int speedLevel,int type) {
+        try {
+            JSONObject param = new JSONObject();
+            param.put("token", yzCameraInfo.getLoginInfo());
+            param.put("channelid", type);
+            param.put("actionid", action.getActionId());
+
+            if (action.needSpeed()) {
+                int deviceSpeed = PtzSpeedMapper.toDeviceSpeed(speedLevel);
+
+                // 聚焦速度字段（设备定义）
+                param.put("ptzfocuspeed", deviceSpeed);
+
+            }
+
+            JSONObject body = new JSONObject();
+            body.put("cmd", "ptzControl");
+            body.put("param", param);
+
+            PostRequestUtil.sendToHpPostReq(
+                    yzCameraInfo.getIp(),
+                    String.valueOf(yzCameraInfo.getHttpPort()),
+                    body.toJSONString()
+            );
+            return true;
+        } catch (Exception e) {
+            log.error("ptzFocusControl failed, action={}", action, e);
+            return false;
+        }
+    }
+
+
+    /**
+     * 设置云台水平速度（1-63）
+     */
+    public boolean setPtzSpeedX(YzCameraInfo yzCameraInfo, int speedX) {
+        try {
+            JSONObject param = new JSONObject();
+            param.put("token", yzCameraInfo.getLoginInfo());
+            param.put("ptzspeedX", speedX);
+
+            JSONObject body = new JSONObject();
+            body.put("cmd", "ptzWebSetPtzSpeedX");
+            body.put("param", param);
+
+            PostRequestUtil.sendToHpPostReq(
+                    yzCameraInfo.getIp(),
+                    String.valueOf(yzCameraInfo.getHttpPort()),
+                    body.toJSONString()
+            );
+            return true;
+        } catch (Exception e) {
+            log.error("setPtzSpeedX failed", e);
+            return false;
+        }
+    }
+
+    /**
+     * 设置云台俯仰速度（1-63）
+     */
+    public boolean setPtzSpeedY(YzCameraInfo yzCameraInfo, int speedY) {
+        try {
+            JSONObject param = new JSONObject();
+            param.put("token", yzCameraInfo.getLoginInfo());
+            param.put("ptzspeedY", speedY);
+
+            JSONObject body = new JSONObject();
+            body.put("cmd", "ptzWebSetPtzSpeedY");
+            body.put("param", param);
+
+            PostRequestUtil.sendToHpPostReq(
+                    yzCameraInfo.getIp(),
+                    String.valueOf(yzCameraInfo.getHttpPort()),
+                    body.toJSONString()
+            );
+            return true;
+        } catch (Exception e) {
+            log.error("setPtzSpeedY failed", e);
+            return false;
+        }
+    }
+
 }

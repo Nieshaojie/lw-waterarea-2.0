@@ -119,9 +119,9 @@ public class VideoStreamProxyServiceImpl implements VideoStreamProxyService {
     private Boolean checkStreamProxyInfo(JSONObject jsonObject, String streamUrl) {
 
         String app = jsonObject.getString(ThirdServiceConst.LiveConst.LIVE_APP_KEY);
-        if (!Objects.equals(app, liveConfig.getApp())) {
+        /*if (!Objects.equals(app, liveConfig.getApp())) {
             return false;
-        }
+        }*/
         String originalUrl = jsonObject.getString(ThirdServiceConst.LiveConst.LIVE_ORIGINAL_STREAM_KEY);
         return Objects.equals(originalUrl, streamUrl);
     }
