@@ -9,10 +9,7 @@ import com.mskyeye.trace.proc.DhCameraProc;
 import com.mskyeye.trace.proc.GplCameraProc;
 import com.mskyeye.trace.proc.HkCameraProc;
 import com.mskyeye.trace.proc.HpCameraProc;
-import com.mskyeye.trace.utils.AjaxResult;
-import com.mskyeye.trace.utils.DisAndAngleUtils;
-import com.mskyeye.trace.utils.RedisCache;
-import com.mskyeye.trace.utils.StringUtil;
+import com.mskyeye.trace.utils.*;
 import com.sun.jna.NativeLong;
 import com.sun.jna.Pointer;
 import org.slf4j.Logger;
@@ -93,7 +90,14 @@ public class CameraOrderController {
             if (!traceProInfo.getbTracking()) {
                 //如果相机没有在跟踪，不做任何操作
                 if (GL_TraceInfoMap.isEmpty() || !GL_TraceInfoMap.containsKey(yzCameraInfo.getId())) {
-                    GplControl.stopAiTrack(yzCameraInfo);
+                    if(yzCameraInfo.getManu().equals("gpl")) {
+                        GplControl.stopAiTrack(yzCameraInfo);
+                    } else if (yzCameraInfo.getManu().equals("hp")) {
+                        int channelId = traceProInfo.getChannelId() == 1 ? 0 : 1;
+                        //先关闭自动跟踪
+                        hpCameraProc.alarmAutoTrackingCtrl(yzCameraInfo, false, channelId);
+                        hpCameraProc.stopPhotoTracking(yzCameraInfo,  channelId);
+                    }
                     return AjaxResult.success();
                 }
                 cancelTraceOrder(traceProInfo, yzCameraInfo);
@@ -132,9 +136,13 @@ public class CameraOrderController {
                 case 6:
                     bResult = true;
                 case 8://高普乐AI跟踪
-                   /* //经纬高跟踪指令
+                   /* //和普经纬高跟踪指令
                     bResult = sendTrackingCtrl(traceProInfo);*/
-                    bResult =sendAiTraceOrder(traceProInfo);
+                    if(yzCameraInfo.getManu().equals("gpl")) {
+                        bResult =sendAiTraceOrder(traceProInfo);
+                    } else if (yzCameraInfo.getManu().equals("hp")) {
+                        bResult =sendAiTraceOrderHp(traceProInfo);
+                    }
                     break;
             }
             if (bResult == true) {
@@ -311,7 +319,7 @@ public class CameraOrderController {
     }
 
     /**
-     * 发送AI跟踪指令
+     * 发送GplAI跟踪指令
      *
      * @param traceProInfo
      * @return
@@ -338,6 +346,25 @@ public class CameraOrderController {
         //标记ai跟踪
         traceProInfo.setTraceType(8);
 //        TimeUnit.MILLISECONDS.sleep(3000);
+        return true;
+    }
+
+    /**
+     * 发送HpAI跟踪指令
+     *
+     * @param traceProInfo
+     * @return
+     * @throws Exception
+     */
+    private Boolean sendAiTraceOrderHp(TraceProInfo traceProInfo) throws Exception {
+        YzCameraInfo yzCameraInfo = GL_CameraInfoMap.get(traceProInfo.getCameraId());
+        //相机转到该经纬度
+        ctrlCameraByLonLat(traceProInfo);
+        int channelId = traceProInfo.getChannelId() == 1 ? 0 : 1;
+        hpCameraProc.alarmAutoTrackingCtrl(yzCameraInfo,true,channelId);
+        log.info("AI自动跟踪指令已发送");
+        //标记ai跟踪
+        traceProInfo.setTraceType(8);
         return true;
     }
 
@@ -497,7 +524,7 @@ public class CameraOrderController {
 //                tVal = tVal < 0 ? 0 : tVal;
                 System.out.println("没有用曲线拟合方法计算T值");
             }else{
-                tVal = -1 * toDegrees(Math.atan2(heightDiff, dis))+ t_Val;
+                tVal = toDegrees(Math.atan2(heightDiff, dis))+ t_Val;
             }
         }
         //计算Z值
@@ -508,12 +535,12 @@ public class CameraOrderController {
                 zFixVal = zVal;
             }
         }
-        if(yzCameraInfo.getManu().equals("hp")){
+        /*if(yzCameraInfo.getManu().equals("hp")){
             Double zVal = calZValHP(dis);
             if(zVal != null){
                 zFixVal = zVal;
             }
-        }
+        }*/
 //        double tVal = -1* toDegrees(asin(height/dis));//旧的方法
         System.out.println("计算出的方位角 dBear: " + dBear);
         System.out.println("相机偏移校准 pCorVal: " + pCorVal+" ---- 相机偏移校准 tCorVal: " + t_Val);
@@ -524,7 +551,10 @@ public class CameraOrderController {
         } else if (yzCameraInfo.getManu().equals("dh")) {
             dhCameraProc.ptzControl(yzCameraInfo, pVal, tVal, zFixVal);
         } else if (yzCameraInfo.getManu().equals("hp")) {
-            hpCameraProc.ptzControl(yzCameraInfo, pVal, tVal, zFixVal);
+            double slantDistance = Math.sqrt(heightDiff * heightDiff + dis * dis);
+            double fov1 = VisibleLightFovCalculator.getFov(slantDistance);
+            double fov2 = ThermalFov.getFov(slantDistance);
+            hpCameraProc.ptvControl(yzCameraInfo, pVal, tVal, fov1,fov2);
         } else if (yzCameraInfo.getManu().equals("gpl")) {
             gplCameraProc.ptzControlPD(yzCameraInfo, pVal, tVal, zFixVal);
         }
@@ -592,6 +622,11 @@ public class CameraOrderController {
                 hpCameraProc.photoTrackingCtrl(yzCameraInfo, false, traceProInfo.getChannelId());
                 //下面这个操作必须添加
                 hpCameraProc.boxTrackCtrl(yzCameraInfo, false, traceProInfo.getChannelId(), 0, 0, 0, 0);
+            }else if (traceType == 8) {
+                int channelId = traceProInfo.getChannelId() == 1 ? 0 : 1;
+                //先关闭自动跟踪
+                hpCameraProc.alarmAutoTrackingCtrl(yzCameraInfo, false, channelId);
+                hpCameraProc.stopPhotoTracking(yzCameraInfo,  channelId);
             }
         } else if (traceProInfo.getManu().equals("hik")) {
             //使用最基本的云台控制左移<停>指令结束跟踪

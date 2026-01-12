@@ -118,13 +118,13 @@ public class CameraStatusAndTraceTask {
                 Map<String, String> statusMap = redisCache.getCacheObject(CAMERA_STATE_BY_ISC);
 //                System.out.println("查询相机PT值方法中相机信息map+"+GL_CameraInfoMap.toString());
                 for (YzCameraInfo yzCameraInfo : GL_CameraInfoMap.values()) {
-                    if (!statusMap.containsKey(yzCameraInfo.getLightCode())) {
+                    /*if (!statusMap.containsKey(yzCameraInfo.getLightCode())) {
                         sendStatusToMq(infoToStatus(false, yzCameraInfo, statusMap));
                         continue;
                     } else if (statusMap.get(yzCameraInfo.getLightCode()).equals("离线")) {
                         sendStatusToMq(infoToStatus(false, yzCameraInfo, statusMap));
                         continue;
-                    }
+                    }*/
                     cameraExe.submit(() -> {
                         try {
                             processCameraInfoMultithreaded(yzCameraInfo, statusMap);

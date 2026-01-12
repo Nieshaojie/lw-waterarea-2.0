@@ -236,6 +236,8 @@ public class HpCameraProc {
             jsonBody1.put("locVerPos", iTVal);
             jsonBody1.put("ptzPosCamview", 0);
             jsonBody1.put("ptzPosIrview", 0);
+            jsonBody1.put("ptzPosCamview", 0);
+            jsonBody1.put("ptzPosIrview", 0);
             jsonBody.put("param", jsonBody1);
             String body = jsonBody.toJSONString();
             PostRequestUtil.sendToHpPostReq(yzCameraInfo.getIp(), String.valueOf(yzCameraInfo.getHttpPort()), body);
@@ -659,6 +661,163 @@ public class HpCameraProc {
         } catch (Exception e) {
             log.error("setPtzSpeedY failed", e);
             return false;
+        }
+    }
+
+    /**
+     * 控制PTZ
+     *
+     * @param yzCameraInfo
+     * @param pVal
+     * @param tVal
+     * @param vVal1
+     * @return
+     * @throws Exception
+     */
+    public boolean ptvControl(YzCameraInfo yzCameraInfo, Double pVal, Double tVal, Double vVal1,Double vVal2) throws Exception {
+        try {
+            Integer iPVal = (int) (pVal * 100);
+
+            Integer iTVal = (int) (tVal * 100);
+
+            Integer ivVal1 = (int) (vVal1 * 100);
+
+            Integer ivVal2 = (int) (vVal2 * 100);
+            if (iTVal < 0) {
+                iTVal = -1 * iTVal;
+            } else {
+                iTVal = 36000 - iTVal;
+            }
+
+            //修改PT值
+            JSONObject jsonBody = new JSONObject();
+            JSONObject jsonBody1 = new JSONObject();
+            jsonBody.put("cmd", "ptzControl");
+            jsonBody1.put("token", yzCameraInfo.getLoginInfo());
+            jsonBody1.put("channelid", 0);
+            jsonBody1.put("actionid", 51);
+            jsonBody1.put("locSpeed", 200);
+            jsonBody1.put("locYSpeed", 200);
+            jsonBody1.put("bptzSpeedAb", 0);
+            jsonBody1.put("locHorPos", iPVal);
+            jsonBody1.put("locVerPos", iTVal);
+            jsonBody1.put("ptzPosCamview", 0);
+            jsonBody1.put("ptzPosIrview", 0);
+            jsonBody1.put("ptzPosCamview", ivVal1);
+            jsonBody1.put("ptzPosIrview", ivVal2);
+            jsonBody.put("param", jsonBody1);
+            String body = jsonBody.toJSONString();
+            PostRequestUtil.sendToHpPostReq(yzCameraInfo.getIp(), String.valueOf(yzCameraInfo.getHttpPort()), body);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * 识别联动自动跟踪开关
+     */
+    public void alarmAutoTrackingCtrl(YzCameraInfo yzCameraInfo,
+                                      Boolean enable,
+                                      Integer channelid) throws Exception {
+        try {
+            JSONObject bodyJson = new JSONObject();
+            JSONObject paramJson = new JSONObject();
+
+            bodyJson.put("cmd", "ivpSet");
+
+            paramJson.put("token", yzCameraInfo.getLoginInfo());
+            paramJson.put("channelid", channelid);
+            paramJson.put("type", 10); // 目标分类
+            paramJson.put("bAlarmTracking", enable);//开启自动跟踪
+            paramJson.put("bAlarmTrackingAutoZoom", enable);//自动变倍
+            bodyJson.put("param", paramJson);
+
+            String body = bodyJson.toJSONString();
+            PostRequestUtil.sendToHpPostReq(
+                    yzCameraInfo.getIp(),
+                    String.valueOf(yzCameraInfo.getHttpPort()),
+                    body
+            );
+
+            TimeUnit.MILLISECONDS.sleep(200);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+
+    /**
+     * 停止图像跟踪
+     */
+    public void stopPhotoTracking(YzCameraInfo yzCameraInfo,
+                                  Integer channelid) throws Exception {
+        try {
+            JSONObject bodyJson = new JSONObject();
+            JSONObject paramJson = new JSONObject();
+
+            bodyJson.put("cmd", "ivpTrackingCtrl");
+
+            paramJson.put("token", yzCameraInfo.getLoginInfo());
+            paramJson.put("channelid", channelid);
+            paramJson.put("bTracking", false);
+
+            bodyJson.put("param", paramJson);
+
+            String body = bodyJson.toJSONString();
+            PostRequestUtil.sendToHpPostReq(
+                    yzCameraInfo.getIp(),
+                    String.valueOf(yzCameraInfo.getHttpPort()),
+                    body
+            );
+
+            TimeUnit.MILLISECONDS.sleep(200);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+
+    /**
+     * 自动跟踪变倍控制
+     *
+     * @param targetPixel 目标像素大小（1~600，1080P）
+     */
+    public void trackingAutoZoomCtrl(YzCameraInfo yzCameraInfo,
+                                     Boolean enable,
+                                     Integer targetPixel,
+                                     Integer channelid) throws Exception {
+        try {
+            JSONObject bodyJson = new JSONObject();
+            JSONObject paramJson = new JSONObject();
+
+            bodyJson.put("cmd", "ivpSet");
+
+            paramJson.put("token", yzCameraInfo.getLoginInfo());
+            paramJson.put("channelid", channelid);
+            paramJson.put("type", 10);
+            paramJson.put("bAlarmTrackingAutoZoom", enable);
+
+            if (enable && targetPixel != null) {
+                paramJson.put("trackingAutoZoomCoef", targetPixel);
+            }
+
+            bodyJson.put("param", paramJson);
+
+            String body = bodyJson.toJSONString();
+            PostRequestUtil.sendToHpPostReq(
+                    yzCameraInfo.getIp(),
+                    String.valueOf(yzCameraInfo.getHttpPort()),
+                    body
+            );
+
+            TimeUnit.MILLISECONDS.sleep(200);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
         }
     }
 
