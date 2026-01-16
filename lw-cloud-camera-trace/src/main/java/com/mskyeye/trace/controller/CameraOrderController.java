@@ -3,6 +3,7 @@ package com.mskyeye.trace.controller;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.mskyeye.trace.camera.gpl.sdk.GplNetSDK;
+import com.mskyeye.trace.constant.Constants;
 import com.mskyeye.trace.model.*;
 import com.mskyeye.trace.netty.control.service.CameraLensControl;
 import com.mskyeye.trace.proc.DhCameraProc;
@@ -15,6 +16,7 @@ import com.sun.jna.Pointer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -520,7 +522,8 @@ public class CameraOrderController {
         Double tVal = calTVal(yzCameraInfo.getName(),dis,dBear);
         if(tVal == null){
             if (yzCameraInfo.getManu().equals("gpl")) {
-                tVal = Math.toDegrees(Math.atan2(heightDiff, dis)) + t_Val;
+                double deltaT = computeGuidedT(yzCameraInfo.getId(), pVal);
+                tVal = Math.toDegrees(Math.atan2(heightDiff, dis)) + deltaT;
 //                tVal = tVal < 0 ? 0 : tVal;
                 System.out.println("没有用曲线拟合方法计算T值");
             }else{
@@ -560,6 +563,20 @@ public class CameraOrderController {
         }
         traceProInfo.setTraceType(4);
         return true;
+    }
+
+    /**
+     * 计算引导用的 补偿T 值（补偿）
+     */
+    public double computeGuidedT(Long cameraId,
+                                 double targetAzimuthDeg) {
+
+        TCalibModel model = redisCache.getCacheObject(Constants.CAMERA_CALIB+cameraId);
+        double deltaT = 0.0;
+        if(!ObjectUtils.isEmpty(model)) {
+            deltaT = model.compute(targetAzimuthDeg);
+        }
+        return deltaT;
     }
 
     /**
