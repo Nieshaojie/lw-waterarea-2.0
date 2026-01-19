@@ -10,7 +10,7 @@ spring:
 #        本机地址
 #        server-addr: 127.0.0.1:8848
         #Linux地址
-        server-addr: 36.139.130.155:8848
+        server-addr: 192.168.115.104:8848
         group: CENTRAL_STATION_DATA_SERVER
         username: nacos
         password: Lw68783883
@@ -22,7 +22,7 @@ spring:
         #本机地址
 #        server-addr: 127.0.0.1:8848
         #Linux地址
-        server-addr: 36.139.130.155:8848
+        server-addr: 192.168.115.104:8848
         file-extension: yaml #文件拓展格式
         group: CENTRAL_STATION_DATA_SERVER
         username: ${spring.cloud.nacos.discovery.username}
@@ -32,7 +32,7 @@ spring:
   # 包含 Redis 相关的配置
   redis:
     #TODO
-    host: 36.139.130.155
+    host: 192.168.115.104
 #    host: 127.0.0.1
 #    host: 192.168.124.70
 #    host: 192.168.124.100
