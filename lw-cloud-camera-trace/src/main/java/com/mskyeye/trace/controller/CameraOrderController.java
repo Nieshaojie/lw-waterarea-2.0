@@ -522,10 +522,13 @@ public class CameraOrderController {
         Double tVal = calTVal(yzCameraInfo.getName(),dis,dBear);
         if(tVal == null){
             if (yzCameraInfo.getManu().equals("gpl")) {
-                double deltaT = computeGuidedT(yzCameraInfo.getId(), pVal);
-                tVal = Math.toDegrees(Math.atan2(heightDiff, dis)) + deltaT;
+                double tPVal = pVal + pCorVal < 0 ? 360 + pVal + pCorVal : pVal + pCorVal;
+                double deltaT = computeGuidedT(yzCameraInfo.getId(), tPVal);
+                tVal = Math.toDegrees(Math.atan2(heightDiff, dis)) ;
+                System.out.println("没有用曲线拟合方法计算T值，原始T值："+tVal);
+                tVal = tVal + deltaT;
 //                tVal = tVal < 0 ? 0 : tVal;
-                System.out.println("没有用曲线拟合方法计算T值");
+                System.out.println("没有用曲线拟合方法计算T值，当前deltaT："+deltaT);
             }else{
                 tVal = toDegrees(Math.atan2(heightDiff, dis))+ t_Val;
             }
@@ -568,16 +571,35 @@ public class CameraOrderController {
     /**
      * 计算引导用的 补偿T 值（补偿）
      */
-    public double computeGuidedT(Long cameraId,
-                                 double targetAzimuthDeg) {
+    public double computeGuidedT(Long cameraId, double targetAzimuthDeg) {
 
-        TCalibModel model = redisCache.getCacheObject(Constants.CAMERA_CALIB+cameraId);
-        double deltaT = 0.0;
-        if(!ObjectUtils.isEmpty(model)) {
-            deltaT = model.compute(targetAzimuthDeg);
+        Object cacheObj =
+                redisCache.getCacheObject(Constants.CAMERA_CALIB + cameraId);
+
+        if (!(cacheObj instanceof String)) {
+            log.error("标定缓存类型异常, cameraId={}, type={}, value={}",
+                    cameraId,
+                    cacheObj == null ? "null" : cacheObj.getClass(),
+                    cacheObj);
+            return 0.0;
         }
-        return deltaT;
+
+        String json = (String) cacheObj;
+
+        TCalibModel model;
+        try {
+            model = JSON.parseObject(json, TCalibModel.class);
+        } catch (Exception e) {
+            log.error("标定模型解析失败, cameraId={}, json={}",
+                    cameraId, json, e);
+            return 0.0;
+        }
+
+        log.info("使用标定模型: {},角度为：{}", model,targetAzimuthDeg);
+        return model.compute(targetAzimuthDeg);
     }
+
+
 
     /**
      * 光电引导
