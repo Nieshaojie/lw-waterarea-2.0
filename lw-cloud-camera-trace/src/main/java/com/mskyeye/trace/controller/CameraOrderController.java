@@ -523,7 +523,7 @@ public class CameraOrderController {
         if(tVal == null){
             if (yzCameraInfo.getManu().equals("gpl")) {
                 double tPVal = pVal + pCorVal < 0 ? 360 + pVal + pCorVal : pVal + pCorVal;
-                double deltaT = computeGuidedT(yzCameraInfo.getId(), tPVal);
+                double deltaT = computeGuidedT(yzCameraInfo.getId(), tPVal,dis);
                 tVal = Math.toDegrees(Math.atan2(heightDiff, dis)) ;
                 System.out.println("没有用曲线拟合方法计算T值，原始T值："+tVal);
                 tVal = tVal + deltaT;
@@ -570,7 +570,7 @@ public class CameraOrderController {
 
     /**
      * 计算引导用的 补偿T 值（补偿）
-     */
+     *//*
     public double computeGuidedT(Long cameraId, double targetAzimuthDeg) {
 
         Object cacheObj =
@@ -597,6 +597,40 @@ public class CameraOrderController {
 
         log.info("使用标定模型: {},角度为：{}", model,targetAzimuthDeg);
         return model.compute(targetAzimuthDeg);
+    }*/
+    /**
+     * 计算引导用的补偿T值
+     */
+    public double computeGuidedT(Long cameraId,
+                                 double targetAzimuthDeg,
+                                 double targetDistanceMeter) {
+
+        Object cacheObj =
+                redisCache.getCacheObject(Constants.CAMERA_CALIB + cameraId);
+
+        if (!(cacheObj instanceof String)) {
+            log.error("标定缓存类型异常, cameraId={}, type={}, value={}",
+                    cameraId,
+                    cacheObj == null ? "null" : cacheObj.getClass(),
+                    cacheObj);
+            return 0.0;
+        }
+
+        String json = (String) cacheObj;
+
+        TCalibModel model;
+        try {
+            model = JSON.parseObject(json, TCalibModel.class);
+        } catch (Exception e) {
+            log.error("标定模型解析失败, cameraId={}, json={}",
+                    cameraId, json, e);
+            return 0.0;
+        }
+
+        log.info("使用标定模型: {}, 方位={}, 距离={}",
+                model, targetAzimuthDeg, targetDistanceMeter);
+
+        return model.compute(targetAzimuthDeg, targetDistanceMeter);
     }
 
 
