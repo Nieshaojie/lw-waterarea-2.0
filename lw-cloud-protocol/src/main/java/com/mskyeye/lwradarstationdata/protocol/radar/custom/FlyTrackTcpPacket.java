@@ -61,5 +61,7 @@ public class FlyTrackTcpPacket implements Serializable {
     private double lat;
     private double lon;
     private double alt;
+    // ================= 目标航向 =================
+    private double heading;      // 目标航迹航向（正北0°，顺时针 0~360°）
     private String sn;
 }

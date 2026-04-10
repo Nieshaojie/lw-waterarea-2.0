@@ -9,12 +9,13 @@ import com.mskyeye.trace.proc.HpCameraProc;
 import com.mskyeye.trace.utils.AjaxResult;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 
 import static com.mskyeye.trace.common.GlResources.GL_CameraInfoMap;
 
 /**
- * @Description: 云台与镜头控制接口（基于 PELCO-DV1.7 协议）
+ * @Description: 云台与镜头控制接口（GPL 部分已切换为 WebSocket JSON 协议）
  * @author nie
  * @create 2025/10/20
  */
@@ -22,8 +23,15 @@ import static com.mskyeye.trace.common.GlResources.GL_CameraInfoMap;
 @RequestMapping("/camera/control")
 public class CameraPtzController {
 
+    // ========== 旧: 原有的 PelcoD 二进制协议实现 ==========
+    // @Autowired
+    // private CameraLensControl lensControl;
+
+    // ========== 新: WebSocket JSON 协议实现 ==========
     @Autowired
-    private CameraLensControl lensControl;
+    @Qualifier("webSocketLensControl")
+    private CameraLensControl wsLensControl;
+
     @Autowired
     private HpCameraProc hpCameraProc;
 
@@ -32,7 +40,8 @@ public class CameraPtzController {
     public AjaxResult zoomIn(@RequestParam Long cameraId, @RequestParam String type) throws Exception {
         YzCameraInfo camera = GL_CameraInfoMap.get(cameraId);
         if(camera.getManu().equals("gpl")) {
-            lensControl.zoomIn(camera, type);
+            // lensControl.zoomIn(camera, type);
+            wsLensControl.zoomIn(camera, type);
         } else if (camera.getManu().equals("hp")) {
             PtzZoomAction directions = PtzZoomAction.from("ZOOM_IN");
             int types = type.equals("1") ? 0:1;
@@ -46,7 +55,8 @@ public class CameraPtzController {
     public AjaxResult zoomOut(@RequestParam Long cameraId, @RequestParam String type) throws Exception {
         YzCameraInfo camera = GL_CameraInfoMap.get(cameraId);
         if(camera.getManu().equals("gpl")) {
-            lensControl.zoomOut(camera, type);
+            // lensControl.zoomOut(camera, type);
+            wsLensControl.zoomOut(camera, type);
         } else if (camera.getManu().equals("hp")) {
             PtzZoomAction directions = PtzZoomAction.from("ZOOM_OUT");
             int types = type.equals("1") ? 0:1;
@@ -60,7 +70,8 @@ public class CameraPtzController {
     public AjaxResult focusNear(@RequestParam Long cameraId, @RequestParam String type) throws Exception {
         YzCameraInfo camera = GL_CameraInfoMap.get(cameraId);
         if(camera.getManu().equals("gpl")) {
-            lensControl.focusNear(camera, type);
+            // lensControl.focusNear(camera, type);
+            wsLensControl.focusNear(camera, type);
         } else if (camera.getManu().equals("hp")) {
             PtzFocusAction directions = PtzFocusAction.from("FOCUS_NEAR");
             int types = type.equals("1") ? 0:1;
@@ -74,7 +85,8 @@ public class CameraPtzController {
     public AjaxResult focusFar(@RequestParam Long cameraId, @RequestParam String type) throws Exception {
         YzCameraInfo camera = GL_CameraInfoMap.get(cameraId);
         if(camera.getManu().equals("gpl")) {
-            lensControl.focusFar(camera, type);
+            // lensControl.focusFar(camera, type);
+            wsLensControl.focusFar(camera, type);
         } else if (camera.getManu().equals("hp")) {
             PtzFocusAction directions = PtzFocusAction.from("FOCUS_FAR");
             int types = type.equals("1") ? 0:1;
@@ -88,7 +100,8 @@ public class CameraPtzController {
     public AjaxResult irisClose(@RequestParam Long cameraId, @RequestParam String type) throws Exception {
         YzCameraInfo camera = GL_CameraInfoMap.get(cameraId);
         if(camera.getManu().equals("gpl")) {
-            lensControl.irisClose(camera, type);
+            // lensControl.irisClose(camera, type);
+            wsLensControl.irisClose(camera, type);
         } else if (camera.getManu().equals("hp")) {
             //TODO
         }
@@ -100,7 +113,8 @@ public class CameraPtzController {
     public AjaxResult irisOpen(@RequestParam Long cameraId, @RequestParam String type) throws Exception {
         YzCameraInfo camera = GL_CameraInfoMap.get(cameraId);
         if(camera.getManu().equals("gpl")) {
-            lensControl.irisOpen(camera, type);
+            // lensControl.irisOpen(camera, type);
+            wsLensControl.irisOpen(camera, type);
         } else if (camera.getManu().equals("hp")) {
             //TODO
         }
@@ -112,7 +126,8 @@ public class CameraPtzController {
     public AjaxResult stop(@RequestParam Long cameraId, @RequestParam String type) throws Exception {
         YzCameraInfo camera = GL_CameraInfoMap.get(cameraId);
         if(camera.getManu().equals("gpl")) {
-            lensControl.stop(camera, type);
+            // lensControl.stop(camera, type);
+            wsLensControl.stop(camera, type);
         } else if (camera.getManu().equals("hp")) {
             PtzFocusAction directions = PtzFocusAction.from("FOCUS_STOP");
             int types = type.equals("1") ? 0:1;
@@ -127,19 +142,21 @@ public class CameraPtzController {
     @GetMapping("/ai/start")
     public AjaxResult start(@RequestParam Long cameraId) throws Exception {
         YzCameraInfo camera = GL_CameraInfoMap.get(cameraId);
-        lensControl.startAiTrack(camera);
+        // lensControl.startAiTrack(camera);
+        wsLensControl.startAiTrack(camera);
         return AjaxResult.success();
     }
 
-    @ApiOperation(value = "开启ai")
+    @ApiOperation(value = "关闭ai")
     @GetMapping("/ai/stop")
     public AjaxResult stop(@RequestParam Long cameraId) throws Exception {
         YzCameraInfo camera = GL_CameraInfoMap.get(cameraId);
-        lensControl.stopAiTrack(camera);
+        // lensControl.stopAiTrack(camera);
+        wsLensControl.stopAiTrack(camera);
         return AjaxResult.success();
     }
 
-    @ApiOperation(value = "云台控制（方向+速度）")
+    @ApiOperation(value = "云台控制（方向 + 速度）")
     @GetMapping("/pzt/control")
     public AjaxResult controlPTZ(@RequestParam Long cameraId,
                                  @RequestParam String type,
@@ -147,7 +164,8 @@ public class CameraPtzController {
                                  @RequestParam int speed) throws Exception {
         YzCameraInfo camera = GL_CameraInfoMap.get(cameraId);
         if(camera.getManu().equals("gpl")) {
-            lensControl.controlPTZ(camera, type, direction, speed);
+            // lensControl.controlPTZ(camera, type, direction, speed);
+            wsLensControl.controlPTZ(camera, type, direction, speed);
         } else if (camera.getManu().equals("hp")) {
             PtzDirection directions = PtzDirection.from(direction);
             hpCameraProc.ptzDirectionControl(camera,directions,speed);
@@ -161,7 +179,8 @@ public class CameraPtzController {
                               @RequestParam String type) throws Exception {
         YzCameraInfo camera = GL_CameraInfoMap.get(cameraId);
         if(camera.getManu().equals("gpl")) {
-            lensControl.stopPTZ(camera, type);
+            // lensControl.stopPTZ(camera, type);
+            wsLensControl.stopPTZ(camera, type);
         } else if (camera.getManu().equals("hp")) {
             PtzDirection directions = PtzDirection.from("STOP");
             hpCameraProc.ptzDirectionControl(camera,directions,0);
