@@ -98,6 +98,8 @@ public class ProConvClazz {
 
         content.setLON(trackTcpPacket.getLon());
 
+        content.setCOURSE((float) trackTcpPacket.getHeading());
+
         content.setSPEED((float)trackTcpPacket.getSpeed3D());
 
 

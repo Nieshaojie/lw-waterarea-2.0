@@ -11,6 +11,8 @@ import com.mskyeye.ws.model.LwAiAlarmPacket;
 import com.mskyeye.ws.model.LwCameraStatusPacket;
 import com.mskyeye.ws.model.LwCarInfoPacket;
 import com.mskyeye.ws.redis.utils.RedisCache;
+import com.mskyeye.ws.serialPort.RadarFrameUtil;
+import com.mskyeye.ws.serialPort.SerialSender;
 import com.mskyeye.ws.utils.AlarmInfoSender;
 import com.mskyeye.ws.utils.WebSocketSession;
 import com.ruoyi.common.core.domain.model.LoginUser;
@@ -51,6 +53,9 @@ public class WebSocketServer {
 
     @Autowired
     private RedisCache redisCache;
+
+    @Autowired
+    private SerialSender serialSender;
 
     @BeforeHandshake
     public void handshake(Session session, HttpHeaders headers, @RequestParam String req, @RequestParam MultiValueMap reqMap, @PathVariable String arg, @PathVariable Map pathMap) {
@@ -172,7 +177,7 @@ public class WebSocketServer {
     /**
      * 向所有用户发送航迹数据
      */
-    public void sendTrackMsgToAll(String msg) {
+    /*public void sendTrackMsgToAll(String msg) {
         try {
             if(StringUtil.isNotEmpty(msg)){
                 //解析成航迹数据对象
@@ -211,6 +216,60 @@ public class WebSocketServer {
                                         redisCache.setCacheObject(alarmKey, alarmCount + 1, 5, TimeUnit.MINUTES); // 每次递增都刷新有效期
                                     }
                                 }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }*/
+    public void sendTrackMsgToAll(String msg) {
+        try {
+            if (StringUtil.isNotEmpty(msg)) {
+                LwTrackPacket lwTrackPacket = JSON.parseObject(msg, LwTrackPacket.class);
+                Content cnt = lwTrackPacket.getITEM().get(0);
+                Long currentTid = cnt.getTID();
+
+                // 读取抓捕目标
+                Long catchTid = null;
+                try {
+                    Object obj = redisCache.getCacheObject("catch_target_tid");
+                    if (obj != null) {
+                        catchTid = Long.valueOf(obj.toString());
+                    }
+                } catch (Exception e) {
+                    catchTid = null;
+                }
+
+                Set<Session> keys = sessionKV.keySet();
+                synchronized (keys) {
+                    for (Session session : keys) {
+                        DeviceInDept devices = sessionKV.get(session);
+                        List<Long> radarIdList = devices.getRadarIdList();
+
+                        if (radarIdList.contains(Long.valueOf(cnt.getSTATIONID()))) {
+                            session.sendText(msg);
+
+                            // 串口发送条件
+                            if (catchTid != null
+                                    && catchTid.equals(currentTid)) {
+
+                                // ========================
+                                // 【关键】目标存在 → 续期10秒
+                                // ========================
+                                redisCache.setCacheObject("catch_target_tid", currentTid, 6, TimeUnit.SECONDS);
+
+                                // 组帧发送
+                                byte[] frame = RadarFrameUtil.buildRadarFrame(
+                                        cnt.getLAT(),
+                                        cnt.getLON(),
+                                        cnt.getALT(),
+                                        cnt.getCOURSE(),
+                                        cnt.getSPEED()
+                                );
+                                serialSender.sendFrame(frame);
                             }
                         }
                     }

@@ -133,6 +133,13 @@
             <version>5.7.22</version>
         </dependency>
 
+        <!-- WebSocket 客户端 -->
+        <dependency>
+            <groupId>org.java-websocket</groupId>
+            <artifactId>Java-WebSocket</artifactId>
+            <version>1.5.4</version>
+        </dependency>
+
     </dependencies>
 
     <build>
