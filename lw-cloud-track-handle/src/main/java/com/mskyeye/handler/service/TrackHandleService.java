@@ -9,6 +9,8 @@ import com.mskyeye.lwradarstationdata.protocol.ais.YzAisStaticInfo;
 import com.mskyeye.lwradarstationdata.protocol.track.Content;
 import com.mskyeye.lwradarstationdata.protocol.track.LwTrackPacket;
 import com.rabbitmq.client.AMQP;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
@@ -33,6 +35,7 @@ import static com.mskyeye.handler.mq.MqConnectionUtil.*;
 @Service
 public class TrackHandleService {
 
+    private static final Logger log = LoggerFactory.getLogger(TrackHandleService.class);
     @Autowired
     private MqConnectionUtil mqConnectionUtil;
 
@@ -99,6 +102,9 @@ public class TrackHandleService {
                         if (cnt.getSTATUS().equals(DEL_TARGET)) {
                             //历史航迹点Map需要及时删除该预警目标
                             oldTrackMap.remove(cnt.getTID());
+                            radarTrackMap.remove(cnt.getTID());
+                            aisTrackMap.remove(cnt.getTID());
+                            mergeResultMap.remove(cnt.getTID());
                             mqConnectionUtil.getChannel().basicPublish(mqConnectionUtil.EXCHANGE_NAME, PRO_TRACK_QUEUE_ROUTING_KEY1,
                                     properties, new Gson().toJson(twp).getBytes(StandardCharsets.UTF_8));
                             mqConnectionUtil.getChannel().basicPublish(mqConnectionUtil.EXCHANGE_NAME, PRO_TRACK_QUEUE_ROUTING_KEY2,
@@ -158,7 +164,7 @@ public class TrackHandleService {
                         }
                         //AIS真实目标处理
                         else if (cnt.getSOURCE() == AIS_TARGET) {
-                            AisTrackCache aisTrackCache = parseToAisTar(cnt, twp.getTIME());//解析成AIS目标
+                            AisTrackCache aisTrackCache = parseToAisTar(cnt, twp.getTIME(),false);//解析成AIS目标
                             GlobalResources.aisTrackMap.put(aisTrackCache.getTargetId(), aisTrackCache);//插入或更新AIS缓存map
                             //如果不是融合目标,给告警处理模块。否则,舍弃该AIS数据
                             if (GlobalResources.mergeResultMap.containsKey(aisTrackCache.getIMmsi())) {
@@ -182,7 +188,7 @@ public class TrackHandleService {
                         }
                         //AIS外推目标处理
                         else if (cnt.getSOURCE() == AIS_FWD_PRETARGET || cnt.getSOURCE() == AIS_NEG_PRTARGET) {
-                            AisTrackCache aisTrackCache = parseToAisTar(cnt, twp.getTIME());//解析成AIS目标
+                            AisTrackCache aisTrackCache = parseToAisTar(cnt, twp.getTIME(),true);//解析成AIS目标
                             GlobalResources.aisTrackMap.put(aisTrackCache.getTargetId(), aisTrackCache);//插入或更新AIS缓存map
                             //如果不是融合目标,给告警处理模块。否则,舍弃该AIS外推数据
                             if (GlobalResources.mergeResultMap.containsKey(aisTrackCache.getIMmsi())) {
@@ -240,7 +246,7 @@ public class TrackHandleService {
      * @return
      * @throws Exception
      */
-    private AisTrackCache parseToAisTar(Content cnt, Long time) throws Exception {
+    private AisTrackCache parseToAisTar(Content cnt, Long time,boolean extrapolated) throws Exception {
         AisTrackCache aisTrackCache = new AisTrackCache();
 
         aisTrackCache.setStationId(cnt.getSTATIONID());
@@ -249,7 +255,7 @@ public class TrackHandleService {
         aisTrackCache.setShipLat(cnt.getLAT());
         aisTrackCache.setShipLon(cnt.getLON());
         aisTrackCache.setRefreshTime(time);
-
+        aisTrackCache.setExtrapolated(extrapolated);
         return aisTrackCache;
     }
 
@@ -302,30 +308,37 @@ public class TrackHandleService {
      */
     private LwTrackPacket alarmHandler(LwTrackPacket lwTrackPacket) throws IOException {
         Content cnt = lwTrackPacket.getITEM().get(0);
-        //AIS目标处理、融合目标
-        if (cnt.getSOURCE() == 1 || cnt.getSOURCE() == 2
-                || cnt.getSOURCE() == 3 || cnt.getSOURCE() == 4) {
-            if (!GlobalResources.aisAlarmCalInfoMap.isEmpty() && GlobalResources.aisAlarmCalInfoMap.containsKey(cnt.getMMSI().intValue())) {
-                //白名单处理
-                if (ALARM_WHITE_LIST == GlobalResources.aisAlarmCalInfoMap.get(cnt.getMMSI().intValue()).getAlarmType()) {
-                    return lwTrackPacket;
-                }
-                //黑名单处理
-                else if (ALARM_BLACK_LIST == GlobalResources.aisAlarmCalInfoMap.get(cnt.getMMSI().intValue()).getAlarmType()) {
-                    cnt.setALARM("黑名单");
-                }
-                //执法船处理
-                else if (LAW_ENFORECE_SHIP == GlobalResources.aisAlarmCalInfoMap.get(cnt.getMMSI().intValue()).getAlarmType()) {
-                    cnt.setALARM("执法船");
+//        log.info("档期告警信息处理对象类型：{}",cnt.getSOURCE());
+
+        //雷达目标
+        if (cnt.getSOURCE() == 0||cnt.getSOURCE() == 1 || cnt.getSOURCE() == 2 || cnt.getSOURCE() == 3 || cnt.getSOURCE() == 4) {
+            //AIS目标处理、融合目标
+            if (cnt.getSOURCE() == 1 || cnt.getSOURCE() == 2
+                    || cnt.getSOURCE() == 3 || cnt.getSOURCE() == 4) {
+                if (!GlobalResources.aisAlarmCalInfoMap.isEmpty() && GlobalResources.aisAlarmCalInfoMap.containsKey(cnt.getMMSI().intValue())) {
+                    //白名单处理
+                    if (ALARM_WHITE_LIST == GlobalResources.aisAlarmCalInfoMap.get(cnt.getMMSI().intValue()).getAlarmType()) {
+                        log.info("白名单过滤");
+                        return lwTrackPacket;
+                    }
+                    //黑名单处理
+                    else if (ALARM_BLACK_LIST == GlobalResources.aisAlarmCalInfoMap.get(cnt.getMMSI().intValue()).getAlarmType()) {
+                        cnt.setALARM("黑名单");
+                    }
+                    //执法船处理
+                    else if (LAW_ENFORECE_SHIP == GlobalResources.aisAlarmCalInfoMap.get(cnt.getMMSI().intValue()).getAlarmType()) {
+                        cnt.setALARM("执法船");
+                    }
                 }
             }
-        }
-        //雷达目标
-        else if (cnt.getSOURCE() == 0) {
+//            log.info("档期告警信息处理对象：{}",cnt);
             //只有连续多少帧以上才判断为稳定目标,才有预警价值
-            if(!radarTrackMap.containsKey(cnt.getTID()) || radarTrackMap.get(cnt.getTID()).getRefNum() < ALARM_THROS){
-                cnt.setALARM("");
-                return lwTrackPacket;
+            if(cnt.getSOURCE() == 0){
+                if(!radarTrackMap.containsKey(cnt.getTID()) || radarTrackMap.get(cnt.getTID()).getRefNum() < ALARM_THROS){
+                    cnt.setALARM("");
+//                    log.info("当前告警信息处理对象被连续性过滤：{}",cnt);
+                    return lwTrackPacket;
+                }
             }
             if (!GlobalResources.code2DeptIdMap.isEmpty() && GlobalResources.code2DeptIdMap.containsKey(cnt.getSTATIONID().intValue())) {
                 Integer deptId = GlobalResources.code2DeptIdMap.get(cnt.getSTATIONID().intValue());

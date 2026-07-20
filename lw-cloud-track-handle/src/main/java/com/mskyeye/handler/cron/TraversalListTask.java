@@ -74,4 +74,23 @@ public class TraversalListTask {
             }
         }
     }
+
+    @Scheduled(fixedDelay = 10000)
+    public void cleanupAisExtrapolatedTracks() {
+        long now = System.currentTimeMillis();
+        long expireThreshold = 310 * 1000; // 310秒
+
+        Iterator<Map.Entry<Long, AisTrackCache>> iter = GlobalResources.aisTrackMap.entrySet().iterator();
+        while (iter.hasNext()) {
+            AisTrackCache track = iter.next().getValue();
+
+            if (track.isExtrapolated() && (now - track.getRefreshTime()) > expireThreshold) {
+                iter.remove();
+           /*     log.info("清理过期AIS外推目标: mmsi={}, lastRefresh={}, 已过期 {} ms",
+                        track.getIMmsi(),
+                        track.getRefreshTime(),
+                        now - track.getRefreshTime());*/
+            }
+        }
+    }
 }
