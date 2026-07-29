@@ -18,9 +18,9 @@ public class AisTrackCache {
 
     private Long iMmsi;                              /*MMSI*/
 
-    private double shipLon;                             /*经度*/
+    private Double shipLon;                             /*经度*/
 
-    private double shipLat;                             /*纬度*/
+    private Double shipLat;                             /*纬度*/
 
     private Long refreshTime;                           /*更新时间*/
 

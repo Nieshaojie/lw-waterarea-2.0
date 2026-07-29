@@ -56,4 +56,25 @@ public class GlobalResources {
     public static final String CAR_INFO = "yz2.0_info:yz_car_info";
 
     public static YzGpsInfo yzGpsInfo = new YzGpsInfo();
+
+    /**
+     * 搭靠预警配对缓存：key = 小ID_大ID
+     */
+    public static ConcurrentHashMap<String, DockAlarmPair> dockAlarmPairMap
+            = new ConcurrentHashMap<>();
+
+    /**
+     * 搭靠预警总开关
+     */
+    public static Boolean dockAlarmEnable = true;
+
+    /**
+     * 搭靠距离阈值（米）
+     */
+    public static Double dockDistanceThreshold = 5.0;
+
+    /**
+     * 搭靠持续时间阈值（秒）
+     */
+    public static Integer dockTimeThreshold = 300;
 }

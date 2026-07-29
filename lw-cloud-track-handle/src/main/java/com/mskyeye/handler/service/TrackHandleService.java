@@ -39,6 +39,10 @@ public class TrackHandleService {
     @Autowired
     private MqConnectionUtil mqConnectionUtil;
 
+    // ========== 新增：搭靠预警服务 ==========
+    @Autowired
+    private DockAlarmService dockAlarmService;
+
     private static final Integer DEL_TARGET = 0;
 
     private static final Integer RADAR_TARGET = 0;
@@ -411,12 +415,25 @@ public class TrackHandleService {
                             }
                         }
                     }
-                }
-                if (StringUtil.isNotEmpty(alarmInfo)) {
-                    alarmInfo = alarmInfo.replaceFirst("\\+", "");
-                }
-                cnt.setALARM(alarmInfo);
-                //有该预警目标,更新信息
+                    if (StringUtil.isNotEmpty(alarmInfo)) {
+                        alarmInfo = alarmInfo.replaceFirst("\\+", "");
+                    }
+
+                    // ===================== 新增：拼接搭靠预警文字 =====================
+                    // 调用搭靠服务，获取搭靠告警文本
+                    String dockAlarmText = dockAlarmService.checkDockAlarm(lwTrackPacket);
+                    if (StringUtil.isNotEmpty(dockAlarmText)) {
+                        if (StringUtil.isEmpty(alarmInfo)) {
+                            alarmInfo = dockAlarmText;
+                        } else {
+                            // 原有区域告警 + 搭靠预警拼接
+                            alarmInfo = alarmInfo + "+" + dockAlarmText;
+                        }
+                    }
+                    // =================================================================
+
+                    cnt.setALARM(alarmInfo);
+                    //有该预警目标,更新信息
                 /*if (oldTrackMap.containsKey(cnt.getTID())) {
                     oldTrackMap.put(cnt.getTID(), lwTrackPacket);
                 } else*/ if (!alarmInfo.equals("") /*&& !oldTrackMap.containsKey(cnt.getTID())*/) {
@@ -424,6 +441,7 @@ public class TrackHandleService {
                             properties, new Gson().toJson(lwTrackPacket).getBytes(StandardCharsets.UTF_8));
                     oldTrackMap.put(cnt.getTID(), lwTrackPacket);
 //                    System.out.println("【航迹服务】新增报警,ID为" + cnt.getTID() + " 报警类型为【" + alarmInfo + "】");
+                    }
                 }
             }
         }

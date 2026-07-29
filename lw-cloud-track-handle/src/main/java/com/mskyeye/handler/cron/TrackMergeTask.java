@@ -31,7 +31,20 @@ public class TrackMergeTask {
         for (AisTrackCache value : GlobalResources.aisTrackMap.values()) {
             //如果该AIS已被融合,则不再计算
             if(GlobalResources.mergeResultMap.containsKey(value.getTargetId())){
-                continue;
+                MergeTrackCache mergeTrackCache = GlobalResources.mergeResultMap.get(value.getTargetId());
+                // 1. 先更新本次AIS报文的最新位置、状态
+                mergeTrackCache.setShipLon(value.getShipLon());
+                mergeTrackCache.setShipLat(value.getShipLat());
+                // 2. 根据绑定雷达ID查询雷达目标，增加非空判断
+                RadarTrackCache radarTrackCache = GlobalResources.radarTrackMap.get(mergeTrackCache.getMerRadarId());
+                if (radarTrackCache != null) {
+                    // 雷达存在，雷达坐标优先级更高，覆盖经纬度
+                    mergeTrackCache.setShipLon(radarTrackCache.getShipLon());
+                    mergeTrackCache.setShipLat(radarTrackCache.getShipLat());
+                }
+
+                // 3. 刷新更新时间，防止被定时清理
+                mergeTrackCache.setRefreshTime(System.currentTimeMillis());
             }
             RadarTrackCache radarTrackCache = srcMatchRadarTarByAis(value);//找到匹配的雷达目标
             if(radarTrackCache != null){
@@ -64,6 +77,9 @@ public class TrackMergeTask {
                     newCacheVal.setMerRadarId(radarTrackCache.getTargetId());
                     newCacheVal.setRefreshTime(System.currentTimeMillis());
                     newCacheVal.setMatchNum(1);
+                    // 初始化经纬度（优先雷达坐标）
+                    newCacheVal.setShipLon(radarTrackCache.getShipLon());
+                    newCacheVal.setShipLat(radarTrackCache.getShipLat());
 //                    GlobalResources.mergeHandleMap.put(newCacheVal.getMerAisMmsi(),newCacheVal);
                     //TODO 第一次匹配上就融合
                     GlobalResources.mergeResultMap.put(value.getTargetId(),newCacheVal);

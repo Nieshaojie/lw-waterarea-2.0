@@ -22,4 +22,8 @@ public class MergeTrackCache {
 
     private Long refreshTime;                           /*更新时间*/
 
+    // 新增：融合目标经纬度，统一存储，供搭靠预警直接读取
+    private Double shipLon;
+    private Double shipLat;
+
 }

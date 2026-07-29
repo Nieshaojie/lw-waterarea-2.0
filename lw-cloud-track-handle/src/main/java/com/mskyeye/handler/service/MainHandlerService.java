@@ -34,6 +34,6 @@ public class MainHandlerService implements ApplicationRunner {
 
         mergeAndAlarmHandleService.run();
 
-        initCarInfoService.initCarInfo();
+        //initCarInfoService.initCarInfo();
     }
 }
