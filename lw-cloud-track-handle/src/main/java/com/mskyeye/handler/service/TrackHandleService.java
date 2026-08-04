@@ -421,15 +421,15 @@ public class TrackHandleService {
 
                     // ===================== 新增：拼接搭靠预警文字 =====================
                     // 调用搭靠服务，获取搭靠告警文本
-                    String dockAlarmText = dockAlarmService.checkDockAlarm(lwTrackPacket);
-                    if (StringUtil.isNotEmpty(dockAlarmText)) {
-                        if (StringUtil.isEmpty(alarmInfo)) {
-                            alarmInfo = dockAlarmText;
-                        } else {
-                            // 原有区域告警 + 搭靠预警拼接
-                            alarmInfo = alarmInfo + "+" + dockAlarmText;
-                        }
-                    }
+//                    String dockAlarmText = dockAlarmService.checkDockAlarm(lwTrackPacket);
+//                    if (StringUtil.isNotEmpty(dockAlarmText)) {
+//                        if (StringUtil.isEmpty(alarmInfo)) {
+//                            alarmInfo = dockAlarmText;
+//                        } else {
+//                            // 原有区域告警 + 搭靠预警拼接
+//                            alarmInfo = alarmInfo + "+" + dockAlarmText;
+//                        }
+//                    }
                     // =================================================================
 
                     cnt.setALARM(alarmInfo);

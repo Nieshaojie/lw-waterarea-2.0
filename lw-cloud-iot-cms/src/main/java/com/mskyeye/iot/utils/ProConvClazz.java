@@ -43,7 +43,8 @@ public class ProConvClazz {
 
         content.setHEAD(trackTcpPacket.getIHead());
 
-        content.setNAVIGATION(trackTcpPacket.getISpeed() > 3.0 ?1:0);
+        double speed = trackTcpPacket.getISpeed();
+        content.setNAVIGATION(speed > 15 ? 2 : (speed > 3 ? 1 : 0));
 
         content.setRANGEMETRES(trackTcpPacket.getRangeMetres());
 

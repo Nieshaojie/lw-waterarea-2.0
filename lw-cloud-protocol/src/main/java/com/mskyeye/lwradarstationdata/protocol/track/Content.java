@@ -55,7 +55,7 @@ public class Content implements Serializable {
     private Float HEAD;//船首向
 
     @JSONField(name = "NAVIGATION")
-    private Integer NAVIGATION = 1;//0:“低速” 1:“在航”
+    private Integer NAVIGATION = 1;//0:“低速” 1:“在航” 2=“高速”
     @JsonSerialize(using = OyzFloatSerialize.class)
     @JSONField(name = "RANGEMETRES")
     private Float RANGEMETRES;
