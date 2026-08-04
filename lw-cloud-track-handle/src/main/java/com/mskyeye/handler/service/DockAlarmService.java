@@ -7,6 +7,7 @@ import com.mskyeye.lwradarstationdata.protocol.track.Content;
 import com.mskyeye.lwradarstationdata.protocol.track.LwTrackPacket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -20,12 +21,16 @@ import static com.mskyeye.handler.common.GlobalResources.*;
  *  计算对象：仅 AIS 真实/外推 + 雷达融合目标
  *  告警规则：配对两艘船舶中必须包含一艘【外籍轮船（外轮）】才触发搭靠预警
  *  计算优化：仅外籍轮船主动发起测距，遍历同站点所有 AIS+融合目标；国内船舶/无效船舶仅清理缓存，不执行测距计算
+ *  改造：告警状态期间每条报文持续输出搭靠预警字段，不再仅首次触发输出
  * @Author: R.Gong
  * @Date: 2026/7/22
- * @Version: 2.1
+ * @Version: 2.2
  **/
 @Service
 public class DockAlarmService {
+
+    @Value("${dock_distance}")
+    private String dockDistance;
 
     private static final Logger log = LoggerFactory.getLogger(DockAlarmService.class);
 
@@ -126,11 +131,14 @@ public class DockAlarmService {
         ShipTarget foreignShip = buildShipTarget(curTid, curMmsi, curLon, curLat, stationId, source);
         List<ShipTarget> stationShips = collectStationDockShips(stationId, now);
 
-        boolean triggerDockAlarm = false;
+        boolean newlyTrigger = false;
+        // 标记：是否处于告警状态（只要任意配对hasAlarm=true且距离合法，则为true，每条报文输出告警）
+        boolean inAlarmState = false;
+
         long timeThreshold = GlobalResources.dockTimeThreshold * 1000L;
 
         // 距离阈值校验
-        Double distanceThreshold = GlobalResources.dockDistanceThreshold;
+        Double distanceThreshold = Double.parseDouble(dockDistance);
         if (distanceThreshold == null) {
             log.warn("搭靠距离阈值未配置，跳过本次计算，站点:{} MMSI:{}", stationId, curMmsi);
             return "";
@@ -163,16 +171,22 @@ public class DockAlarmService {
             // 原子更新配对缓存，并发安全
             boolean newlyAlarmed = updateDockPairAtomic(pairKey, foreignShip, otherShip, dist, now, timeThreshold);
             if (newlyAlarmed) {
-                triggerDockAlarm = true;
+                newlyTrigger = true;
                 log.info("【搭靠预警触发】外籍轮船MMSI={} 对接船舶MMSI={} 距离={}米 站点={}",
                         curMmsi, otherShip.getMmsi(), String.format("%.1f", dist), stationId);
+            }
+
+            DockAlarmPair currentPair = GlobalResources.dockAlarmPairMap.get(pairKey);
+            if (currentPair != null && currentPair.getHasAlarm()) {
+                inAlarmState = true;
             }
         }
 
         // 全局清理站点过期、失效配对，防止内存溢出
         cleanExpiredDockPair(now, stationShips, stationId);
 
-        return triggerDockAlarm ? "搭靠预警" : "";
+        // 只要处于告警状态，每条报文都输出搭靠预警
+        return inAlarmState ? "搭靠预警" : "";
     }
 
     // ============================================================
