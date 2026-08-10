@@ -21,10 +21,10 @@ import static com.mskyeye.handler.common.GlobalResources.*;
  *  计算对象：仅 AIS 真实/外推 + 雷达融合目标
  *  告警规则：配对两艘船舶中必须包含一艘【外籍轮船（外轮）】才触发搭靠预警
  *  计算优化：仅外籍轮船主动发起测距，遍历同站点所有 AIS+融合目标；国内船舶/无效船舶仅清理缓存，不执行测距计算
- *  改造：告警状态期间每条报文持续输出搭靠预警字段，不再仅首次触发输出
+ *  改造点：取消已告警配对10分钟自动过期；仅距离超出告警距离才取消告警；目标消失依旧清理配对防内存泄露
  * @Author: R.Gong
- * @Date: 2026/7/22
- * @Version: 2.2
+ * @Date: 2026/8/4
+ * @Version: 2.3
  **/
 @Service
 public class DockAlarmService {
@@ -51,8 +51,7 @@ public class DockAlarmService {
     private static final long AIS_EXTRAPOLATED_TIMEOUT_MS = 3000L;
     /** 融合目标超时时间（毫秒） */
     private static final long MERGE_TIMEOUT_MS = 10000L;
-    /** 已告警配对保留时长（毫秒）— 10分钟 */
-    private static final long ALARMED_PAIR_KEEP_MS = 600000L;
+    // 已告警配对：移除10分钟自动过期，只有距离超限/目标消失才清理
     /** 未告警配对无更新清理时长（毫秒）— 30秒无更新视为失效 */
     private static final long UNALARMED_PAIR_EXPIRE_MS = 30000L;
     /** MMSI融合缓存刷新间隔（毫秒） */
@@ -162,7 +161,7 @@ public class DockAlarmService {
                     otherShip.getLon(), otherShip.getLat()
             );
 
-            // 超出搭靠距离，移除配对缓存
+            // 超出搭靠距离，移除配对缓存，直接取消告警
             if (dist > thresholdVal) {
                 GlobalResources.dockAlarmPairMap.remove(pairKey);
                 continue;
@@ -333,6 +332,7 @@ public class DockAlarmService {
 
     /**
      * 单船舶关联过期配对清理（国内船快速返回时调用）
+     * 改动：已告警配对不再按时间过期；仅未告警配对30s无更新清理
      */
     private void cleanExpiredDockPairByTarget(Long curTid, long now, Integer stationId) {
         ConcurrentHashMap<String, DockAlarmPair> pairMap = GlobalResources.dockAlarmPairMap;
@@ -347,14 +347,9 @@ public class DockAlarmService {
             if (!Objects.equals(pair.getShipId1(), curTid) && !Objects.equals(pair.getShipId2(), curTid)) {
                 return false;
             }
-            // 未告警30s无更新清理
+            // 未告警30s无更新清理；已告警配对不做时间过期
             if (!pair.getHasAlarm() && pair.getLastUpdateTime() != null
                     && now - pair.getLastUpdateTime() > UNALARMED_PAIR_EXPIRE_MS) {
-                return true;
-            }
-            // 已告警超过10分钟清理
-            if (pair.getHasAlarm() && pair.getFirstCloseTime() != null
-                    && now - pair.getFirstCloseTime() > ALARMED_PAIR_KEEP_MS) {
                 return true;
             }
             return false;
@@ -363,6 +358,7 @@ public class DockAlarmService {
 
     /**
      * 站点全局过期配对清理
+     * 改动：移除已告警配对时间过期逻辑；只清理未告警超时、目标失效的配对
      */
     private void cleanExpiredDockPair(long now, List<ShipTarget> validShips, Integer stationId) {
         ConcurrentHashMap<String, DockAlarmPair> pairMap = GlobalResources.dockAlarmPairMap;
@@ -381,17 +377,15 @@ public class DockAlarmService {
             DockAlarmPair pair = entry.getValue();
             if (pair == null) return true;
             if (!Objects.equals(pair.getStationId(), stationId)) return false;
-            // 告警配对按保留时长清理
-            if (pair.getHasAlarm()) {
-                return pair.getFirstCloseTime() != null
-                        && now - pair.getFirstCloseTime() > ALARMED_PAIR_KEEP_MS;
+
+            // 未告警配对：30s无更新直接删除
+            if (!pair.getHasAlarm()) {
+                if (pair.getLastUpdateTime() != null
+                        && now - pair.getLastUpdateTime() > UNALARMED_PAIR_EXPIRE_MS) {
+                    return true;
+                }
             }
-            // 未告警无更新清理
-            if (pair.getLastUpdateTime() != null
-                    && now - pair.getLastUpdateTime() > UNALARMED_PAIR_EXPIRE_MS) {
-                return true;
-            }
-            // 任一船舶失效则清理配对
+            // 无论是否告警：任一船舶失效消失，直接清理配对，防止内存泄露
             boolean ship1Valid = pair.getShipId1() != null && validTidSet.contains(pair.getShipId1());
             boolean ship2Valid = pair.getShipId2() != null && validTidSet.contains(pair.getShipId2());
             return !ship1Valid || !ship2Valid;

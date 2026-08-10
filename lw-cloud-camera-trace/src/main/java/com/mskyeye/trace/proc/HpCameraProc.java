@@ -396,12 +396,12 @@ public class HpCameraProc {
             jsonBody.put("cmd", "ivpSet");
             jsonBody1.put("token", yzCameraInfo.getLoginInfo());
             jsonBody1.put("channelid", channelid);
-            jsonBody1.put("enable", /*enable?1:0*/0);
+            jsonBody1.put("enable", enable?1:0);
             jsonBody1.put("bAlarmTracking", enable);
             jsonBody1.put("type", 10);
             jsonBody.put("param", jsonBody1);
             String body = jsonBody.toJSONString();
-            String result = PostRequestUtil.sendToHpPostReq(yzCameraInfo.getIp(), String.valueOf(yzCameraInfo.getHttpPort()), body);
+            PostRequestUtil.sendToHpPostReq(yzCameraInfo.getIp(), String.valueOf(yzCameraInfo.getHttpPort()), body);
             TimeUnit.MILLISECONDS.sleep(200);
         } catch (Exception e) {
             e.printStackTrace();

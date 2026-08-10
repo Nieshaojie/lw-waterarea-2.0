@@ -178,17 +178,17 @@ public class RCAlarmTask {
                     traceProInfo.setAlarmRelUrl(urlArray[1]);
                 }
                 //第50秒开始抓拍照片
-                if (clock == 50) {
+                if (clock == 35) {
                     if (traceProInfo.getAlarmAbsUrl() != null) {
                         alertCapPhoto(yzCameraInfo, traceProInfo);
                     }
                 }
                 //第60秒结束取证
-                if (clock == 60) {
+                if (clock == 40) {
                     clock = 0;
                     traceProInfo.setTraceType(6);//返回雷光警戒
                     traceProInfo.setClock(clock);
-                    GL_TraceInfoMap.put(traceProInfo.getCameraId(), traceProInfo);
+//                    GL_TraceInfoMap.put(traceProInfo.getCameraId(), traceProInfo);
                     hpCameraProc.photoTrackingCtrl(yzCameraInfo, false, traceProInfo.getChannelId());
                     //下面这个操作必须添加
                     hpCameraProc.boxTrackCtrl(yzCameraInfo, false, 1, 0, 0, 0, 0);
@@ -447,6 +447,12 @@ public class RCAlarmTask {
         //计算Z值
         if(yzCameraInfo.getManu().equals("gpl")){
             Double zVal = calZVal(dis);
+            if(zVal != null){
+                zFixVal = zVal;
+            }
+        }
+        if(yzCameraInfo.getManu().equals("hp")){
+            Double zVal = calZValHP(dis);
             if(zVal != null){
                 zFixVal = zVal;
             }

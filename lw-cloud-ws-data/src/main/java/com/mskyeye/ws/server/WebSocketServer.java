@@ -196,9 +196,9 @@ public class WebSocketServer {
                                 // 从Redis获取上次发送告警的时间戳
                                 Long lastSendTime = redisCache.getCacheObject(alarmTimeKey);
 
-                                if (alarmCount != null && alarmCount > 200) {
-                                    // 如果上次发送时间为空，或距离当前超过10秒，则发送
-                                    if (lastSendTime == null || (currentTime - lastSendTime >= 10000)) {
+                                if (alarmCount != null && alarmCount > 5) {
+                                    // 如果上次发送时间为空，或距离当前超过100秒，则发送
+                                    if (lastSendTime == null || (currentTime - lastSendTime >= 180000)) {
                                         AlarmInfoSender.sendAlarmInfo(cnt);
                                         // 更新Redis中上次发送时间戳
                                         redisCache.setCacheObject(alarmTimeKey, currentTime, 12, TimeUnit.SECONDS);

@@ -392,14 +392,14 @@ public class CameraOrderController {
             }*/
             //发送图像跟踪指令
             hpCameraProc.photoTrackingCtrl(yzCameraInfo, traceProInfo.getbTracking(), traceProInfo.getChannelId());
-            try {
+            /*try {
                 Thread.sleep(1500); // 延迟1.5秒（1500毫秒）
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt(); // 恢复中断状态
                 e.printStackTrace(); // 可选：打印异常栈信息
-            }
+            }*/
             //相机转到该经纬度
-            ctrlCameraByLonLatToHP(traceProInfo);
+            //ctrlCameraByLonLatToHP(traceProInfo);
         } else if (traceProInfo.getManu().equals("hik")) {
             //注:海康相机的图像跟踪需要先发送【起始跟踪指令】,然后定时发送【连续跟踪指令】
             if (!hkCameraProc.photoTraceStart(traceProInfo, yzCameraInfo)) {

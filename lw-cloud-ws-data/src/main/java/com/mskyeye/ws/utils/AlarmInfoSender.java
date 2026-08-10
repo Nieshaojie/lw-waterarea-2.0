@@ -8,7 +8,7 @@ import java.util.Map;
 
 public class AlarmInfoSender {
 
-    private static final String ALARM_INFO_URL = "http://36.139.130.155:8081/system/alarm/info";
+    private static final String ALARM_INFO_URL = "http://192.168.0.171:8081/system/alarm/info";
 
     /**
      * 发送预警信息
@@ -24,6 +24,7 @@ public class AlarmInfoSender {
         requestBody.put("alarm", packet.getALARM());
         requestBody.put("lat", packet.getLAT());
         requestBody.put("lon", packet.getLON());
+        requestBody.put("name", packet.getSHIPNAME());
 
         // 构造请求头
         HttpHeaders headers = new HttpHeaders();
