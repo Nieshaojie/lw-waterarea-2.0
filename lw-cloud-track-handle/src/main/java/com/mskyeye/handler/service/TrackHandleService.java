@@ -78,6 +78,7 @@ public class TrackHandleService {
     private static final Integer SPEED_CAL = 2;//速度计算
     private static final Integer SIZEMETERS_CAL = 3;//回波尺寸计算
     private static final Integer SIZEDEGREES_CAL = 4;//回波展宽计算
+    private static final Integer DISTANCES_CAL = 5;//回波展宽计算
 
     private static final String FLIT_SIGN = "+";
 
@@ -411,6 +412,12 @@ public class TrackHandleService {
                                     if (cnt.getSIZEDEGREES() < calVal) {
                                         alarmInfo += FLIT_SIGN + tmpInfo.getTypeName();
                                     }
+                                }else if (calPro == DISTANCES_CAL) {
+                                    String dockAlarmText = dockAlarmService.checkDockAlarm(lwTrackPacket,calVal);
+                                    //满足搭靠预警预警
+                                    if (StringUtil.isNotEmpty(dockAlarmText)) {
+                                        alarmInfo += FLIT_SIGN + tmpInfo.getTypeName();
+                                    }
                                 }
                             }
                         }
@@ -418,20 +425,6 @@ public class TrackHandleService {
                     if (StringUtil.isNotEmpty(alarmInfo)) {
                         alarmInfo = alarmInfo.replaceFirst("\\+", "");
                     }
-
-                    // ===================== 新增：拼接搭靠预警文字 =====================
-                    // 调用搭靠服务，获取搭靠告警文本
-//                    String dockAlarmText = dockAlarmService.checkDockAlarm(lwTrackPacket);
-//                    if (StringUtil.isNotEmpty(dockAlarmText)) {
-//                        if (StringUtil.isEmpty(alarmInfo)) {
-//                            alarmInfo = dockAlarmText;
-//                        } else {
-//                            // 原有区域告警 + 搭靠预警拼接
-//                            alarmInfo = alarmInfo + "+" + dockAlarmText;
-//                        }
-//                    }
-                    // =================================================================
-
                     cnt.setALARM(alarmInfo);
                     //有该预警目标,更新信息
                 /*if (oldTrackMap.containsKey(cnt.getTID())) {

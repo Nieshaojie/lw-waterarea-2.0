@@ -29,8 +29,8 @@ import static com.mskyeye.handler.common.GlobalResources.*;
 @Service
 public class DockAlarmService {
 
-    @Value("${dock_distance}")
-    private String dockDistance;
+//    @Value("${dock_distance}")
+//    private String dockDistance;
 
     private static final Logger log = LoggerFactory.getLogger(DockAlarmService.class);
 
@@ -71,7 +71,7 @@ public class DockAlarmService {
      * @param lwTrackPacket 当前航迹包
      * @return 满足搭靠预警返回【搭靠预警】，无搭靠返回空字符串
      */
-    public String checkDockAlarm(LwTrackPacket lwTrackPacket) {
+    public String checkDockAlarm(LwTrackPacket lwTrackPacket,Integer dockDistance) {
         // 全局开关关闭直接返回
         if (!GlobalResources.dockAlarmEnable) {
             return "";
@@ -137,7 +137,7 @@ public class DockAlarmService {
         long timeThreshold = GlobalResources.dockTimeThreshold * 1000L;
 
         // 距离阈值校验
-        Double distanceThreshold = Double.parseDouble(dockDistance);
+        Integer distanceThreshold = dockDistance;
         if (distanceThreshold == null) {
             log.warn("搭靠距离阈值未配置，跳过本次计算，站点:{} MMSI:{}", stationId, curMmsi);
             return "";
