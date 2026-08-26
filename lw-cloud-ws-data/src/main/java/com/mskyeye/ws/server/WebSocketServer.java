@@ -12,6 +12,7 @@ import com.mskyeye.ws.model.LwCameraStatusPacket;
 import com.mskyeye.ws.model.LwCarInfoPacket;
 import com.mskyeye.ws.redis.utils.RedisCache;
 import com.mskyeye.ws.utils.AlarmInfoSender;
+import com.mskyeye.ws.utils.ForeignShipInfoSender;
 import com.mskyeye.ws.utils.WebSocketSession;
 import com.ruoyi.common.core.domain.model.LoginUser;
 import io.netty.handler.codec.http.HttpHeaders;
@@ -215,10 +216,33 @@ public class WebSocketServer {
                         }
                     }
                 }
+                //马鞍上项目添加历史外轮信息：外轮船舶信息写入数据库（同一外轮一小时内不重复写入，超出一小时后重新写入）
+                if (isForeignVessel(cnt.getMMSI())) {
+                    String foreignShipKey = "foreignShip:info:" + cnt.getMMSI();
+                    Long lastWriteTime = redisCache.getCacheObject(foreignShipKey);
+                    long currentTime = System.currentTimeMillis();
+                    if (lastWriteTime == null || (currentTime - lastWriteTime >= 3600000)) {
+                        ForeignShipInfoSender.sendForeignShipInfo(cnt);
+                        redisCache.setCacheObject(foreignShipKey, currentTime, 1, TimeUnit.HOURS);
+                    }
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    /**
+     * 判断是否为外籍轮船（外轮）
+     * 国内船MMSI前缀为412/413/414，其余判定为外籍轮船
+     * @param mmsi 船舶9位MMSI
+     * @return true=外籍轮船，false=国内船舶/无效MMSI
+     */
+    private boolean isForeignVessel(Long mmsi) {
+        if (mmsi == null || mmsi < 100000000L || mmsi > 999999999L) {
+            return false;
+        }
+        int prefix = (int) (mmsi / 1000000L);
+        return prefix != 412 && prefix != 413 && prefix != 414;
     }
     /**
      * 向所有用户发送相机状态数据
