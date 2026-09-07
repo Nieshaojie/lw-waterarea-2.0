@@ -106,6 +106,8 @@ public class AiCruiseTask {
                         fishingDetectInfo.setPresetNum(Math.toIntExact(yzAiCruiseInfo.getPointsInfoList()
                                 .get(yzAiCruiseInfo.getCurPointIndex()).getId()));
                         fishingDetectInfo.setStatus(0);
+                        //添加算法服务需要拉流的地址
+                        fishingDetectInfo.setRtsp(yzCameraInfo.getLightRtsp());
                         redisCache.pushMsg(DETECT_KEY, JSONObject.toJSONString(fishingDetectInfo));
 
                         LocalDateTime now = LocalDateTime.now();

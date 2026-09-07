@@ -16,6 +16,7 @@ public class FishingDetectInfo {
     private Integer channel;//相机通道号
     private Integer presetNum;//当前预置位号
     private Integer status;//0:启动检测；1：停止检测
+    private String rtsp;//相机拉流地址
     private String ext;//扩展信息
 
 }

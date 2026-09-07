@@ -186,6 +186,7 @@ public class CameraOrderController {
                 fishingDetectInfo.setPresetNum(Math.toIntExact(yzAiCruiseInfo.getPointsInfoList()
                         .get(yzAiCruiseInfo.getCurPointIndex()).getId()));
                 fishingDetectInfo.setStatus(status);
+                fishingDetectInfo.setRtsp(yzCameraInfo.getLightRtsp());
                 redisCache.pushMsg(DETECT_KEY, JSONObject.toJSONString(fishingDetectInfo));
                 LocalDateTime now = LocalDateTime.now();
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
