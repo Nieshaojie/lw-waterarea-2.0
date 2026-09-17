@@ -76,9 +76,11 @@ public class CSDataService implements ApplicationRunner {
                 @Override
                 protected void initChannel(SocketChannel ch) throws Exception {
                     log.info("-------------有客户端连接--------------");
-                    log.info("IP:" + ch.localAddress().getHostName());
-                    log.info("Port:" + ch.localAddress().getPort());
-                    log.info("IP详情:" + IpUtil.getIpVo(ch.localAddress().getHostName()));
+                    String clientIp = ch.remoteAddress().getAddress().getHostAddress();
+                    int clientPort = ch.remoteAddress().getPort();
+                    log.info("客户端IP:{}", clientIp);
+                    log.info("客户端Port:{}", clientPort);
+//                    log.info("IP详情:{}", IpUtil.getIpVo(clientIp));
 
 //                    ch.pipeline().addLast(new IdleStateHandler(5, 0, 0, TimeUnit.SECONDS));
                     ch.pipeline().addLast(MarshallingCodeFactory.buildMarshallingEncoder());
