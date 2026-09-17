@@ -101,51 +101,12 @@ public class MessageReceiver implements MessageListener {
                 lwAiAlarmPacket.setLAT(traceProInfo.getTraceLat());
                 lwAiAlarmPacket.setLON(traceProInfo.getTraceLon());
             }
-        }else if(obj.getType() == 3){
+        }else{
             yzAiPointInfo = GL_CurPointInfoMap.get(yzCameraInfo.getId());
             if(yzAiPointInfo == null){
                 return;
             }
-            yzAlarmEvent.setEventType(3L);//垂钓
-            yzAlarmEvent.setLat(yzAiPointInfo!=null?yzAiPointInfo.getLat().doubleValue():obj.getLat());
-            yzAlarmEvent.setLon(yzAiPointInfo!=null?yzAiPointInfo.getLon().doubleValue():obj.getLng());
-            yzAlarmEvent.setAiPointName(yzAiPointInfo.getName());
-
-            lwAiAlarmPacket.setLAT(yzAiPointInfo.getLat().doubleValue());
-            lwAiAlarmPacket.setLON(yzAiPointInfo.getLon().doubleValue());
-            lwAiAlarmPacket.setAIPOINTNAME(yzAiPointInfo.getName());
-        }else if(obj.getType() == 4){
-            yzAiPointInfo = GL_CurPointInfoMap.get(yzCameraInfo.getId());
-            if(yzAiPointInfo == null){
-                return;
-            }
-            yzAlarmEvent.setEventType(4L);//垂钓
-            yzAlarmEvent.setLat(yzAiPointInfo!=null?yzAiPointInfo.getLat().doubleValue():obj.getLat());
-            yzAlarmEvent.setLon(yzAiPointInfo!=null?yzAiPointInfo.getLon().doubleValue():obj.getLng());
-            yzAlarmEvent.setAiPointName(yzAiPointInfo.getName());
-
-            lwAiAlarmPacket.setLAT(yzAiPointInfo.getLat().doubleValue());
-            lwAiAlarmPacket.setLON(yzAiPointInfo.getLon().doubleValue());
-            lwAiAlarmPacket.setAIPOINTNAME(yzAiPointInfo.getName());
-        }else if(obj.getType() == 5){
-            yzAiPointInfo = GL_CurPointInfoMap.get(yzCameraInfo.getId());
-            if(yzAiPointInfo == null){
-                return;
-            }
-            yzAlarmEvent.setEventType(5L);//垂钓
-            yzAlarmEvent.setLat(yzAiPointInfo!=null?yzAiPointInfo.getLat().doubleValue():obj.getLat());
-            yzAlarmEvent.setLon(yzAiPointInfo!=null?yzAiPointInfo.getLon().doubleValue():obj.getLng());
-            yzAlarmEvent.setAiPointName(yzAiPointInfo.getName());
-
-            lwAiAlarmPacket.setLAT(yzAiPointInfo.getLat().doubleValue());
-            lwAiAlarmPacket.setLON(yzAiPointInfo.getLon().doubleValue());
-            lwAiAlarmPacket.setAIPOINTNAME(yzAiPointInfo.getName());
-        }else if(obj.getType() == 1){
-            yzAiPointInfo = GL_CurPointInfoMap.get(yzCameraInfo.getId());
-            if(yzAiPointInfo == null){
-                return;
-            }
-            yzAlarmEvent.setEventType(1L);//垂钓
+            yzAlarmEvent.setEventType(obj.getType().longValue());//违捕
             yzAlarmEvent.setLat(yzAiPointInfo!=null?yzAiPointInfo.getLat().doubleValue():obj.getLat());
             yzAlarmEvent.setLon(yzAiPointInfo!=null?yzAiPointInfo.getLon().doubleValue():obj.getLng());
             yzAlarmEvent.setAiPointName(yzAiPointInfo.getName());

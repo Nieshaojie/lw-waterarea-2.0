@@ -1,6 +1,14 @@
-server:
+﻿server:
   port: 9983
 
 spring:
   application:
     name: lw-cloud-ws-data
+# 第三方无人机平台(cmii)实时数据对接配置（token 由 yz_biz_sys 权威维护并写入统一 Redis）
+cmii:
+  # 数据面：无人机/机库实时数据查询
+  data-url: https://www.ahlyfly.com
+  tenant-id: "254"
+  uas-type: cmii
+  # 统一 token 的 Redis key（与 yz_biz_sys 中 cmii.token-redis-key 保持一致，共享同一 Redis）
+  token-redis-key: cmii:drone:access_token
