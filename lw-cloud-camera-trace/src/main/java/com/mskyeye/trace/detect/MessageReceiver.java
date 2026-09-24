@@ -104,16 +104,24 @@ public class MessageReceiver implements MessageListener {
         }else{
             yzAiPointInfo = GL_CurPointInfoMap.get(yzCameraInfo.getId());
             if(yzAiPointInfo == null){
-                return;
-            }
-            yzAlarmEvent.setEventType(obj.getType().longValue());//违捕
-            yzAlarmEvent.setLat(yzAiPointInfo!=null?yzAiPointInfo.getLat().doubleValue():obj.getLat());
-            yzAlarmEvent.setLon(yzAiPointInfo!=null?yzAiPointInfo.getLon().doubleValue():obj.getLng());
-            yzAlarmEvent.setAiPointName(yzAiPointInfo.getName());
+                yzAlarmEvent.setEventType(obj.getType().longValue());//违捕
+                yzAlarmEvent.setLat(yzCameraInfo != null ? yzCameraInfo.getLat().doubleValue() : obj.getLat());
+                yzAlarmEvent.setLon(yzCameraInfo != null ? yzCameraInfo.getLon().doubleValue() : obj.getLng());
+                yzAlarmEvent.setAiPointName(yzCameraInfo.getName());
 
-            lwAiAlarmPacket.setLAT(yzAiPointInfo.getLat().doubleValue());
-            lwAiAlarmPacket.setLON(yzAiPointInfo.getLon().doubleValue());
-            lwAiAlarmPacket.setAIPOINTNAME(yzAiPointInfo.getName());
+                lwAiAlarmPacket.setLAT(yzCameraInfo.getLat().doubleValue());
+                lwAiAlarmPacket.setLON(yzCameraInfo.getLon().doubleValue());
+                lwAiAlarmPacket.setAIPOINTNAME(yzCameraInfo.getName());
+            }else {
+                yzAlarmEvent.setEventType(obj.getType().longValue());//违捕
+                yzAlarmEvent.setLat(yzAiPointInfo != null ? yzAiPointInfo.getLat().doubleValue() : obj.getLat());
+                yzAlarmEvent.setLon(yzAiPointInfo != null ? yzAiPointInfo.getLon().doubleValue() : obj.getLng());
+                yzAlarmEvent.setAiPointName(yzAiPointInfo.getName());
+
+                lwAiAlarmPacket.setLAT(yzAiPointInfo.getLat().doubleValue());
+                lwAiAlarmPacket.setLON(yzAiPointInfo.getLon().doubleValue());
+                lwAiAlarmPacket.setAIPOINTNAME(yzAiPointInfo.getName());
+            }
         }
         yzAlarmEvent.setCameraId(yzCameraInfo.getId());
         yzAlarmEvent.setDeptId(yzCameraInfo.getDeptId());
