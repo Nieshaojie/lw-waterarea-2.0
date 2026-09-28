@@ -55,6 +55,19 @@ public class RedisCache {
     }
 
     /**
+     * 原子设置缓存对象（仅当键不存在时设置成功），带过期时间，用于并发去重/抢锁
+     *
+     * @param key      缓存的键值
+     * @param value    缓存的值
+     * @param timeout  时间
+     * @param timeUnit 时间颗粒度
+     * @return true=设置成功（键之前不存在）；false=键已存在，设置失败
+     */
+    public <T> Boolean setIfAbsent(final String key, final T value, final Integer timeout, final TimeUnit timeUnit) {
+        return redisTemplate.opsForValue().setIfAbsent(key, value, timeout, timeUnit);
+    }
+
+    /**
      * 设置有效时间
      *
      * @param key     Redis键

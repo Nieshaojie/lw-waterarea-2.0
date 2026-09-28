@@ -225,11 +225,16 @@ public class WebSocketServer {
                 }
                 if (shipCategory != -1) {
                     String shipKey = (shipCategory == 0 ? "foreignShip:info:" : "domesticShip:info:") + cnt.getMMSI();
-                    Long lastWriteTime = redisCache.getCacheObject(shipKey);
-                    long currentTime = System.currentTimeMillis();
-                    if (lastWriteTime == null || (currentTime - lastWriteTime >= 1800000)) {
-                        ShipInfoSender.sendShipInfo(cnt, shipCategory);
-                        redisCache.setCacheObject(shipKey, currentTime, 30, TimeUnit.MINUTES);
+                    // 原子占位（SET NX EX）：半小时内已写入则直接跳过，抢锁成功才入库，避免并发重复写入
+                    Boolean acquired = redisCache.setIfAbsent(shipKey, System.currentTimeMillis(), 30, TimeUnit.MINUTES);
+                    if (Boolean.TRUE.equals(acquired)) {
+                        try {
+                            ShipInfoSender.sendShipInfo(cnt, shipCategory);
+                        } catch (Exception e) {
+                            // 发送失败时删除占位键，避免半小时内漏记
+                            e.printStackTrace();
+                            redisCache.deleteObject(shipKey);
+                        }
                     }
                 }
             }
