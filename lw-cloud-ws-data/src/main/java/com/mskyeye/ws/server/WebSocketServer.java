@@ -12,7 +12,7 @@ import com.mskyeye.ws.model.LwCameraStatusPacket;
 import com.mskyeye.ws.model.LwCarInfoPacket;
 import com.mskyeye.ws.redis.utils.RedisCache;
 import com.mskyeye.ws.utils.AlarmInfoSender;
-import com.mskyeye.ws.utils.ForeignShipInfoSender;
+import com.mskyeye.ws.utils.ShipInfoSender;
 import com.mskyeye.ws.utils.WebSocketSession;
 import com.ruoyi.common.core.domain.model.LoginUser;
 import io.netty.handler.codec.http.HttpHeaders;
@@ -216,14 +216,20 @@ public class WebSocketServer {
                         }
                     }
                 }
-                //马鞍上项目添加历史外轮信息：外轮船舶信息写入数据库（同一外轮一小时内不重复写入，超出一小时后重新写入）
+                //马鞍上项目添加历史船舶信息：外轮(0)/国轮(1)船舶信息写入数据库（同一船舶半小时内不重复写入，超过半小时后重新写入）
+                int shipCategory = -1;
                 if (isForeignVessel(cnt.getMMSI())) {
-                    String foreignShipKey = "foreignShip:info:" + cnt.getMMSI();
-                    Long lastWriteTime = redisCache.getCacheObject(foreignShipKey);
+                    shipCategory = 0;
+                } else if (isDomesticVessel(cnt.getMMSI())) {
+                    shipCategory = 1;
+                }
+                if (shipCategory != -1) {
+                    String shipKey = (shipCategory == 0 ? "foreignShip:info:" : "domesticShip:info:") + cnt.getMMSI();
+                    Long lastWriteTime = redisCache.getCacheObject(shipKey);
                     long currentTime = System.currentTimeMillis();
-                    if (lastWriteTime == null || (currentTime - lastWriteTime >= 3600000)) {
-                        ForeignShipInfoSender.sendForeignShipInfo(cnt);
-                        redisCache.setCacheObject(foreignShipKey, currentTime, 1, TimeUnit.HOURS);
+                    if (lastWriteTime == null || (currentTime - lastWriteTime >= 1800000)) {
+                        ShipInfoSender.sendShipInfo(cnt, shipCategory);
+                        redisCache.setCacheObject(shipKey, currentTime, 30, TimeUnit.MINUTES);
                     }
                 }
             }
@@ -243,6 +249,19 @@ public class WebSocketServer {
         }
         int prefix = (int) (mmsi / 1000000L);
         return prefix != 412 && prefix != 413 && prefix != 414;
+    }
+    /**
+     * 判断是否为国内船舶（国轮）
+     * 国内船MMSI前缀为412/413/414
+     * @param mmsi 船舶9位MMSI
+     * @return true=国内船舶，false=外籍轮船/无效MMSI
+     */
+    private boolean isDomesticVessel(Long mmsi) {
+        if (mmsi == null || mmsi < 100000000L || mmsi > 999999999L) {
+            return false;
+        }
+        int prefix = (int) (mmsi / 1000000L);
+        return prefix == 412 || prefix == 413 || prefix == 414;
     }
     /**
      * 向所有用户发送相机状态数据
