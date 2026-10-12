@@ -1,5 +1,6 @@
 package com.mskyeye.ws.platform;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.mskyeye.ws.utils.WebSocketSession;
@@ -77,6 +78,20 @@ public class CmiiRealtimeCronTask {
             String dockSn = dock.getDockSn();
             try {
                 JSONObject dockData = client.getDockRealtime(dockSn);
+                // 将机库绑定的无人机SN信息放入机库实时数据，供前端在无人机关机时仍能获取机库内无人机SN
+                if (dockData != null) {
+                    JSONArray droneArr = new JSONArray();
+                    if (dock.getDroneList() != null) {
+                        for (DroneVO drone : dock.getDroneList()) {
+                            JSONObject dj = new JSONObject(true);
+                            dj.put("droneId", drone.getDroneId());
+                            dj.put("droneSn", drone.getDroneSn());
+                            dj.put("droneName", drone.getDroneName());
+                            droneArr.add(dj);
+                        }
+                    }
+                    dockData.put("droneList", droneArr);
+                }
                 WebSocketSession.sendMessage2All(buildMessage(TYPE_DOCK, dockSn, dockData));
             } catch (Exception e) {
                 log.error("推送机库实时数据失败 dock={}", dockSn, e);
@@ -92,7 +107,12 @@ public class CmiiRealtimeCronTask {
                         JSONObject droneData = client.getDroneRealtime(droneSn);
                         WebSocketSession.sendMessage2All(buildMessage(TYPE_DRONE, droneSn, droneData));
                     } catch (Exception e) {
-                        log.error("推送无人机实时数据失败 drone={}", droneSn, e);
+                        // 无人机不在线/未找到属正常情况，降级为 debug 日志，不按错误处理
+                        if (e instanceof IllegalStateException && e.getMessage() != null && e.getMessage().contains("未找到对应")) {
+                            log.debug("无人机不在线或未找到，跳过实时推送 drone={}", droneSn);
+                        } else {
+                            log.error("推送无人机实时数据失败 drone={}", droneSn, e);
+                        }
                     }
                 }
             }
