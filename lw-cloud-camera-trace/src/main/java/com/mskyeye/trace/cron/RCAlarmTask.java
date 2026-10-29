@@ -189,12 +189,12 @@ public class RCAlarmTask {
      *
      * @throws Exception
      */
-    @Scheduled(cron = "0 0 6 * * ?") // 每天早上6点执行
+ /*   @Scheduled(cron = "0 0 6 * * ?") // 每天早上6点执行
     public void delExpEvi() throws Exception {
         String folderPath = alarmStgUrl;
         File folder = new File(folderPath);
         cleanFolders(folder);
-    }
+    }*/
 
 
 
