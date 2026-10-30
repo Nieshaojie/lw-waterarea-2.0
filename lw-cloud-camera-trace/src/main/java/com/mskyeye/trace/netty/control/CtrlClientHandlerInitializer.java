@@ -4,6 +4,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.codec.FixedLengthFrameDecoder;
 
 /**
  * @ClassName:CtrlClientHandlerInitializer
@@ -35,6 +36,8 @@ public class CtrlClientHandlerInitializer extends ChannelInitializer<SocketChann
     @Override
     protected void initChannel(SocketChannel ch) {
         ChannelPipeline pipeline = ch.pipeline();
+        // 高普乐控制口响应固定8字节一帧，加解码器防止TCP粘包/拆包导致强光状态丢失
+        pipeline.addLast(new FixedLengthFrameDecoder(8));
         GplCtrlClientHandler gplCtrlClientHandler = new GplCtrlClientHandler();
         pipeline.addLast(gplCtrlClientHandler);
         gplCtrlClientHandler.setCameraId(this.cameraId);

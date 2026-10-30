@@ -4,6 +4,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.codec.FixedLengthFrameDecoder;
 
 /**
  * @ClassName:StatusClientHandlerInitializer
@@ -37,6 +38,8 @@ public class StatusClientHandlerInitializer extends ChannelInitializer<SocketCha
     @Override
     protected void initChannel(SocketChannel ch) {
         ChannelPipeline pipeline = ch.pipeline();
+        // 高普乐光电状态推送固定12字节一帧，加解码器防止TCP粘包/拆包导致PT值丢失
+        pipeline.addLast(new FixedLengthFrameDecoder(12));
         GplStatusClientHandler gplStatusClientHandler = new GplStatusClientHandler();
         pipeline.addLast(gplStatusClientHandler);
         this.setCtx(gplStatusClientHandler.getCtx());

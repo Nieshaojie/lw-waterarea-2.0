@@ -268,9 +268,8 @@ public class CameraStatusAndTraceTask {
                 processDhCameraInfo(yzCameraInfo, statusMap);
                 break;
             case "gpl":
+                // GPL 相机 PTZ 值由 TCP 状态口（sparePort2）被动推送到 GL_CameraInfoMap，此处直接读取
                 sendStatusToMq(infoToStatus(false, yzCameraInfo, statusMap));
-//                processGplCameraInfo(yzCameraInfo, statusMap);
-                log.info("gpl相机处理");
                 break;
             default:
                 sendStatusToMq(infoToStatus(false, yzCameraInfo, statusMap));
