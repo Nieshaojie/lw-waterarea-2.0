@@ -108,7 +108,7 @@ public class CameraStatusAndTraceTask {
     /**
      * 等待200ms查询一次相机PT值
      */
-    @Scheduled(fixedDelay = 2000)
+    @Scheduled(fixedDelay = 200)
     @Async
     public void QueryPTVal() {
         if (GL_CameraInfoMap != null && !GL_CameraInfoMap.isEmpty()) {

@@ -17,6 +17,17 @@ public class CmiiProperties {
     /** 数据面：无人机/机库实时数据查询 */
     private String dataUrl;
 
+    /** 数据面：无人机/机库实时数据查询 */
+    private String tenantDataUrl;
+
+    public String getTenantDataUrl() {
+        return tenantDataUrl;
+    }
+
+    public void setTenantDataUrl(String tenantDataUrl) {
+        this.tenantDataUrl = tenantDataUrl;
+    }
+
     /** 请求头 tenant-id */
     private String tenantId;
 

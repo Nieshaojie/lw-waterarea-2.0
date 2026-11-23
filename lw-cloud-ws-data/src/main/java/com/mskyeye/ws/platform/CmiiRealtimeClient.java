@@ -60,7 +60,7 @@ public class CmiiRealtimeClient {
      * 按租户查询所有机库及其绑定无人机（data 为数组）
      */
     public List<DockDroneVO> getDockDroneList() {
-        String url = props.getDataUrl() + "/admin-api/api/device/drone/get_dock_drone_sn";
+        String url = props.getTenantDataUrl() + "/admin-api/api/device/drone/get_dock_drone_sn";
         String resp = httpsGet(url);
         JSONObject json = JSON.parseObject(resp);
         Integer code = json.getInteger("code");

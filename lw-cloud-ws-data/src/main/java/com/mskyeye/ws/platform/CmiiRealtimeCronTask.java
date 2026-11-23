@@ -53,7 +53,7 @@ public class CmiiRealtimeCronTask {
         try {
             List<DockDroneVO> list = client.getDockDroneList();
             dockDroneList = list;
-            log.info("刷新机库/无人机清单成功，共 {} 个机库", list.size());
+//            log.info("刷新机库/无人机清单成功，共 {} 个机库", list.size());
         } catch (Exception e) {
             log.error("刷新机库/无人机清单失败，保留旧清单", e);
         }
